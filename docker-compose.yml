@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
     volumes:
       - ./backend:/var/www/html
+      - ./data:/var/www/html/data
     ports:
       - "8080:80"
       - "8443:443"

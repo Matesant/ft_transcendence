@@ -28,4 +28,9 @@ RewriteCond %{REQUEST_FILENAME} !-f\n\
 RewriteCond %{REQUEST_FILENAME} !-d\n\
 RewriteRule ^ index.php [QSA,L]' > /var/www/html/.htaccess
 
+# Cria pasta de dados e dá permissão para o Apache (www-data)
+RUN mkdir -p /var/www/html/data && \
+    chown -R www-data:www-data /var/www/html/data && \
+    chmod 777 /var/www/html/data
+
 EXPOSE 80 443
