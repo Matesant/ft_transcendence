@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8080:80"
+      - "8443:443"
