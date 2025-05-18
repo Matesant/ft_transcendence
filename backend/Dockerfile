@@ -22,12 +22,6 @@ RUN sed -i 's|SSLCertificateFile.*|SSLCertificateFile /etc/ssl/certs/server.crt|
 RUN a2enmod rewrite && \
     sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# Cria .htaccess para redirecionar tudo para index.php
-RUN echo 'RewriteEngine On\n\
-RewriteCond %{REQUEST_FILENAME} !-f\n\
-RewriteCond %{REQUEST_FILENAME} !-d\n\
-RewriteRule ^ index.php [QSA,L]' > /var/www/html/.htaccess
-
 # Cria pasta de dados e dá permissão para o Apache (www-data)
 RUN mkdir -p /var/www/html/data && \
     chown -R www-data:www-data /var/www/html/data && \

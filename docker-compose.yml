@@ -3,7 +3,14 @@ services:
     build: ./backend
     volumes:
       - ./backend:/var/www/html
-      - ./data:/var/www/html/data
+      - ./data:/var/www/data
     ports:
       - "8080:80"
       - "8443:443"
+    # Ensure www-data has write access to the data directory
+    command: >
+      bash -c "
+        chown -R www-data:www-data /var/www/data &&
+        chmod 777 /var/www/data &&
+        apache2-foreground
+      "

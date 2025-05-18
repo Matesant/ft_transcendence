@@ -13,8 +13,14 @@ if (!isset($data['alias']) || empty(trim($data['alias']))) {
 
 $alias = htmlspecialchars(trim($data['alias']));
 
+// Verifica se o diretório data existe, caso contrário, cria-o
+$dataDir = '/var/www/data';
+if (!is_dir($dataDir)) {
+    mkdir($dataDir, 0755, true);
+}
+
 // Conecta ao banco (cria se não existir)
-$db = new PDO('sqlite:' . __DIR__ . '/../data/players.db');
+$db = new PDO('sqlite:' . $dataDir . '/players.db');
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Cria tabela se não existir
