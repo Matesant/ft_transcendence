@@ -12,6 +12,7 @@ export default fp(async (fastify) => {
     CREATE TABLE IF NOT EXISTS players (
       id INTEGER PRIMARY KEY,
       alias TEXT UNIQUE NOT NULL,
+	  password TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `)
