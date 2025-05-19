@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 
 export default async function (fastify, opts) {
   // REGISTRO
-  fastify.post('/register', async (request, reply) => {
+	fastify.post('/register', async (request, reply) => {
     const { alias, password } = request.body
     if (!alias || !password) {
       return reply.status(400).send({ error: 'Alias and password are required' })
