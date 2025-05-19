@@ -14,3 +14,17 @@ services:
         chmod 777 /var/www/data &&
         apache2-foreground
       "
+  
+  node-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.node
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    depends_on:
+      - backend
