@@ -46,4 +46,11 @@ export default async function (fastify, opts) {
     const token = fastify.jwt.sign({ alias: player.alias, id: player.id })
     return { token }
   })
+
+  fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+	return {
+		message: 'Tá dento pae',
+		user: request.user
+	}
+})
 }
