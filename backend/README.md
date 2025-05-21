@@ -1,5 +1,12 @@
 # 📘 API - ft\_transcendence
 
+## 🥵 Como rodar o backend diretasso
+```
+npm install
+npm run dev
+
+```
+
 ## 📆 Base URL
 
 ```
