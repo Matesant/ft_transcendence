@@ -56,6 +56,7 @@ export default fp(async (fastify) => {
       player2 TEXT,
 	  winner TEXT,
       status TEXT DEFAULT 'pending',
+	  round INTEGER DEFAULT 1,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `)
