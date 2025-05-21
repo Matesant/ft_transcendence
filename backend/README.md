@@ -1,6 +1,6 @@
 # 📘 API - ft\_transcendence
 
-## 📦 Base URL
+## 📆 Base URL
 
 ```
 http://localhost:3000
@@ -29,6 +29,14 @@ Registra um novo jogador.
 }
 ```
 
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"alias": "mateus", "password": "1234"}'
+```
+
 **Resposta:**
 
 ```json
@@ -53,6 +61,14 @@ Autentica o jogador e retorna um token JWT.
 }
 ```
 
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"alias": "mateus", "password": "1234"}'
+```
+
 **Resposta:**
 
 ```json
@@ -66,6 +82,13 @@ Autentica o jogador e retorna um token JWT.
 ### GET /auth/profile
 
 Retorna os dados do jogador autenticado.
+
+**curl:**
+
+```bash
+curl http://localhost:3000/auth/profile \
+  -H "Authorization: Bearer <TOKEN>"
+```
 
 **Resposta:**
 
@@ -88,12 +111,19 @@ Retorna os dados do jogador autenticado.
 
 Lista todos os jogadores registrados.
 
+**curl:**
+
+```bash
+curl http://localhost:3000/players \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 **Resposta:**
 
 ```json
 [
   { "alias": "mateus", "created_at": "2025-05-20 12:00:00" },
-  { "alias": "carol", "created_at": "2025-05-20 12:01:00" }
+  { "alias": "jorge", "created_at": "2025-05-20 12:01:00" }
 ]
 ```
 
@@ -105,12 +135,19 @@ Lista todos os jogadores registrados.
 
 Cria a primeira rodada de confrontos.
 
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/match \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 **Resposta:**
 
 ```json
 {
   "matches": [
-    { "player1": "mateus", "player2": "carol" },
+    { "player1": "mateus", "player2": "jorge" },
     { "winner": "lucas", "status": "walkover" }
   ]
 }
@@ -122,6 +159,13 @@ Cria a primeira rodada de confrontos.
 
 Retorna a próxima partida a ser jogada.
 
+**curl:**
+
+```bash
+curl http://localhost:3000/match/next \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 **Resposta:**
 
 ```json
@@ -129,7 +173,7 @@ Retorna a próxima partida a ser jogada.
   "match": {
     "id": 3,
     "player1": "mateus",
-    "player2": "carol"
+    "player2": "jorge"
   }
 }
 ```
@@ -158,6 +202,15 @@ Registra o vencedor de uma partida.
 }
 ```
 
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/match/score \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"matchId": 3, "winner": "mateus"}'
+```
+
 **Resposta:**
 
 ```json
@@ -174,6 +227,13 @@ Registra o vencedor de uma partida.
 
 Gera a próxima rodada com os vencedores da anterior.
 
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/match/advance \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 **Resposta:**
 
 ```json
@@ -181,7 +241,7 @@ Gera a próxima rodada com os vencedores da anterior.
   "round": 2,
   "matches": [
     { "player1": "mateus", "player2": "lucas" },
-    { "winner": "carol", "status": "walkover" }
+    { "winner": "jorge", "status": "walkover" }
   ]
 }
 ```
@@ -192,6 +252,13 @@ Gera a próxima rodada com os vencedores da anterior.
 
 Retorna o estado completo do torneio, agrupado por rodadas.
 
+**curl:**
+
+```bash
+curl http://localhost:3000/match/tournament \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 **Resposta:**
 
 ```json
@@ -201,13 +268,13 @@ Retorna o estado completo do torneio, agrupado por rodadas.
       "round": 1,
       "matches": [
         { "player1": "mateus", "player2": "lucas", "winner": "mateus", "status": "done" },
-        { "player1": "carol", "player2": null, "winner": "carol", "status": "done" }
+        { "player1": "jorge", "player2": null, "winner": "jorge", "status": "done" }
       ]
     },
     {
       "round": 2,
       "matches": [
-        { "player1": "mateus", "player2": "carol", "winner": null, "status": "pending" }
+        { "player1": "mateus", "player2": "jorge", "winner": null, "status": "pending" }
       ]
     }
   ]
@@ -216,7 +283,7 @@ Retorna o estado completo do torneio, agrupado por rodadas.
 
 ---
 
-## 🧭 Fluxo de uso sugerido
+## 🪩 Fluxo de uso sugerido
 
 1. Registro e login do jogador: `/auth/register` e `/auth/login`
 2. Criação dos confrontos: `POST /match`
