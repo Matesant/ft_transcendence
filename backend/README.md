@@ -1,10 +1,10 @@
 # 📘 API - ft\_transcendence
 
-## 🥵 Como rodar o backend diretasso
+## 🫕 Como rodar o backend diretasso
+
 ```
 npm install
 npm run dev
-
 ```
 
 ## 📆 Base URL
@@ -32,7 +32,8 @@ Registra um novo jogador.
 ```json
 {
   "alias": "mateus",
-  "password": "1234"
+  "password": "1234",
+  "email": "jorge@jorge.com"
 }
 ```
 
@@ -41,7 +42,7 @@ Registra um novo jogador.
 ```bash
 curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"alias": "mateus", "password": "1234"}'
+  -d '{"alias": "mateus", "password": "1234", "email": "jorge@jorge.com"}'
 ```
 
 **Resposta:**
@@ -55,9 +56,9 @@ curl -X POST http://localhost:3000/auth/register \
 
 ---
 
-### POST /auth/login
+### POST /auth/2fa/request
 
-Autentica o jogador e retorna um token JWT.
+Valida alias + senha e envia um código 2FA para o email do jogador.
 
 **Payload:**
 
@@ -71,9 +72,41 @@ Autentica o jogador e retorna um token JWT.
 **curl:**
 
 ```bash
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST http://localhost:3000/auth/2fa/request \
   -H "Content-Type: application/json" \
   -d '{"alias": "mateus", "password": "1234"}'
+```
+
+**Resposta:**
+
+```json
+{
+  "success": true,
+  "message": "Código enviado por e-mail"
+}
+```
+
+---
+
+### POST /auth/2fa/verify
+
+Confirma o código recebido por e-mail e retorna o token JWT de autenticação.
+
+**Payload:**
+
+```json
+{
+  "alias": "mateus",
+  "code": "123456"
+}
+```
+
+**curl:**
+
+```bash
+curl -X POST http://localhost:3000/auth/2fa/verify \
+  -H "Content-Type: application/json" \
+  -d '{"alias": "mateus", "code": "123456"}'
 ```
 
 **Resposta:**
@@ -292,9 +325,11 @@ curl http://localhost:3000/match/tournament \
 
 ## 🪩 Fluxo de uso sugerido
 
-1. Registro e login do jogador: `/auth/register` e `/auth/login`
-2. Criação dos confrontos: `POST /match`
-3. Jogo busca partida: `GET /match/next`
-4. Jogo envia resultado: `POST /match/score`
-5. Backend gera próxima rodada: `POST /match/advance`
-6. Frontend/jogo lista o torneio completo: `GET /match/tournament`
+1. Registro do jogador: `POST /auth/register`
+2. Login com senha: `POST /auth/2fa/request`
+3. Confirmação do código: `POST /auth/2fa/verify`
+4. Criação dos confrontos: `POST /match`
+5. Jogo busca partida: `GET /match/next`
+6. Jogo envia resultado: `POST /match/score`
+7. Backend gera próxima rodada: `POST /match/advance`
+8. Frontend/jogo lista o torneio completo: `GET /match/tournament`

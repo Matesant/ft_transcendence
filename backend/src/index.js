@@ -10,7 +10,11 @@ import matchRoutes from './routes/match.js'
 
 dotenv.config()
 
-const fastify = Fastify({ logger: true })
+const fastify = Fastify({ 
+  logger: true,
+  // Add explicit configuration for parsing JSON
+  bodyLimit: 1048576 // 1MiB
+})
 fastify.decorate("authenticate", async function (request, reply) {
   try {
 	await request.jwtVerify()

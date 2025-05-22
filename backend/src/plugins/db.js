@@ -44,6 +44,7 @@ export default fp(async (fastify) => {
     CREATE TABLE IF NOT EXISTS players (
       id INTEGER PRIMARY KEY,
       alias TEXT UNIQUE NOT NULL,
+	  email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
@@ -60,6 +61,16 @@ export default fp(async (fastify) => {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `)
+
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS two_factor_codes (
+    id INTEGER PRIMARY KEY,
+    alias TEXT NOT NULL,
+    code TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`)
 
   fastify.decorate('db', db)
 })
