@@ -1,4 +1,4 @@
-// filepath: /home/matesant/ft_transcendence/backend/src/plugins/db.js
+// filepath: backend/src/plugins/db.js
 import fp from 'fastify-plugin'
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
@@ -7,34 +7,20 @@ import { fileURLToPath } from 'url'
 import fs from 'fs'
 
 export default fp(async (fastify) => {
-  // Create a data directory for our database files
-  const dataDir = '/app/data'
-  let dbPath;
-  
-  // Use this for local development without Docker
-  if (!fs.existsSync(dataDir)) {
-    try {
-      // Create data directory in the project root
-      const __dirname = path.dirname(fileURLToPath(import.meta.url))
-      const projectRoot = path.resolve(__dirname, '../../')
-      const localDataDir = path.join(projectRoot, 'data')
-      
-      if (!fs.existsSync(localDataDir)) {
-        fs.mkdirSync(localDataDir, { recursive: true })
-      }
-      
-      dbPath = path.join(localDataDir, 'players.db')
-      console.log('Using local database path:', dbPath)
-    } catch (err) {
-      console.error('Error creating local data directory:', err)
-      throw err
-    }
-  } else {
-    dbPath = path.join(dataDir, 'players.db')
-    console.log('Using Docker database path:', dbPath)
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const rootDir = path.resolve(__dirname, '../../')
+
+  // Usa caminho do .env ou padrão ./data/players.db
+  const dbPath = process.env.DB_PATH || path.join(rootDir, 'data', 'players.db')
+
+  // Garante que o diretório exista
+  const dbDir = path.dirname(dbPath)
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true })
   }
-  
-  // Open the database
+
+  console.log('Using database at:', dbPath)
+
   const db = await open({
     filename: dbPath,
     driver: sqlite3.Database
@@ -44,7 +30,7 @@ export default fp(async (fastify) => {
     CREATE TABLE IF NOT EXISTS players (
       id INTEGER PRIMARY KEY,
       alias TEXT UNIQUE NOT NULL,
-	  email TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
@@ -55,22 +41,22 @@ export default fp(async (fastify) => {
       id INTEGER PRIMARY KEY,
       player1 TEXT NOT NULL,
       player2 TEXT,
-	  winner TEXT,
+      winner TEXT,
       status TEXT DEFAULT 'pending',
-	  round INTEGER DEFAULT 1,
+      round INTEGER DEFAULT 1,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `)
 
   await db.exec(`
-  CREATE TABLE IF NOT EXISTS two_factor_codes (
-    id INTEGER PRIMARY KEY,
-    alias TEXT NOT NULL,
-    code TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  )
-`)
+    CREATE TABLE IF NOT EXISTS two_factor_codes (
+      id INTEGER PRIMARY KEY,
+      alias TEXT NOT NULL,
+      code TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
 
   fastify.decorate('db', db)
 })

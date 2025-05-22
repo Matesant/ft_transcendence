@@ -1,30 +1,10 @@
 services:
   backend:
     build: ./backend
-    volumes:
-      - ./backend:/var/www/html
-      - ./data:/var/www/data
     ports:
-      - "8080:80"
-      - "8443:443"
-    # Ensure www-data has write access to the data directory
-    command: >
-      bash -c "
-        chown -R www-data:www-data /var/www/data &&
-        chmod 777 /var/www/data &&
-        apache2-foreground
-      "
-  
-  node-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.node
+      - "3000:3000"
     volumes:
       - ./backend:/app
       - ./data:/app/data
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-    depends_on:
-      - backend
+    env_file:
+      - ./backend/.env
