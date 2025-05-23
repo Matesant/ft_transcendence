@@ -23,7 +23,7 @@ make logs       # acompanha logs dos serviços
 > **Base URL:** `http://localhost:3001/auth`
 
 Todas as rotas abaixo retornam JSON.  
-Rotas protegidas exigem header:
+Rotas marcadas com [🔐 Requer autenticação] exigem o header:
 
 ```http
 Authorization: Bearer <TOKEN>
@@ -38,9 +38,9 @@ Registra um novo jogador.
 #### Requisição:
 ```json
 {
-  "alias": "mateus",
+  "alias": "jorge",
   "password": "1234",
-  "email": "mateus@email.com"
+  "email": "jorge@email.com"
 }
 ```
 
@@ -48,7 +48,7 @@ Registra um novo jogador.
 ```json
 {
   "success": true,
-  "alias": "mateus"
+  "alias": "jorge"
 }
 ```
 
@@ -61,7 +61,7 @@ Autentica por senha e envia um código 2FA para o e-mail.
 #### Requisição:
 ```json
 {
-  "alias": "mateus",
+  "alias": "jorge",
   "password": "1234"
 }
 ```
@@ -83,7 +83,7 @@ Confirma o código e retorna um JWT.
 #### Requisição:
 ```json
 {
-  "alias": "mateus",
+  "alias": "jorge",
   "code": "123456"
 }
 ```
@@ -97,12 +97,44 @@ Confirma o código e retorna um JWT.
 
 ---
 
-### 🔐 GET /auth/profile
+### 🛡️ POST /auth/2fa/enable [🔐 Requer autenticação]
 
-Exemplo de rota protegida. Retorna dados do jogador autenticado.
+Ativa a autenticação 2FA para o jogador logado.
 
-```bash
-curl http://localhost:3001/auth/profile   -H "Authorization: Bearer <TOKEN>"
+#### Requisição:
+```json
+{
+  "alias": "jorge"
+}
+```
+
+#### Resposta:
+```json
+{
+  "success": true,
+  "message": "2FA ativado com sucesso."
+}
+```
+
+---
+
+### 🛡️ POST /auth/2fa/disable [🔐 Requer autenticação]
+
+Desativa a autenticação 2FA para o jogador logado.
+
+#### Requisição:
+```json
+{
+  "alias": "jorge"
+}
+```
+
+#### Resposta:
+```json
+{
+  "success": true,
+  "message": "2FA desativado com sucesso."
+}
 ```
 
 ---
@@ -111,22 +143,18 @@ curl http://localhost:3001/auth/profile   -H "Authorization: Bearer <TOKEN>"
 
 > **Base URL:** `http://localhost:3002/match`
 
-Requer JWT em todas as rotas via:
-
-```http
-Authorization: Bearer <TOKEN>
-```
+Todas as rotas abaixo [🔐 Requerem autenticação].
 
 ---
 
-### 🧾 POST /match
+### 🧾 POST /match [🔐 Requer autenticação]
 
 Cria a primeira rodada com os jogadores fornecidos.
 
 #### Requisição:
 ```json
 {
-  "players": ["mateus", "jorge", "lucas"]
+  "players": ["jorge", "jorge", "lucas"]
 }
 ```
 
@@ -134,36 +162,21 @@ Cria a primeira rodada com os jogadores fornecidos.
 ```json
 {
   "matches": [
-    { "player1": "mateus", "player2": "jorge" },
+    { "player1": "jorge", "player2": "jorge" },
     { "wo": "lucas" }
   ]
 }
 ```
 
-> ⚠️ Se o número de jogadores for ímpar, o último avança automaticamente (WO = walkover).
-
 ---
 
-### ⏭️ GET /match/next
+### ⏭️ GET /match/next [🔐 Requer autenticação]
 
 Retorna a próxima partida pendente (status = `"pending"`).
 
-#### Resposta:
-```json
-{
-  "match": {
-    "id": 2,
-    "player1": "mateus",
-    "player2": "caio",
-    "status": "pending",
-    "round": 2
-  }
-}
-```
-
 ---
 
-### 🏆 POST /match/score
+### 🏆 POST /match/score [🔐 Requer autenticação]
 
 Define o vencedor de uma partida.
 
@@ -171,64 +184,21 @@ Define o vencedor de uma partida.
 ```json
 {
   "matchId": 2,
-  "winner": "mateus"
+  "winner": "jorge"
 }
 ```
-
-#### Resposta:
-```json
-{
-  "success": true,
-  "matchId": 2,
-  "winner": "mateus"
-}
-```
-
-> ⚠️ Partidas do tipo `wo` ou `done` não podem ser pontuadas.
 
 ---
 
-### ➕ POST /match/advance
+### ➕ POST /match/advance [🔐 Requer autenticação]
 
 Gera a próxima rodada com os vencedores da rodada anterior (`status = done || wo`).
 
-#### Resposta:
-```json
-{
-  "round": 2,
-  "matches": [
-    { "player1": "mateus", "player2": "lucas" },
-    { "wo": "ana" }
-  ]
-}
-```
-
 ---
 
-### 🧩 GET /match/tournament
+### 🧩 GET /match/tournament [🔐 Requer autenticação]
 
 Retorna todas as rodadas agrupadas por fase.
-
-#### Resposta:
-```json
-{
-  "rounds": [
-    {
-      "round": 1,
-      "matches": [
-        { "id": 1, "player1": "mateus", "player2": "jorge", "status": "done" },
-        { "id": 2, "player1": "lucas", "status": "wo", "winner": "lucas" }
-      ]
-    },
-    {
-      "round": 2,
-      "matches": [
-        { "id": 3, "player1": "mateus", "player2": "lucas", "status": "pending" }
-      ]
-    }
-  ]
-}
-```
 
 ---
 
