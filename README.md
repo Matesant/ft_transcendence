@@ -1,6 +1,1 @@
-# ft_transcendence
-# ft_transcendence
-# ft_transcendence
-
-
-# npm install
+# TEM UM README DENTRO DE SERVICES E DENTRO DE BACKEND
