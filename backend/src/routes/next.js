@@ -4,7 +4,7 @@ export default async function (fastify, opts) {
   }, async (request, reply) => {
     const db = fastify.db
 
-    // Busca a próxima partida ainda não jogada
+    // Search for the next match not yet played
     const next = await db.get(`
       SELECT * FROM matches
       WHERE status = 'pending'
@@ -16,7 +16,7 @@ export default async function (fastify, opts) {
       return { match: null, message: 'No more matches available' }
     }
 
-    // Marca como "playing"
+    // Mark as "playing"
     await db.run(`UPDATE matches SET status = 'playing' WHERE id = ?`, [next.id])
 
     return {

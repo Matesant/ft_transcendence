@@ -10,10 +10,10 @@ export default fp(async (fastify) => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url))
   const rootDir = path.resolve(__dirname, '../../')
 
-  // Usa caminho do .env ou padrão ./data/players.db
+  // Uses path from .env or default ./data/players.db
   const dbPath = process.env.DB_PATH || path.join(rootDir, 'data', 'players.db')
 
-  // Garante que o diretório exista
+  // Ensures directory exists
   const dbDir = path.dirname(dbPath)
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true })

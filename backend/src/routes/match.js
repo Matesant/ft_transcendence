@@ -132,7 +132,7 @@ export default async function (fastify, opts) {
 			const wo = winners.pop()
 			await db.run(`
 				INSERT INTO matches (player1, winner, status, round)
-				VALUES (?, NULL, ?, 'done', ?)
+				VALUES (?, ?, 'done', ?)
 			`, [wo, wo, nextRound])
 			matches.push({ winner: wo, status: 'walkover' })
 		}

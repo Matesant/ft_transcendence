@@ -1,35 +1,41 @@
-# 📘 API - ft\_transcendence (Microsserviços)
+# 🎮 ft_transcendence - API (Microsserviços)
 
-## 🔧 Como rodar o projeto
-
-```bash
-make setup      # cria arquivos .env automaticamente se não existirem
-make build      # builda todos os serviços
-make up         # sobe auth-service e match-service
-make logs       # visualiza logs de ambos
-```
-
-A API roda com múltiplos microsserviços acessíveis por URLs distintas:
-
-* `http://localhost:3001` → auth-service
-* `http://localhost:3002` → match-service
-
-> Todas as rotas protegidas exigem autenticação via JWT:
->
-> **Header obrigatório:**
->
-> ```http
-> Authorization: Bearer <TOKEN>
-> ```
+API backend baseada em **Fastify + SQLite**, com autenticação JWT e sistema de torneio com rounds, WO (walkover) e múltiplas fases.
 
 ---
 
-## 🔐 Auth-service (`localhost:3001`)
+## 🧰 Como rodar o projeto
 
-### POST /auth/register
+```bash
+make setup      # cria arquivos .env se necessário
+make build      # compila os microsserviços
+make up         # sobe auth-service e match-service
+make logs       # acompanha logs dos serviços
+```
+
+- Auth: [`http://localhost:3001`](http://localhost:3001)
+- Match: [`http://localhost:3002`](http://localhost:3002)
+
+---
+
+## 🔐 Auth-service
+
+> **Base URL:** `http://localhost:3001/auth`
+
+Todas as rotas abaixo retornam JSON.  
+Rotas protegidas exigem header:
+
+```http
+Authorization: Bearer <TOKEN>
+```
+
+---
+
+### ✅ POST /auth/register
 
 Registra um novo jogador.
 
+#### Requisição:
 ```json
 {
   "alias": "mateus",
@@ -38,10 +44,21 @@ Registra um novo jogador.
 }
 ```
 
-### POST /auth/2fa/request
+#### Resposta:
+```json
+{
+  "success": true,
+  "alias": "mateus"
+}
+```
 
-Valida o alias + senha e envia código 2FA por e-mail.
+---
 
+### 🔐 POST /auth/2fa/request
+
+Autentica por senha e envia um código 2FA para o e-mail.
+
+#### Requisição:
 ```json
 {
   "alias": "mateus",
@@ -49,10 +66,21 @@ Valida o alias + senha e envia código 2FA por e-mail.
 }
 ```
 
-### POST /auth/2fa/verify
+#### Resposta:
+```json
+{
+  "success": true,
+  "message": "Código enviado por e-mail"
+}
+```
 
-Confirma o código e retorna um token JWT.
+---
 
+### 🔐 POST /auth/2fa/verify
+
+Confirma o código e retorna um JWT.
+
+#### Requisição:
 ```json
 {
   "alias": "mateus",
@@ -60,107 +88,207 @@ Confirma o código e retorna um token JWT.
 }
 ```
 
-**Resposta 200 OK:**
-
+#### Resposta:
 ```json
 {
   "token": "eyJhbGciOi..."
 }
 ```
 
-**Resposta 401 Unauthorized:**
+---
 
-```json
-{
-  "error": "Código inválido ou expirado"
-}
-```
+### 🔐 GET /auth/profile
 
-### GET /auth/profile *(exemplo de rota protegida)*
+Exemplo de rota protegida. Retorna dados do jogador autenticado.
 
 ```bash
-curl http://localhost:3001/auth/profile \
-  -H "Authorization: Bearer <TOKEN>"
+curl http://localhost:3001/auth/profile   -H "Authorization: Bearer <TOKEN>"
 ```
 
 ---
 
-## 🏓 Match-service (`localhost:3002`)
+## 🏓 Match-service
 
-### POST /match
+> **Base URL:** `http://localhost:3002/match`
 
-Cria a primeira rodada de confrontos.
+Requer JWT em todas as rotas via:
 
+```http
+Authorization: Bearer <TOKEN>
+```
+
+---
+
+### 🧾 POST /match
+
+Cria a primeira rodada com os jogadores fornecidos.
+
+#### Requisição:
 ```json
 {
   "players": ["mateus", "jorge", "lucas"]
 }
 ```
 
-> ⚠️ Os aliases devem ser válidos. O frontend é responsável por garantir isso.
-
-### GET /match/next
-
-Retorna a próxima partida pendente.
-
-### POST /match/score
-
-Registra o vencedor de uma partida.
-
+#### Resposta:
 ```json
 {
-  "matchId": 3,
+  "matches": [
+    { "player1": "mateus", "player2": "jorge" },
+    { "wo": "lucas" }
+  ]
+}
+```
+
+> ⚠️ Se o número de jogadores for ímpar, o último avança automaticamente (WO = walkover).
+
+---
+
+### ⏭️ GET /match/next
+
+Retorna a próxima partida pendente (status = `"pending"`).
+
+#### Resposta:
+```json
+{
+  "match": {
+    "id": 2,
+    "player1": "mateus",
+    "player2": "caio",
+    "status": "pending",
+    "round": 2
+  }
+}
+```
+
+---
+
+### 🏆 POST /match/score
+
+Define o vencedor de uma partida.
+
+#### Requisição:
+```json
+{
+  "matchId": 2,
   "winner": "mateus"
 }
 ```
 
-### POST /match/advance
+#### Resposta:
+```json
+{
+  "success": true,
+  "matchId": 2,
+  "winner": "mateus"
+}
+```
 
-Gera a próxima rodada com os vencedores da anterior.
+> ⚠️ Partidas do tipo `wo` ou `done` não podem ser pontuadas.
 
-### GET /match/tournament
+---
+
+### ➕ POST /match/advance
+
+Gera a próxima rodada com os vencedores da rodada anterior (`status = done || wo`).
+
+#### Resposta:
+```json
+{
+  "round": 2,
+  "matches": [
+    { "player1": "mateus", "player2": "lucas" },
+    { "wo": "ana" }
+  ]
+}
+```
+
+---
+
+### 🧩 GET /match/tournament
 
 Retorna todas as rodadas agrupadas por fase.
 
----
-
-## 🔁 Fluxo de uso sugerido
-
-```text
-[ Register ] → /auth/register
-    ↓
-[ Login ] → /auth/2fa/request
-    ↓
-[ Código ] → /auth/2fa/verify → JWT
-    ↓
-[ Token ] → usado em chamadas para /match/*
+#### Resposta:
+```json
+{
+  "rounds": [
+    {
+      "round": 1,
+      "matches": [
+        { "id": 1, "player1": "mateus", "player2": "jorge", "status": "done" },
+        { "id": 2, "player1": "lucas", "status": "wo", "winner": "lucas" }
+      ]
+    },
+    {
+      "round": 2,
+      "matches": [
+        { "id": 3, "player1": "mateus", "player2": "lucas", "status": "pending" }
+      ]
+    }
+  ]
+}
 ```
 
-1. Registro via `POST /auth/register`
-2. Login + 2FA com `POST /auth/2fa/request` e `POST /auth/2fa/verify`
-3. Frontend envia `players[]` válidos para `POST /match`
-4. Jogo consulta com `GET /match/next`
-5. Jogo envia resultado com `POST /match/score`
-6. Backend gera novas rodadas com `POST /match/advance`
-7. Front ou admins consultam tudo com `GET /match/tournament`
+---
+
+## 🔁 Fluxo resumido (Frontend)
+
+```mermaid
+graph TD
+A[POST /auth/register] --> B[POST /auth/2fa/request]
+B --> C[POST /auth/2fa/verify → JWT]
+C --> D[POST /match → cria jogos]
+D --> E[GET /match/next → próxima partida]
+E --> F[POST /match/score → vencedor]
+F --> G[POST /match/advance → próxima rodada]
+G --> H[GET /match/tournament → estrutura total]
+```
 
 ---
 
-## 🧪 Ambiente de desenvolvimento
+## 🔑 JWT para testes
 
-* auth-service → `http://localhost:3001`
-* match-service → `http://localhost:3002`
-
-> Em produção, pode haver um gateway (ex: Nginx) unificando tudo em `api.domain.com/auth` e `api.domain.com/match`
-
----
-
-## 🧪 JWT de teste para desenvolvimento
-
-Você pode gerar um token válido manualmente:
+Durante o desenvolvimento, você pode gerar manualmente um token JWT válido:
 
 ```js
-require('jsonwebtoken').sign({ alias: 'teste', id: 99 }, 'jorge-super-secrets')
+require('jsonwebtoken').sign({ alias: 'dev', id: 42 }, 'jorge-super-secrets')
 ```
 
-Use esse token com rotas protegidas do match-service se quiser pular o 2FA durante testes.
+Use o token para testar o match-service sem passar pelo 2FA completo.
+
+---
+
+## 🧠 Convenções de `status` em partidas
+
+| Status   | Significado |
+|----------|-------------|
+| `pending` | Partida ainda não resolvida |
+| `done`    | Vencedor registrado manualmente |
+| `wo`      | Jogador avançou automaticamente (walkover) |
+
+---
+
+## 📌 Notas para o frontend
+
+- Sempre aguarde a resposta de `/match` ou `/advance` para saber a estrutura real.
+- O frontend **não precisa gerar os confrontos** — só envia `["a", "b", "c", ...]`.
+- Jogadores com `status = wo` já têm `winner` definido e **não devem entrar em jogos ativos**.
+- Partidas com `player2 = null` não são válidas — são WO ou erro.
+
+---
+
+## 🔒 Segurança
+
+- Toda rota protegida exige `Authorization: Bearer <TOKEN>`
+- Usuários só podem alterar dados de sua própria sessão
+- 2FA é obrigatório após login, mas pode ser desativado pelo usuário
+
+---
+
+## 📁 Microsserviços
+
+| Serviço       | Porta         | Descrição                          |
+|---------------|---------------|------------------------------------|
+| auth-service  | `:3001`       | Registro, login, 2FA, JWT          |
+| match-service | `:3002`       | Torneios, partidas, placar, rounds |

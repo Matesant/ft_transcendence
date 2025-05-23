@@ -1,26 +1,32 @@
 export default async function (fastify, opts) {
   fastify.post('/', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    const players = request.body.players  // deve receber um array
+    const players = request.body.players
     if (!Array.isArray(players) || players.length < 2) {
-      return reply.status(400).send({ error: 'Pelo menos dois jogadores são necessários' })
+      return reply.status(400).send({ error: 'At least two players are required' })
     }
 
     await fastify.db.run('DELETE FROM matches')
-
     const matches = []
 
     for (let i = 0; i < players.length - 1; i += 2) {
       const p1 = players[i]
       const p2 = players[i + 1]
-      await fastify.db.run('INSERT INTO matches (player1, player2) VALUES (?, ?)', [p1, p2])
+      await fastify.db.run(
+        'INSERT INTO matches (player1, player2, round, status) VALUES (?, ?, ?, ?)',
+        [p1, p2, 1, 'pending']
+      )
       matches.push({ player1: p1, player2: p2 })
     }
 
     if (players.length % 2 !== 0) {
-      const waiting = players.at(-1)
-      await fastify.db.run('INSERT INTO matches (player1, status) VALUES (?, ?)', [waiting, 'waiting'])
-      matches.push({ waiting })
-    }
+	  const wo = players.at(-1)
+	  await fastify.db.run(
+		'INSERT INTO matches (player1, status, winner, round) VALUES (?, ?, ?, ?)',
+		[wo, 'wo', wo, 1]
+	  )
+	  matches.push({ wo })
+	}
+
 
     return { matches }
   })
@@ -39,8 +45,22 @@ export default async function (fastify, opts) {
   fastify.post('/score', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const { matchId, winner } = request.body
     if (!matchId || !winner) {
-      return reply.status(400).send({ error: 'matchId e winner são obrigatórios' })
+      return reply.status(400).send({ error: 'matchId and winner are required' })
     }
+
+	const match = await fastify.db.get('SELECT * FROM matches WHERE id = ?', [matchId])
+
+	if (!match) {
+	return reply.status(404).send({ error: 'Match not found' })
+	}
+
+	if (match.status !== 'pending') {
+	return reply.status(400).send({ error: 'This match is not active for scoring' })
+	}
+
+	if (match.player1 !== winner && match.player2 !== winner) {
+	return reply.status(400).send({ error: 'Invalid winner for this match' })
+	}
 
     await fastify.db.run(`
       UPDATE matches SET winner = ?, status = 'done' WHERE id = ?
@@ -51,30 +71,37 @@ export default async function (fastify, opts) {
 
   fastify.post('/advance', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const winners = await fastify.db.all(`
-      SELECT winner FROM matches
-      WHERE status = 'done' AND winner IS NOT NULL
-      ORDER BY created_at ASC
-    `)
+	  SELECT winner FROM matches
+	  WHERE (status = 'done' OR status = 'wo') AND winner IS NOT NULL
+	  ORDER BY created_at ASC
+	`)
+
 
     if (winners.length < 2) {
-      return reply.send({ message: 'Não há vencedores suficientes para avançar' })
+      return reply.send({ message: 'Not enough winners to advance' })
     }
 
-    const round = (await fastify.db.get(`SELECT MAX(round) as r FROM matches`)).r + 1
+    const { r } = await fastify.db.get(`SELECT MAX(round) as r FROM matches`)
+    const round = (r || 0) + 1
     const matches = []
 
     for (let i = 0; i < winners.length - 1; i += 2) {
       const p1 = winners[i].winner
       const p2 = winners[i + 1].winner
-      await fastify.db.run('INSERT INTO matches (player1, player2, round) VALUES (?, ?, ?)', [p1, p2, round])
+      await fastify.db.run('INSERT INTO matches (player1, player2, round, status) VALUES (?, ?, ?, ?)',
+        [p1, p2, round, 'pending'])
       matches.push({ player1: p1, player2: p2 })
     }
 
     if (winners.length % 2 !== 0) {
-      const waiting = winners.at(-1).winner
-      await fastify.db.run('INSERT INTO matches (player1, round, status) VALUES (?, ?, ?)', [waiting, round, 'waiting'])
-      matches.push({ waiting })
-    }
+	  const wo = winners.at(-1).winner
+	  await fastify.db.run(
+    	'INSERT INTO matches (player1, status, winner, round) VALUES (?, ?, ?, ?)',
+    	[wo, 'wo', wo, round]
+  	)
+  	matches.push({ wo })
+	}
+
 
     return { round, matches }
   })

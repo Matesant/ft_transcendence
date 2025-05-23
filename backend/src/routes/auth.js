@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import { send2FACode } from '../utils/mailer.js'
 
 export default async function (fastify, opts) {
-  // REGISTRO
+  // REGISTRATION
 	fastify.post('/register', async (request, reply) => {
     const { alias, password, email } = request.body
     if (!alias || !password || !email) {
@@ -50,7 +50,7 @@ export default async function (fastify, opts) {
 
   fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	return {
-		message: 'Tá dento pae',
+		message: 'You\'re in, pal',
 		user: request.user
 	}
 })
@@ -74,7 +74,7 @@ export default async function (fastify, opts) {
 		}
 
 		const code = Math.floor(100000 + Math.random() * 900000).toString()
-		const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutos
+		const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes
 
 		await fastify.db.run(`
 			INSERT INTO two_factor_codes (alias, code, expires_at)
@@ -83,10 +83,10 @@ export default async function (fastify, opts) {
 
 		try {
 			await send2FACode(player.email, code)
-			return { success: true, message: 'Código enviado por e-mail' }
+			return { success: true, message: 'Code sent by email' }
 		} catch (err) {
-			console.error('Erro ao enviar email:', err)
-			return reply.status(500).send({ error: 'Erro ao enviar código de autenticação' })
+			console.error('Error sending email:', err)
+			return reply.status(500).send({ error: 'Error sending authentication code' })
 		}
 		})
 

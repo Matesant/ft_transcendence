@@ -12,7 +12,7 @@ export async function send2FACode(to, code) {
   await transporter.sendMail({
     from: `ft_transcendence <${process.env.MAIL_USER}>`,
     to,
-    subject: 'Seu código de autenticação',
-    html: `<p>Seu código de verificação é: <strong>${code}</strong></p>`
+    subject: 'Your authentication code',
+    html: `<p>Your verification code is: <strong>${code}</strong></p>`
   })
 }

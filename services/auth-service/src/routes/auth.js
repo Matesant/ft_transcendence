@@ -41,9 +41,9 @@ export default async function (fastify, opts) {
 
     try {
       await send2FACode(player.email, code)
-      return { success: true, message: 'Código enviado por e-mail' }
+      return { success: true, message: 'Code sent by email' }
     } catch (err) {
-      return reply.status(500).send({ error: 'Erro ao enviar código de autenticação' })
+      return reply.status(500).send({ error: 'Error sending authentication code' })
     }
   })
 
@@ -56,7 +56,7 @@ export default async function (fastify, opts) {
     )
 
     if (!record || new Date(record.expires_at) < new Date()) {
-      return reply.status(401).send({ error: 'Código inválido ou expirado' })
+      return reply.status(401).send({ error: 'Invalid or expired code' })
     }
 
     await fastify.db.run('DELETE FROM two_factor_codes WHERE id = ?', [record.id])
@@ -68,7 +68,7 @@ export default async function (fastify, opts) {
   })
 
 
-  //#TODO: rota login só pra testes, será removida depois
+  //#TODO: login route just for testing, will be removed later
 	fastify.post('/login', async (request, reply) => {
 		const { alias, password } = request.body
 		if (!alias || !password) {
@@ -102,28 +102,28 @@ export default async function (fastify, opts) {
 		const { alias } = request.body
 
 		if (request.user.alias !== alias) {
-			return reply.status(403).send({ error: 'Não autorizado' })
+			return reply.status(403).send({ error: 'Not authorized' })
 		}
 
 		await fastify.db.run(
 			'UPDATE players SET is_2fa_enabled = 1 WHERE alias = ?',
 			[alias]
 		)
-		return { success: true, message: '2FA ativado com sucesso.' }
+		return { success: true, message: '2FA enabled successfully.' }
 	})
 
 	fastify.post('/2fa/disable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	const { alias } = request.body
 
 	if (request.user.alias !== alias) {
-		return reply.status(403).send({ error: 'Não autorizado' })
+		return reply.status(403).send({ error: 'Not authorized' })
 	}
 
 	await fastify.db.run(
 		'UPDATE players SET is_2fa_enabled = 0 WHERE alias = ?',
 		[alias]
 	)
-	return { success: true, message: '2FA desativado com sucesso.' }
+	return { success: true, message: '2FA disabled successfully.' }
 	})
 
 }
