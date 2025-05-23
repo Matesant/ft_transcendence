@@ -21,6 +21,7 @@ export default fp(async (fastify) => {
         alias TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+		is_2fa_enabled INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `)

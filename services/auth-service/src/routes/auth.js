@@ -69,28 +69,61 @@ export default async function (fastify, opts) {
 
 
   //#TODO: rota login só pra testes, será removida depois
-  fastify.post('/login', async (request, reply) => {
-    const { alias, password } = request.body
-    if (!alias || !password) {
-      return reply.status(400).send({ error: 'Alias and password are required' })
-    }
+	fastify.post('/login', async (request, reply) => {
+		const { alias, password } = request.body
+		if (!alias || !password) {
+		return reply.status(400).send({ error: 'Alias and password are required' })
+		}
 
-    const player = await fastify.db.get(
-      'SELECT * FROM players WHERE alias = ?',
-      [alias]
-    )
+		const player = await fastify.db.get(
+		'SELECT * FROM players WHERE alias = ?',
+		[alias]
+		)
 
-    if (!player) {
-      return reply.status(401).send({ error: 'Invalid alias or password' })
-    }
+		if (!player) {
+		return reply.status(401).send({ error: 'Invalid alias or password' })
+		}
 
-    const match = await bcrypt.compare(password, player.password)
+		if (player.is_2fa_enabled) {
+		return { require2FA: true, message: '2FA required' }
+		}
 
-    if (!match) {
-      return reply.status(401).send({ error: 'Invalid alias or password' })
-    }
+		const match = await bcrypt.compare(password, player.password)
 
-    const token = fastify.jwt.sign({ alias: player.alias, id: player.id })
-    return { token }
+		if (!match) {
+		return reply.status(401).send({ error: 'Invalid alias or password' })
+		}
+
+		const token = fastify.jwt.sign({ alias: player.alias, id: player.id })
+		return { token }
   })
+
+    fastify.post('/2fa/enable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+		const { alias } = request.body
+
+		if (request.user.alias !== alias) {
+			return reply.status(403).send({ error: 'Não autorizado' })
+		}
+
+		await fastify.db.run(
+			'UPDATE players SET is_2fa_enabled = 1 WHERE alias = ?',
+			[alias]
+		)
+		return { success: true, message: '2FA ativado com sucesso.' }
+	})
+
+	fastify.post('/2fa/disable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+	const { alias } = request.body
+
+	if (request.user.alias !== alias) {
+		return reply.status(403).send({ error: 'Não autorizado' })
+	}
+
+	await fastify.db.run(
+		'UPDATE players SET is_2fa_enabled = 0 WHERE alias = ?',
+		[alias]
+	)
+	return { success: true, message: '2FA desativado com sucesso.' }
+	})
+
 }
