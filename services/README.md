@@ -241,7 +241,7 @@ Retorna todas as rodadas agrupadas por fase.
 graph TD
 A[POST /auth/register] --> B[POST /auth/login]
 B --> C{2FA enabled?}
-C -- No --> D[→ JWT]
+C -- No --> D[→ JWT] --> G
 C -- Yes --> E[POST /auth/2fa/request]
 E --> F[POST /auth/2fa/verify → JWT]
 F --> G[POST /match → cria jogos]
