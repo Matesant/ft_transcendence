@@ -248,7 +248,7 @@ F --> G[POST /match → cria jogos]
 G --> H[GET /match/next → próxima partida]
 H --> I[POST /match/score → vencedor]
 I --> J[POST /match/advance → próxima rodada]
-K[GET /match/tournament → estrutura total]
+J --> K[GET /match/tournament → estrutura total]
 ```
 
 ---
