@@ -10,6 +10,7 @@ dotenv.config()
 
 const fastify = Fastify({ logger: true })
 
+// JWT Auth decorator
 fastify.decorate("authenticate", async function (request, reply) {
   try {
     await request.jwtVerify()
@@ -18,12 +19,33 @@ fastify.decorate("authenticate", async function (request, reply) {
   }
 })
 
-await fastify.register(cors)
+// CORS config
+await fastify.register(cors, {
+  origin: true,
+  credentials: true
+})
+
+// Plugins
 await fastify.register(dbPlugin)
 await fastify.register(fastifyJWT, {
   secret: process.env.JWT_SECRET || 'default-secret'
 })
+
+// Rotas
 await fastify.register(authRoutes, { prefix: '/auth' })
 await fastify.register(playersRoutes, { prefix: '/players' })
 
-fastify.listen({ port: 3000, host: '0.0.0.0' })
+// ✅ Global Error Handler
+fastify.setErrorHandler((error, request, reply) => {
+  request.log.error(error)
+
+  reply.status(error.statusCode || 500).send({
+    status: error.statusCode || 500,
+    error: error.name || 'InternalServerError',
+    message: error.message || 'Something went wrong.',
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+  })
+})
+
+// Inicia servidor
+await fastify.listen({ port: 3000, host: '0.0.0.0' })
