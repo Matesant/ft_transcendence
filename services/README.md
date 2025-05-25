@@ -54,9 +54,9 @@ Registra um novo jogador.
 
 ---
 
-### 🔐 POST /auth/2fa/request
+### 🔓 POST /auth/login
 
-Autentica por senha e envia um código 2FA para o e-mail.
+Autentica o usuário com alias e senha.
 
 #### Requisição:
 ```json
@@ -66,11 +66,44 @@ Autentica por senha e envia um código 2FA para o e-mail.
 }
 ```
 
+#### Possíveis respostas:
+- Se o usuário **não tiver 2FA habilitado**:
+
+```json
+{
+  "token": "eyJhbGciOi..."
+}
+```
+
+- Se o usuário **tiver 2FA habilitado**:
+
+```json
+{
+  "require2FA": true,
+  "alias": "jorge"
+}
+```
+
+---
+
+### 🔐 POST /auth/2fa/request
+
+Gera e envia o código 2FA para o e-mail.
+
+> ⚠️ Requer apenas o alias, já que o login já foi feito.
+
+#### Requisição:
+```json
+{
+  "alias": "jorge"
+}
+```
+
 #### Resposta:
 ```json
 {
   "success": true,
-  "message": "Código enviado por e-mail"
+  "message": "Code sent by email."
 }
 ```
 
@@ -112,7 +145,7 @@ Ativa a autenticação 2FA para o jogador logado.
 ```json
 {
   "success": true,
-  "message": "2FA ativado com sucesso."
+  "message": "2FA enabled successfully."
 }
 ```
 
@@ -133,7 +166,7 @@ Desativa a autenticação 2FA para o jogador logado.
 ```json
 {
   "success": true,
-  "message": "2FA desativado com sucesso."
+  "message": "2FA disabled successfully."
 }
 ```
 
@@ -154,7 +187,7 @@ Cria a primeira rodada com os jogadores fornecidos.
 #### Requisição:
 ```json
 {
-  "players": ["jorge", "jorge", "lucas"]
+  "players": ["jorge", "tobias", "lucas"]
 }
 ```
 
@@ -162,7 +195,7 @@ Cria a primeira rodada com os jogadores fornecidos.
 ```json
 {
   "matches": [
-    { "player1": "jorge", "player2": "jorge" },
+    { "player1": "jorge", "player2": "tobias" },
     { "wo": "lucas" }
   ]
 }
@@ -206,13 +239,16 @@ Retorna todas as rodadas agrupadas por fase.
 
 ```mermaid
 graph TD
-A[POST /auth/register] --> B[POST /auth/2fa/request]
-B --> C[POST /auth/2fa/verify → JWT]
-C --> D[POST /match → cria jogos]
-D --> E[GET /match/next → próxima partida]
-E --> F[POST /match/score → vencedor]
-F --> G[POST /match/advance → próxima rodada]
-G --> H[GET /match/tournament → estrutura total]
+A[POST /auth/register] --> B[POST /auth/login]
+B --> C{2FA enabled?}
+C -- No --> D[→ JWT]
+C -- Yes --> E[POST /auth/2fa/request]
+E --> F[POST /auth/2fa/verify → JWT]
+F --> G[POST /match → cria jogos]
+G --> H[GET /match/next → próxima partida]
+H --> I[POST /match/score → vencedor]
+I --> J[POST /match/advance → próxima rodada]
+J --> K[GET /match/tournament → estrutura total]
 ```
 
 ---
