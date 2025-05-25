@@ -67,8 +67,6 @@ export default async function (fastify, opts) {
     return { token }
   })
 
-
-  //#TODO: login route just for testing, will be removed later
 	fastify.post('/login', async (request, reply) => {
 		const { alias, password } = request.body
 		if (!alias || !password) {
@@ -99,18 +97,20 @@ export default async function (fastify, opts) {
   })
 
     fastify.post('/2fa/enable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-		const { alias } = request.body
+	  const { alias } = request.body
 
-		if (request.user.alias !== alias) {
-			return reply.status(403).send({ error: 'Not authorized' })
-		}
+	  if (request.user.alias !== alias) {
+		return reply.status(403).send({ error: 'Not authorized' })
+	}
 
-		await fastify.db.run(
-			'UPDATE players SET is_2fa_enabled = 1 WHERE alias = ?',
-			[alias]
-		)
-		return { success: true, message: '2FA enabled successfully.' }
+	  await fastify.db.run(
+		'UPDATE players SET is_2fa_enabled = 1 WHERE alias = ?',
+		[alias]
+	)
+
+	  return { success: true, message: '2FA enabled successfully.' }
 	})
+
 
 	fastify.post('/2fa/disable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	const { alias } = request.body
