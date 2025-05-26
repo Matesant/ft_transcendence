@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt'
 import { send2FACode } from '../utils/mailer.js'
-import { getTestMessageUrl } from 'nodemailer'
 
 export default async function (fastify, opts) {
   fastify.post('/register', async (request, reply) => {
