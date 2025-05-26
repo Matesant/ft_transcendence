@@ -23,11 +23,11 @@ export default async function (fastify, opts) {
   })
 
   fastify.post('/2fa/request', async (request, reply) => {
-    const { alias, password } = request.body
+    const { alias } = request.body
     const player = await fastify.db.get('SELECT * FROM players WHERE alias = ?', [alias])
 
-    if (!player || !(await bcrypt.compare(password, player.password))) {
-      return reply.status(401).send({ error: 'Invalid alias or password' })
+    if (!player) {
+      return reply.status(401).send({ error: 'Invalid alias' })
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString()
