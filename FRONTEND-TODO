@@ -1,54 +1,34 @@
-#TODO: MAJOR — Setup do Frontend
-❌ Escolher framework (ex: React + Vite)
-❌ Criar estrutura de pastas (componentes, páginas, serviços)
-❌ Configurar comunicação com API (Axios, JWT storage, env)
-❌ Configurar controle de rotas (React Router)
-❌ Configurar estilos globais (TailwindCSS, CSS-in-JS, etc.)
+#TODO: Configuração inicial
+❌ Criar projeto base (ex: React, Vite, Next.js, etc.)
+❌ Configurar comunicação com backend via HTTP (Axios ou fetch)
+❌ Armazenar e enviar JWT nos headers (Authorization: Bearer)
 
-#TODO: MAJOR — Autenticação
-❌ Página de login
-❌ Página de registro
-❌ Suporte a autenticação JWT
-❌ Fluxo de autenticação com 2FA (input de código após login)
-❌ Suporte a login com Google (OAuth popup)
+#TODO: Autenticação de usuário
+❌ Página de registro (POST /auth/register)
+❌ Página de login (POST /auth/login)
+❌ Receber e armazenar token JWT no login
+❌ Redirecionar usuário autenticado para dashboard/home
 
-#TODO: MAJOR — Gerenciamento de Usuário
-❌ Página de perfil do usuário
-❌ Edição de perfil (nickname, avatar)
-❌ Upload de avatar (com preview)
-❌ Listagem de amigos e status online
-❌ Sistema de adicionar/remover amigo
+#TODO: Suporte a 2FA
+❌ Detectar se o usuário tem 2FA habilitado após login
+❌ Página/campo para inserir o código TOTP (POST /auth/2fa/verify ou similar)
+❌ Guardar token final após 2FA (se for trocado)
+❌ Feedback de erro/sucesso no 2FA
 
-#TODO: MAJOR — Sistema de Torneios e Partidas
-❌ Tela para entrar em torneios
-❌ Visualização de chaveamento (bracket)
-❌ Histórico de partidas (componente de tabela)
-❌ Página de detalhes da partida
-❌ Matchmaking e "esperando adversário"
+#TODO: Página de usuário simples
+❌ Exibir nome do usuário logado
+❌ Botão de logout (remover token)
+❌ Mostrar se está autenticado
 
-#TODO: MAJOR — Jogo Pong (3D com Babylon.js)
-❌ Integração com Babylon.js
-❌ Renderização do jogo em canvas
-❌ Comunicação com backend via WebSocket
-❌ Sincronização de inputs entre jogadores
-❌ Interface de HUD (pontuação, tempo, status)
+#TODO: Matchmaking básico
+❌ Botão para "entrar em partida" (POST /match)
+❌ Mostrar status: aguardando jogador / partida iniciada
+❌ Receber resposta da API com dados da partida
 
-#TODO: MINOR — Layout e Responsividade
-❌ Header e footer comuns
-❌ Layout responsivo (desktop, mobile)
-❌ Tela de carregamento global
-❌ Erros e mensagens do sistema
+#TODO: Organização e navegação
+❌ Controle de rotas com proteção (login obrigatório para acessar certas páginas)
+❌ Componentes básicos reutilizáveis (formulário, botão, input, etc.)
 
-#TODO: MINOR — Feedback ao usuário
-❌ Toasts (login, erro, sucesso)
-❌ Modais (confirmar ações, sair da partida)
-❌ Skeleton loading components
-
-#TODO: OPTIONAL — Dashboard/Leaderboard
-❌ Tabela de ranking global
-❌ Estatísticas do usuário (gráficos, partidas vencidas, etc.)
-❌ Página "Sobre o projeto" (informativa)
-
-#TODO: OPTIONAL — Progressive Web App (PWA)
-❌ Instalação como app
-❌ Ícone e splash screen
+#TODO: Estilo e experiência
+❌ Layout mínimo: header, conteúdo, feedback de carregamento
+❌ Feedback visual para login, erro de senha, erro no 2FA, etc.
