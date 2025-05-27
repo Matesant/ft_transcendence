@@ -1,0 +1,41 @@
+#TODO: MAJOR — Use a framework to build the backend
+✔ auth-service (parcial – falta Google Verify)
+✔ match-service
+❌ game-service
+❌ user-management-service
+
+#TODO: MAJOR — Implement remote authentication
+❌ Autenticação remota (Google/Facebook/etc.)
+
+#TODO: MINOR — Use a database for the backend and more
+✔ game-service
+✔ auth-service
+❌ user-management-service
+
+#TODO: MAJOR — Standard user management, authentication and users across tournaments
+✔ Users can securely subscribe to the website
+✔ Registered users can securely log in
+✔ Users can select a unique display name to participate in tournaments
+❌ Users can update their information
+❌ Users can upload an avatar (default if none is provided)
+❌ Users can add others as friends and view their online status
+❌ User profiles display stats (e.g. wins, losses)
+❌ Each user has a Match History (1v1 games, dates, details – visible to logged-in users)
+
+#TODO: MAJOR — Design the backend as microservices
+✔ auth-service
+✔ match-service
+❌ game-service
+❌ user-management-service
+
+#TODO: MAJOR — Implement advanced 3D techniques (Babylon.js)
+❌ Engine setup
+❌ 3D arena and player rendering
+❌ Camera and lighting
+❌ Real-time updates from backend
+
+#TODO: MAJOR — Implement Two-Factor Authentication (2FA) and JWT
+✔ Implement 2FA as an additional layer of security (TOTP code or similar)
+✔ Use JWT for secure authentication and session control
+❌ Provide a user-friendly setup for enabling 2FA (SMS, email, or authenticator apps)
+✔ Ensure JWT tokens are issued and validated securely

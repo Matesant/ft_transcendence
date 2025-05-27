@@ -1,0 +1,54 @@
+#TODO: MAJOR — Setup do Frontend
+❌ Escolher framework (ex: React + Vite)
+❌ Criar estrutura de pastas (componentes, páginas, serviços)
+❌ Configurar comunicação com API (Axios, JWT storage, env)
+❌ Configurar controle de rotas (React Router)
+❌ Configurar estilos globais (TailwindCSS, CSS-in-JS, etc.)
+
+#TODO: MAJOR — Autenticação
+❌ Página de login
+❌ Página de registro
+❌ Suporte a autenticação JWT
+❌ Fluxo de autenticação com 2FA (input de código após login)
+❌ Suporte a login com Google (OAuth popup)
+
+#TODO: MAJOR — Gerenciamento de Usuário
+❌ Página de perfil do usuário
+❌ Edição de perfil (nickname, avatar)
+❌ Upload de avatar (com preview)
+❌ Listagem de amigos e status online
+❌ Sistema de adicionar/remover amigo
+
+#TODO: MAJOR — Sistema de Torneios e Partidas
+❌ Tela para entrar em torneios
+❌ Visualização de chaveamento (bracket)
+❌ Histórico de partidas (componente de tabela)
+❌ Página de detalhes da partida
+❌ Matchmaking e "esperando adversário"
+
+#TODO: MAJOR — Jogo Pong (3D com Babylon.js)
+❌ Integração com Babylon.js
+❌ Renderização do jogo em canvas
+❌ Comunicação com backend via WebSocket
+❌ Sincronização de inputs entre jogadores
+❌ Interface de HUD (pontuação, tempo, status)
+
+#TODO: MINOR — Layout e Responsividade
+❌ Header e footer comuns
+❌ Layout responsivo (desktop, mobile)
+❌ Tela de carregamento global
+❌ Erros e mensagens do sistema
+
+#TODO: MINOR — Feedback ao usuário
+❌ Toasts (login, erro, sucesso)
+❌ Modais (confirmar ações, sair da partida)
+❌ Skeleton loading components
+
+#TODO: OPTIONAL — Dashboard/Leaderboard
+❌ Tabela de ranking global
+❌ Estatísticas do usuário (gráficos, partidas vencidas, etc.)
+❌ Página "Sobre o projeto" (informativa)
+
+#TODO: OPTIONAL — Progressive Web App (PWA)
+❌ Instalação como app
+❌ Ícone e splash screen
