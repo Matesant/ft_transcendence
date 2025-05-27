@@ -26,3 +26,5 @@ Thumbs.db
 # Optional: compiled files or test output
 dist/
 coverage/
+
+package-lock.json
