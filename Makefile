@@ -39,8 +39,8 @@ clean: down
 fclean: clean
 	@echo "$(RED)Removendo volumes e dados locais...$(RESET)"
 	docker system prune -af --volumes
-	@rm -rf services/auth-service/data/players.db
-	@rm -rf services/match-service/data/players.db
+	@rm -rf services/auth-service/data/*.db
+	@rm -rf services/match-service/data/*.db
 
 re: fclean build up
 
