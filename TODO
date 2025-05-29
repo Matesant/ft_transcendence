@@ -5,7 +5,7 @@
 ❌ user-management-service
 
 #TODO: MAJOR — Implement remote authentication
-❌ Autenticação remota (Google/Facebook/etc.)
+❌ Autenticação remota (Google)
 
 #TODO: MINOR — Use a database for the backend and more
 ✔ game-service

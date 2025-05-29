@@ -48,7 +48,7 @@ logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
 
 setup:
-	@for svc in auth-service match-service game-service; do \
+	@for svc in auth-service match-service game-service user-service; do \
 		if [ ! -f services/$$svc/.env ]; then \
 			echo "$(YELLOW)Criando .env para $$svc$(RESET)"; \
 			mkdir -p services/$$svc/data; \

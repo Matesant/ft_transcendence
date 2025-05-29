@@ -1,0 +1,16 @@
+{
+  "name": "user-service",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8",
+    "@fastify/jwt": "^6",
+    "dotenv": "^16",
+    "fastify": "^4.29.1",
+    "fastify-plugin": "^4",
+    "sqlite3": "^5"
+  }
+}

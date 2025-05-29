@@ -18,3 +18,13 @@ services:
       - ./services/match-service/data:/app/data
     env_file:
       - ./services/match-service/.env
+  user-service:
+    container_name: user-service
+    build: ./services/user-service
+    ports:
+      - "3003:3000"
+    env_file:
+      - ./services/user-service/.env
+    volumes:
+      - ./services/user-service/data:/app/data
+
