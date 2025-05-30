@@ -2,7 +2,7 @@
 ✔ auth-service (parcial – falta Google Verify)
 ✔ match-service
 ❌ game-service
-❌ user-management-service
+✔ user-management-service
 
 #TODO: MAJOR — Implement remote authentication
 ❌ Autenticação remota (Google)
@@ -10,14 +10,14 @@
 #TODO: MINOR — Use a database for the backend and more
 ✔ game-service
 ✔ auth-service
-❌ user-management-service
+✔ user-management-service
 
 #TODO: MAJOR — Standard user management, authentication and users across tournaments
 ✔ Users can securely subscribe to the website
 ✔ Registered users can securely log in
 ✔ Users can select a unique display name to participate in tournaments
-❌ Users can update their information
-❌ Users can upload an avatar (default if none is provided)
+✔ Users can update their information
+✔ Users can upload an avatar (default if none is provided)
 ❌ Users can add others as friends and view their online status
 ❌ User profiles display stats (e.g. wins, losses)
 ❌ Each user has a Match History (1v1 games, dates, details – visible to logged-in users)
@@ -26,7 +26,7 @@
 ✔ auth-service
 ✔ match-service
 ❌ game-service
-❌ user-management-service
+✔ user-management-service
 
 #TODO: MAJOR — Implement advanced 3D techniques (Babylon.js)
 ❌ Engine setup
