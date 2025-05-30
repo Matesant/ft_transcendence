@@ -27,4 +27,5 @@ services:
       - ./services/user-service/.env
     volumes:
       - ./services/user-service/data:/app/data
+      - ./services/user-service/uploads:/app/uploads
 

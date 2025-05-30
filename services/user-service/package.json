@@ -8,6 +8,7 @@
   "dependencies": {
     "@fastify/cors": "^8",
     "@fastify/jwt": "^6",
+    "@fastify/multipart": "^7",
     "dotenv": "^16",
     "fastify": "^4.29.1",
     "fastify-plugin": "^4",
