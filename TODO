@@ -18,9 +18,9 @@
 ✔ Users can select a unique display name to participate in tournaments
 ✔ Users can update their information
 ✔ Users can upload an avatar (default if none is provided)
-❌ Users can add others as friends and view their online status
-❌ User profiles display stats (e.g. wins, losses)
-❌ Each user has a Match History (1v1 games, dates, details – visible to logged-in users)
+❌ Users can add others as friends and view their online status (parcial, falta status online)
+✔ User profiles display stats (e.g. wins, losses)
+✔ Each user has a Match History (1v1 games, dates, details – visible to logged-in users)
 
 #TODO: MAJOR — Design the backend as microservices
 ✔ auth-service
@@ -35,7 +35,7 @@
 ❌ Real-time updates from backend
 
 #TODO: MAJOR — Implement Two-Factor Authentication (2FA) and JWT
-✔ Implement 2FA as an additional layer of security (TOTP code or similar)
+✔ Implement 2FA as an additional layer of security
 ✔ Use JWT for secure authentication and session control
-❌ Provide a user-friendly setup for enabling 2FA (SMS, email, or authenticator apps)
+❌ Provide a user-friendly setup for enabling 2FA (email)
 ✔ Ensure JWT tokens are issued and validated securely

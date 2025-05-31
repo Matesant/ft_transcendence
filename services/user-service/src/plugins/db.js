@@ -23,7 +23,8 @@ db.serialize(() => {
       display_name TEXT,
       avatar TEXT DEFAULT 'default.png',
       wins INTEGER DEFAULT 0,
-      losses INTEGER DEFAULT 0
+      losses INTEGER DEFAULT 0,
+	  is_online INTEGER DEFAULT 0
     )
   `)
 
@@ -42,8 +43,8 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS match_history (
       id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,
-      opponent TEXT NOT NULL,
-      result TEXT CHECK(result IN ('win', 'loss')) NOT NULL,
+      opponent TEXT,
+      result TEXT CHECK(result IN ('win', 'loss', 'wo')) NOT NULL,
       date TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES user_profiles(id)
     )
