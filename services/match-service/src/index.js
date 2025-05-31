@@ -3,7 +3,10 @@ import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import dotenv from 'dotenv'
 import dbPlugin from './plugins/db.js'
-import matchRoutes from './routes/match.js'
+import setupRoutes from './routes/match/setup.js';
+import playRoutes from './routes/match/play.js';
+import tournamentRoutes from './routes/match/tournament.js';
+
 
 dotenv.config()
 
@@ -38,9 +41,10 @@ await fastify.register(cors, {
   credentials: true
 })
 
+await fastify.register(setupRoutes, { prefix: '/match' });
+await fastify.register(playRoutes, { prefix: '/match' });
+await fastify.register(tournamentRoutes, { prefix: '/match' });
 await fastify.register(dbPlugin)
 await fastify.register(jwt, { secret: process.env.JWT_SECRET })
-
-await fastify.register(matchRoutes, { prefix: '/match' })
 
 await fastify.listen({ port: 3000, host: '0.0.0.0' })

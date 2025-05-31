@@ -2,9 +2,13 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import dotenv from 'dotenv'
-import dbPlugin from '../plugins/db.js'
-import userRoutes from './routes/users.js'
+import dbPlugin from './plugins/db.js'
 import multipart from '@fastify/multipart'
+import profileRoutes from './routes/users/profile.js';
+import avatarRoutes from './routes/users/avatar.js';
+import friendsRoutes from './routes/users/friends.js';
+import publicRoutes from './routes/users/public.js';
+import historyRoutes from './routes/users/history.js';
 
 dotenv.config()
 
@@ -26,6 +30,10 @@ await fastify.register(multipart, {
 	fileSize: 10 * 1024 * 1024 // 10 MB
   }
 })
-await fastify.register(userRoutes, { prefix: '/users' })
+await fastify.register(profileRoutes, { prefix: '/users' });
+await fastify.register(avatarRoutes, { prefix: '/users' });
+await fastify.register(friendsRoutes, { prefix: '/users' });
+await fastify.register(publicRoutes, { prefix: '/users' });
+await fastify.register(historyRoutes, { prefix: '/users' });
 
 await fastify.listen({ port: 3000, host: '0.0.0.0' })

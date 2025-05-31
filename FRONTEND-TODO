@@ -11,7 +11,7 @@
 
 #TODO: Suporte a 2FA
 ❌ Detectar se o usuário tem 2FA habilitado após login
-❌ Página/campo para inserir o código TOTP (POST /auth/2fa/verify ou similar)
+❌ Página/campo para inserir o código TOTP (POST /auth/2fa/verify)
 ❌ Guardar token final após 2FA (se for trocado)
 ❌ Feedback de erro/sucesso no 2FA
 
