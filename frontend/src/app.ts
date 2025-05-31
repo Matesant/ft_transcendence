@@ -9,13 +9,46 @@ function drawDashedLine(scene: Scene): void {
    
     const dashedLine = MeshBuilder.CreateDashedLines("dashedLine", {
         points: [start, end],
-        dashSize: 0.5,
-        gapSize: 0.5
+        dashSize: 3,
+        gapSize: 1
     }, scene);
 
     const lineMaterial = new StandardMaterial("lineMaterial", scene);
     lineMaterial.emissiveColor = new Color3(1, 1, 1);
     dashedLine.material = lineMaterial;
+}
+
+/**
+ * Cria os limites do jogo (faixas brancas no topo e na base da cena).
+ * @param scene - A cena do Babylon.js onde os limites serão desenhados.
+ */
+function createGameBoundaries(scene: Scene): void {
+    // Configurações das faixas
+    const boundaryWidth = 20; // Altura das faixas
+    const boundaryHeight = 1; // Espessura das faixas
+    const boundaryDepth = 100; // Largura da faixa (profundidade da cena)
+
+    // Material branco para as faixas
+    const boundaryMaterial = new StandardMaterial("boundaryMaterial", scene);
+    boundaryMaterial.diffuseColor = Color3.White();
+
+    // Faixa superior
+    const topBoundary = MeshBuilder.CreateBox("topBoundary", {
+        width: boundaryDepth,
+        height: boundaryHeight,
+        depth: boundaryWidth,
+    }, scene);
+    topBoundary.material = boundaryMaterial;
+    topBoundary.position = new Vector3(0, boundaryHeight / 2, -boundaryWidth / 2);
+
+    // Faixa inferior
+    const bottomBoundary = MeshBuilder.CreateBox("bottomBoundary", {
+        width: boundaryDepth,
+        height: boundaryHeight,
+        depth: boundaryWidth,
+    }, scene);
+    bottomBoundary.material = boundaryMaterial;
+    bottomBoundary.position = new Vector3(0, -boundaryHeight / 2, -boundaryWidth / 2);
 }
 
 class App {
@@ -35,13 +68,13 @@ class App {
         this._engine = new Engine(this._canvas, true);
 
         this._scene = new Scene(this._engine);
-        this._scene.clearColor = new Color4(0.0, 0.0, 0.0, 1.0);
+        this._scene.clearColor = new Color4(0, 0.4, 0.3, 1.0);
 
         this._camera = new UniversalCamera("UniversalCamera", new Vector3(0, 0, -10), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
         this._camera.setTarget(Vector3.Zero());
         
-        // camera.attachControl(canvas, true);
+        // this._camera.attachControl(this._canvas, true);
         const ratio = this._canvas.height / this._canvas.width;
         if ( ratio > 1) {
             this._camera.orthoLeft = -1 / 2;
@@ -72,6 +105,16 @@ class App {
                 }
             }
         });
+
+        const light = new HemisphericLight("light", new Vector3(0, 1, 0));
+
+        // createGameBoundaries(this._scene);
+
+        const box = MeshBuilder.CreateBox("box", {}); //unit cube
+        box.scaling = new Vector3(0.03, 0.18, 0.1);
+        box.position = new Vector3(-0.90, 0, 0);
+        // box.rotation = new Vector3(0, 0, Math.PI / 2);
+
 
         // run the main render loop
         this._engine.runRenderLoop(() => {
