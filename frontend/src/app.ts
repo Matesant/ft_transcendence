@@ -1,121 +1,117 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Camera, UniversalCamera, Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, Color4, StandardMaterial, Color3 } from "@babylonjs/core";
-
-function drawDashedLine(scene: Scene): void {
-    const start = new Vector3(0, -1, 0);
-    const end = new Vector3(0, 1, 0);
-   
-    const dashedLine = MeshBuilder.CreateDashedLines("dashedLine", {
-        points: [start, end],
-        dashSize: 3,
-        gapSize: 1
-    }, scene);
-
-    const lineMaterial = new StandardMaterial("lineMaterial", scene);
-    lineMaterial.emissiveColor = new Color3(1, 1, 1);
-    dashedLine.material = lineMaterial;
-}
-
-/**
- * Cria os limites do jogo (faixas brancas no topo e na base da cena).
- * @param scene - A cena do Babylon.js onde os limites serão desenhados.
- */
-function createGameBoundaries(scene: Scene): void {
-    // Configurações das faixas
-    const boundaryWidth = 20; // Altura das faixas
-    const boundaryHeight = 1; // Espessura das faixas
-    const boundaryDepth = 100; // Largura da faixa (profundidade da cena)
-
-    // Material branco para as faixas
-    const boundaryMaterial = new StandardMaterial("boundaryMaterial", scene);
-    boundaryMaterial.diffuseColor = Color3.White();
-
-    // Faixa superior
-    const topBoundary = MeshBuilder.CreateBox("topBoundary", {
-        width: boundaryDepth,
-        height: boundaryHeight,
-        depth: boundaryWidth,
-    }, scene);
-    topBoundary.material = boundaryMaterial;
-    topBoundary.position = new Vector3(0, boundaryHeight / 2, -boundaryWidth / 2);
-
-    // Faixa inferior
-    const bottomBoundary = MeshBuilder.CreateBox("bottomBoundary", {
-        width: boundaryDepth,
-        height: boundaryHeight,
-        depth: boundaryWidth,
-    }, scene);
-    bottomBoundary.material = boundaryMaterial;
-    bottomBoundary.position = new Vector3(0, -boundaryHeight / 2, -boundaryWidth / 2);
-}
+import * as BABYLON from "@babylonjs/core";
 
 class App {
     private _canvas: HTMLCanvasElement;
-    private _engine: Engine;
-    private _scene: Scene;
-    private _camera: UniversalCamera;
+    private _engine: BABYLON.Engine;
+    private _scene: BABYLON.Scene;
+    private _camera: BABYLON.ArcRotateCamera;
+    private _ground: BABYLON.GroundMesh;
+    private _groundMaterial: BABYLON.StandardMaterial;
+    private _light: BABYLON.PointLight;
+    private _shadowGenerator: BABYLON.ShadowGenerator;
+    private _leftWall: BABYLON.Mesh;
+    private _rightWall: BABYLON.Mesh;
+    private _topSlider: BABYLON.Mesh;
+    private _bottomSlider: BABYLON.Mesh;
+    private _pressedKeys: { [key: string]: boolean } = {};
+    private _slidersMoveSpeed: number = 0.1;
+
+    private slidersAnimation(): void {
+        if (this._pressedKeys["w"] && this._bottomSlider.position.x > -2.5) {
+            this._bottomSlider.position.x -= this._slidersMoveSpeed;
+        }
+        if (this._pressedKeys["s"] && this._bottomSlider.position.x < 2.5) {
+            this._bottomSlider.position.x += this._slidersMoveSpeed;
+        }
+        if (this._pressedKeys["arrowup"] && this._topSlider.position.x > -2.5) {
+            this._topSlider.position.x -= this._slidersMoveSpeed;
+        }
+        if (this._pressedKeys["arrowdown"] && this._topSlider.position.x < 2.5) {
+            this._topSlider.position.x += this._slidersMoveSpeed;
+        }
+        requestAnimationFrame(() => this.slidersAnimation());
+    }
 
     constructor() {
 
         this._canvas = document.createElement("canvas");
-        this._canvas.style.width = "100%";
-        this._canvas.style.height = "100%";
+        this._canvas.width  = window.innerWidth;
+        this._canvas.height = window.innerHeight;
+
         this._canvas.id = "gameCanvas";
         document.body.appendChild(this._canvas);
 
-        this._engine = new Engine(this._canvas, true);
-
-        this._scene = new Scene(this._engine);
-        this._scene.clearColor = new Color4(0, 0.4, 0.3, 1.0);
-
-        this._camera = new UniversalCamera("UniversalCamera", new Vector3(0, 0, -10), this._scene);
-        this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-        this._camera.setTarget(Vector3.Zero());
-        
+        this._engine = new BABYLON.Engine(this._canvas, true);
+        this._scene = new BABYLON.Scene(this._engine);
+        this._scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+        this._camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2 - 0.7, 20, new BABYLON.Vector3(0, 0, 0), this._scene);
+        this._camera.setTarget(BABYLON.Vector3.Zero());
         // this._camera.attachControl(this._canvas, true);
-        const ratio = this._canvas.height / this._canvas.width;
-        if ( ratio > 1) {
-            this._camera.orthoLeft = -1 / 2;
-            this._camera.orthoRight = 1 / 2;
-            this._camera.orthoTop = 1 * ratio / 2;
-            this._camera.orthoBottom = -1 * ratio / 2;
-        } else {
-            this._camera.orthoTop = 1 / 2;
-            this._camera.orthoBottom = -1 / 2;
-            this._camera.orthoLeft = -1 / ratio / 2;
-            this._camera.orthoRight = 1 / ratio / 2;
-        }
+        this._light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(10, 5, 5), this._scene);
+        this._light.intensity = 1.5;
+        this._ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 12, height: 17 }, this._scene);
+        this._groundMaterial = new BABYLON.StandardMaterial("groundMaterial", this._scene);
+        this._groundMaterial.diffuseColor = new BABYLON.Color3(0.28, 0.77, 0.39);
+        this._ground.material = this._groundMaterial;
+        this._ground.receiveShadows = true;
+        this._shadowGenerator = new BABYLON.ShadowGenerator(3024, this._light);
 
-        drawDashedLine(this._scene);
+        this._leftWall = BABYLON.MeshBuilder.CreateBox("leftWall", {width: 0.1, height: 0.3, depth: 12}, this._scene);
+        this._leftWall.position = new BABYLON.Vector3(-3.05, 0.12, 0);
+        this._rightWall = this._leftWall.clone("rightWall");
+        this._rightWall.position.x = 3.05;
+
+        this._topSlider = BABYLON.MeshBuilder.CreateBox("topSlider", {
+            width: 1.3, height: 0.3, depth: 0.35
+        }, this._scene);
+        this._topSlider.position = new BABYLON.Vector3(0, 0.15, 6.05);
+
+        this._bottomSlider = this._topSlider.clone("bottomSlider");
+        this._bottomSlider.position.z = -6.05;
+
+        this._shadowGenerator.getShadowMap().renderList.push(this._rightWall, this._leftWall, this._topSlider, this._bottomSlider);
+        this._shadowGenerator.usePoissonSampling = true;
+        this._shadowGenerator.useBlurExponentialShadowMap = true;
+
+        window.addEventListener("keydown", (event) => {
+            
+            // to hide/how inspector: Shift+Ctrl+Alt+I
+            if (event.shiftKey && event.ctrlKey && event.altKey && (event.key === "I" || event.key === "i")) {
+                if (this._scene.debugLayer.isVisible()) {
+                    this._scene.debugLayer.hide();
+                } else {
+                    this._scene.debugLayer.show({embedMode: false}).then(function () {
+                        document.getElementById("scene-explorer-host").style.zIndex = "1000";
+                        document.getElementById("inspector-host").style.zIndex = "1000";
+                        document.getElementById("scene-explorer-host").style.position = "fixed";
+                        document.getElementById("inspector-host").style.position = "fixed";
+                    });
+                }
+                return ;
+            }
+
+            // store the slider's movement keys
+            this._pressedKeys[event.key.toLocaleLowerCase()] = true;
+        })
+
+        window.addEventListener("keyup", (event) => {
+            this._pressedKeys[event.key.toLocaleLowerCase()] = false;
+        });
+
+        window.addEventListener("resize", () => {
+            this._canvas.width = window.innerWidth;
+            this._canvas.height = window.innerHeight;
+            this._engine.resize();
+        })
+
     }
 
     public mainLoop(): void {
         
-        // hide/show the Inspector
-        window.addEventListener("keydown", (ev) => {
-
-            // Shift+Ctrl+Alt+I
-            if (ev.shiftKey && ev.ctrlKey && ev.altKey && (ev.key === "I" || ev.key === "i")) {
-                if (this._scene.debugLayer.isVisible()) {
-                    this._scene.debugLayer.hide();
-                } else {
-                    this._scene.debugLayer.show();
-                }
-            }
-        });
-
-        const light = new HemisphericLight("light", new Vector3(0, 1, 0));
-
-        // createGameBoundaries(this._scene);
-
-        const box = MeshBuilder.CreateBox("box", {}); //unit cube
-        box.scaling = new Vector3(0.03, 0.18, 0.1);
-        box.position = new Vector3(-0.90, 0, 0);
-        // box.rotation = new Vector3(0, 0, Math.PI / 2);
-
-
+        this.slidersAnimation();
         // run the main render loop
         this._engine.runRenderLoop(() => {
             this._scene.render();
