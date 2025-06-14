@@ -1,6 +1,8 @@
 // services/match-service/src/routes/match/play.js
 import { badRequest, notFound } from '../../utils/errors.js';
 
+//#TODO validar o ganhador da partida pelo jogador perdedor(se fizermos websocket)
+
 export default async function (fastify, opts) {
 	fastify.get('/next', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 		const match = await fastify.db.get(`
