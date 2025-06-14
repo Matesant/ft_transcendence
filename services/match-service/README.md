@@ -142,8 +142,11 @@ Allows a logged-in user to change their email and/or password.
 }
 
 You can include either or both of newEmail and newPassword.
-
+```
+**Response 200**
+```json
 {
   "success": true,
   "message": "Credentials updated successfully."
 }
+```
