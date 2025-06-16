@@ -129,6 +129,7 @@ Content-Type: application/json
 ```json
 { "success": true, "message": "2FA disabled successfully." }
 ```
+---
 
 ### 7. PATCH /auth/update-credentials 🔐
 
