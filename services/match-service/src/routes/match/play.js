@@ -45,33 +45,32 @@ export default async function (fastify, opts) {
 		const opponent = (match.player1 === winner) ? match.player2 : match.player1
 
 		try {
-		await fetch('http://user-service:3000/users/history', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-			alias: winner,
-			opponent,
-			result: match.status === 'wo' ? 'wo' : 'win',
-			date: new Date().toISOString()
-			})
-		})
-		fastify.log.error('Failed to notify user-service:', err)
-		
-		if (resultType === 'win' && opponent) {
-			await fetch('http://user-service:3000/users/history', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				alias: opponent,
-				opponent: winner,
-				result: 'loss',
-				date: new Date().toISOString()
-			})
-			})
-		}
-		} catch (err) {
-		fastify.log.error('Failed to notify user-service:', err)
-	}
+                await fetch('http://user-service:3000/users/history', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                                alias: winner,
+                                opponent,
+                                result: match.status === 'wo' ? 'wo' : 'win',
+                                date: new Date().toISOString()
+                        })
+                })
+
+                if (match.status !== 'wo' && opponent) {
+                        await fetch('http://user-service:3000/users/history', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                        alias: opponent,
+                                        opponent: winner,
+                                        result: 'loss',
+                                        date: new Date().toISOString()
+                                })
+                        })
+                }
+                } catch (err) {
+                        fastify.log.error('Failed to notify user-service:', err)
+        }
 	return { success: true, matchId, winner };
 });
 }
