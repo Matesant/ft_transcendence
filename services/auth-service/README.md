@@ -129,3 +129,25 @@ Content-Type: application/json
 ```json
 { "success": true, "message": "2FA disabled successfully." }
 ```
+
+### 7. PATCH /auth/update-credentials 🔐
+
+Allows a logged-in user to change their email and/or password.
+
+**Request**  
+```json
+{
+  "currentPassword": "1234",
+  "newEmail": "novo@email.com",
+  "newPassword": "abc123"
+}
+
+You can include either or both of newEmail and newPassword.
+```
+**Response 200**
+```json
+{
+  "success": true,
+  "message": "Credentials updated successfully."
+}
+```
