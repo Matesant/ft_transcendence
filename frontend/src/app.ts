@@ -17,7 +17,13 @@ class App {
     private _topSlider: BABYLON.Mesh;
     private _bottomSlider: BABYLON.Mesh;
     private _pressedKeys: { [key: string]: boolean } = {};
-    private _slidersMoveSpeed: number = 0.1;
+    private _slidersMoveSpeed: number = 0.175;
+    private _ball: BABYLON.Mesh;
+    private _ballSpeed: number = 0.1;
+    private _ballVelocity: BABYLON.Vector3;
+    private _score: { player1: number, player2: number } = { player1: 0, player2: 0 };
+    private _gameStarted: boolean = false;
+    private _firstCollision: boolean = true;
 
     private slidersAnimation(): void {
         if (this._pressedKeys["w"] && this._bottomSlider.position.x > -2.5) {
@@ -54,7 +60,7 @@ class App {
         this._light.intensity = 1.5;
         this._ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 12, height: 17 }, this._scene);
         this._groundMaterial = new BABYLON.StandardMaterial("groundMaterial", this._scene);
-        this._groundMaterial.diffuseColor = new BABYLON.Color3(0.28, 0.77, 0.39);
+        this._groundMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.4, 0.8); // Changed from green to blue
         this._ground.material = this._groundMaterial;
         this._ground.receiveShadows = true;
         this._shadowGenerator = new BABYLON.ShadowGenerator(3024, this._light);
@@ -71,6 +77,17 @@ class App {
 
         this._bottomSlider = this._topSlider.clone("bottomSlider");
         this._bottomSlider.position.z = -6.05;
+
+        this._ball = BABYLON.MeshBuilder.CreateSphere("ball", { diameter: 0.3 }, this._scene);
+        this._ball.position = new BABYLON.Vector3(0, 0.15, 0);
+        this._ballVelocity = new BABYLON.Vector3(
+            Math.random() < 0.5 ? -this._ballSpeed : this._ballSpeed,
+            0,
+            Math.random() < 0.5 ? -this._ballSpeed : this._ballSpeed
+        );
+        
+        // Add ball to shadow rendering
+        this._shadowGenerator.getShadowMap().renderList.push(this._ball);
 
         this._shadowGenerator.getShadowMap().renderList.push(this._rightWall, this._leftWall, this._topSlider, this._bottomSlider);
         this._shadowGenerator.usePoissonSampling = true;
@@ -109,11 +126,95 @@ class App {
 
     }
 
-    public mainLoop(): void {
+    private resetBall(): void {
+        this._ball.position = new BABYLON.Vector3(0, 0.15, 0);
+        this._ballVelocity = new BABYLON.Vector3(
+            Math.random() < 0.5 ? -this._ballSpeed : this._ballSpeed,
+            0,
+            Math.random() < 0.5 ? -this._ballSpeed : this._ballSpeed
+        );
+    }
+
+    private checkCollisions(): void {
+        // Wall collisions
+        if (this._ball.position.x <= -2.9 || this._ball.position.x >= 2.9) {
+            this._ballVelocity.x *= -1;
+        }
+
+        // Slider collisions - separate checks for top and bottom sliders to fix glitching
+        if (this._ball.intersectsMesh(this._topSlider)) {
+            // Only change direction if ball is moving toward the paddle
+            if (this._ballVelocity.z > 0) {
+                // Calculate where on the paddle the ball hit
+                const hitPosition = this._ball.position.x - this._topSlider.position.x;
+                // Normalize to range -1 to 1 (paddle width is 1.3)
+                const normalizedHit = hitPosition / (1.3/2);
+                
+                // Increase speed only after first collision
+                if (this._firstCollision) {
+                    const speedMultiplier = 1.5;
+                    this._ballVelocity.z *= -speedMultiplier;
+                    this._ballVelocity.x = this._ballSpeed * normalizedHit * 1.5;
+                    this._firstCollision = false;
+                } else {
+                    this._ballVelocity.z *= -1;
+                    // Adjust x direction based on where ball hit the paddle
+                    this._ballVelocity.x = this._ballSpeed * normalizedHit * 1.5;
+                }
+                
+                // Push ball away from paddle to prevent multiple collisions
+                this._ball.position.z = this._topSlider.position.z - 0.35;
+            }
+        } 
         
+        if (this._ball.intersectsMesh(this._bottomSlider)) {
+            // Only change direction if ball is moving toward the paddle
+            if (this._ballVelocity.z < 0) {
+                // Calculate where on the paddle the ball hit
+                const hitPosition = this._ball.position.x - this._bottomSlider.position.x;
+                // Normalize to range -1 to 1 (paddle width is 1.3)
+                const normalizedHit = hitPosition / (1.3/2);
+                
+                // Increase speed only after first collision
+                if (this._firstCollision) {
+                    const speedMultiplier = 1.5;
+                    this._ballVelocity.z *= -speedMultiplier;
+                    this._ballVelocity.x = this._ballSpeed * normalizedHit * 1.5;
+                    this._firstCollision = false;
+                } else {
+                    this._ballVelocity.z *= -1;
+                    // Adjust x direction based on where ball hit the paddle
+                    this._ballVelocity.x = this._ballSpeed * normalizedHit * 1.5;
+                }
+                
+                // Push ball away from paddle to prevent multiple collisions
+                this._ball.position.z = this._bottomSlider.position.z + 0.35;
+            }
+        }
+
+        // Score detection
+        if (this._ball.position.z >= 6.5) {
+            this._score.player1++;
+            this.resetBall();
+            this._firstCollision = true; // Reset the collision flag for the new round
+        } else if (this._ball.position.z <= -6.5) {
+            this._score.player2++;
+            this.resetBall();
+            this._firstCollision = true; // Reset the collision flag for the new round
+        }
+    }
+
+    private updateBall(): void {
+        this._ball.position.addInPlace(this._ballVelocity);
+        this.checkCollisions();
+    }
+
+    public mainLoop(): void {
         this.slidersAnimation();
+        
         // run the main render loop
         this._engine.runRenderLoop(() => {
+            this.updateBall();
             this._scene.render();
         });
     }
