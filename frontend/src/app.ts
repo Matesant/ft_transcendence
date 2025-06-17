@@ -2,6 +2,7 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
+import * as GUI from "@babylonjs/gui";
 
 class App {
     private _canvas: HTMLCanvasElement;
@@ -18,6 +19,8 @@ class App {
     private _bottomSlider: BABYLON.Mesh;
     private _pressedKeys: { [key: string]: boolean } = {};
     private _slidersMoveSpeed: number = 0.1;
+    private _ball: BABYLON.Mesh;
+    private _ballMoviment: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, 0.1);
 
     private slidersAnimation(): void {
         if (this._pressedKeys["w"] && this._bottomSlider.position.x > -2.5) {
@@ -65,7 +68,7 @@ class App {
         this._rightWall.position.x = 3.05;
 
         this._topSlider = BABYLON.MeshBuilder.CreateBox("topSlider", {
-            width: 1.3, height: 0.3, depth: 0.35
+            width: 1.4, height: 0.3, depth: 0.35
         }, this._scene);
         this._topSlider.position = new BABYLON.Vector3(0, 0.15, 6.05);
 
@@ -75,6 +78,9 @@ class App {
         this._shadowGenerator.getShadowMap().renderList.push(this._rightWall, this._leftWall, this._topSlider, this._bottomSlider);
         this._shadowGenerator.usePoissonSampling = true;
         this._shadowGenerator.useBlurExponentialShadowMap = true;
+
+        this._ball = BABYLON.MeshBuilder.CreateSphere("ball", {diameter: 0.3}, this._scene);
+        this._ball.position = new BABYLON.Vector3(0, 0.15, 0);
 
         window.addEventListener("keydown", (event) => {
             
@@ -107,6 +113,30 @@ class App {
             this._engine.resize();
         })
 
+
+        this._scene.registerBeforeRender(() => {
+            this._ball.position.addInPlace (this._ballMoviment);
+
+            if (this._ball.position.x < -2.9 || this._ball.position.x > 2.9) {
+                this._ballMoviment.x *= -1;
+            }
+
+                // Collision with bottom slider
+            if (this._ball.position.z <= -5.8 && Math.abs(this._ball.position.x - this._bottomSlider.position.x) <= 0.6) {
+                const deltaX = this._ball.position.x - this._bottomSlider.position.x;
+                this._ballMoviment.z *= -1;
+                this._ballMoviment.x = deltaX * 0.2;
+            }
+            // Collision with top slider
+            if (this._ball.position.z >= 5.8 && Math.abs(this._ball.position.x - this._topSlider.position.x) <= 0.6) {
+                const deltaX = this._ball.position.x - this._topSlider.position.x;
+                console.log("delta x :", deltaX);
+                this._ballMoviment.z *= -1;
+                this._ballMoviment.x = deltaX * 0.2;
+            }
+
+
+        })
     }
 
     public mainLoop(): void {
@@ -115,7 +145,7 @@ class App {
         // run the main render loop
         this._engine.runRenderLoop(() => {
             this._scene.render();
-        });
+        })
     }
 }
 

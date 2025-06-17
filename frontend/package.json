@@ -6,13 +6,14 @@
   "scripts": {
     "build": "webpack",
     "start": "webpack-dev-server --port 8080"
-},
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
     "@babylonjs/core": "^8.9.0",
+    "@babylonjs/gui": "^8.12.1",
     "@babylonjs/inspector": "^8.9.0",
     "html-webpack-plugin": "^5.6.3",
     "ts-loader": "^9.5.2",
