@@ -4,6 +4,8 @@ import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import { GameManager } from "./managers/GameManager";
 
+const SCENE_ROTATION_DEGREES = 90;
+
 class App {
     private _canvas: HTMLCanvasElement;
     private _engine: BABYLON.Engine;
@@ -26,7 +28,7 @@ class App {
         // Camera setup
         const camera = new BABYLON.ArcRotateCamera(
             "Camera", 
-            Math.PI, // alpha - rotate 180 degrees around
+            Math.PI + BABYLON.Tools.ToRadians(SCENE_ROTATION_DEGREES), // alpha - rotate horizontally
             Math.PI/4, // beta - looking down at an angle
             22, // radius - distance
             new BABYLON.Vector3(0, 0, 0), 
