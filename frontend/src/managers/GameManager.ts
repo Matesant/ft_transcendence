@@ -6,6 +6,13 @@ import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 
+// Simple enum for game states
+enum GameState {
+    MENU,
+    PLAYING,
+    GAME_OVER
+}
+
 export class GameManager {
     private _scene: BABYLON.Scene;
     private _ball: Ball;
@@ -14,6 +21,11 @@ export class GameManager {
     private _scoreManager: ScoreManager;
     private _inputManager: InputManager;
     private _firstCollision: boolean = true;
+    private _gameState: GameState = GameState.MENU;
+    
+    // UI elements
+    private _menuUI: HTMLDivElement;
+    private _gameOverUI: HTMLDivElement;
     
     constructor(scene: BABYLON.Scene) {
         this._scene = scene;
@@ -31,6 +43,145 @@ export class GameManager {
         
         // Create playing field
         this._createPlayingField();
+        
+        // Create UI elements
+        this._createMenuUI();
+        this._createGameOverUI();
+        
+        // Show menu initially
+        this._showMenu();
+    }
+    
+    private _createMenuUI(): void {
+        this._menuUI = document.createElement("div");
+        this._menuUI.style.position = "absolute";
+        this._menuUI.style.top = "0";
+        this._menuUI.style.left = "0";
+        this._menuUI.style.width = "100%";
+        this._menuUI.style.height = "100%";
+        this._menuUI.style.display = "flex";
+        this._menuUI.style.flexDirection = "column";
+        this._menuUI.style.justifyContent = "center";
+        this._menuUI.style.alignItems = "center";
+        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        
+        const title = document.createElement("h1");
+        title.textContent = "PONG";
+        title.style.color = "white";
+        title.style.fontSize = "48px";
+        title.style.marginBottom = "30px";
+        
+        const startButton = document.createElement("button");
+        startButton.textContent = "START GAME";
+        startButton.style.padding = "10px 20px";
+        startButton.style.fontSize = "20px";
+        startButton.style.cursor = "pointer";
+        startButton.style.backgroundColor = "#4CAF50";
+        startButton.style.border = "none";
+        startButton.style.borderRadius = "5px";
+        startButton.style.color = "white";
+        
+        startButton.addEventListener("click", () => {
+            this._startGame();
+        });
+        
+        this._menuUI.appendChild(title);
+        this._menuUI.appendChild(startButton);
+        document.body.appendChild(this._menuUI);
+    }
+    
+    private _createGameOverUI(): void {
+        this._gameOverUI = document.createElement("div");
+        this._gameOverUI.style.position = "absolute";
+        this._gameOverUI.style.top = "0";
+        this._gameOverUI.style.left = "0";
+        this._gameOverUI.style.width = "100%";
+        this._gameOverUI.style.height = "100%";
+        this._gameOverUI.style.display = "none";
+        this._gameOverUI.style.flexDirection = "column";
+        this._gameOverUI.style.justifyContent = "center";
+        this._gameOverUI.style.alignItems = "center";
+        this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        
+        const gameOverText = document.createElement("h2");
+        gameOverText.textContent = "GAME OVER";
+        gameOverText.style.color = "white";
+        gameOverText.style.fontSize = "36px";
+        gameOverText.style.marginBottom = "20px";
+        
+        const winnerText = document.createElement("h3");
+        winnerText.style.color = "white";
+        winnerText.style.fontSize = "24px";
+        winnerText.style.marginBottom = "30px";
+        winnerText.id = "winnerText";
+        
+        const playAgainButton = document.createElement("button");
+        playAgainButton.textContent = "PLAY AGAIN";
+        playAgainButton.style.padding = "10px 20px";
+        playAgainButton.style.fontSize = "20px";
+        playAgainButton.style.cursor = "pointer";
+        playAgainButton.style.backgroundColor = "#4CAF50";
+        playAgainButton.style.border = "none";
+        playAgainButton.style.borderRadius = "5px";
+        playAgainButton.style.color = "white";
+        playAgainButton.style.marginBottom = "10px";
+        
+        playAgainButton.addEventListener("click", () => {
+            this._resetGame();
+            this._startGame();
+        });
+        
+        const menuButton = document.createElement("button");
+        menuButton.textContent = "MAIN MENU";
+        menuButton.style.padding = "10px 20px";
+        menuButton.style.fontSize = "20px";
+        menuButton.style.cursor = "pointer";
+        menuButton.style.backgroundColor = "#f44336";
+        menuButton.style.border = "none";
+        menuButton.style.borderRadius = "5px";
+        menuButton.style.color = "white";
+        
+        menuButton.addEventListener("click", () => {
+            this._showMenu();
+        });
+        
+        this._gameOverUI.appendChild(gameOverText);
+        this._gameOverUI.appendChild(winnerText);
+        this._gameOverUI.appendChild(playAgainButton);
+        this._gameOverUI.appendChild(menuButton);
+        document.body.appendChild(this._gameOverUI);
+    }
+    
+    private _showMenu(): void {
+        this._gameState = GameState.MENU;
+        this._menuUI.style.display = "flex";
+        this._gameOverUI.style.display = "none";
+        this._resetGame();
+    }
+    
+    private _startGame(): void {
+        this._gameState = GameState.PLAYING;
+        this._menuUI.style.display = "none";
+        this._gameOverUI.style.display = "none";
+    }
+    
+    private _showGameOver(winner: string): void {
+        this._gameState = GameState.GAME_OVER;
+        const winnerText = document.getElementById("winnerText");
+        if (winnerText) {
+            winnerText.textContent = `${winner} Wins!`;
+        }
+        this._gameOverUI.style.display = "flex";
+    }
+    
+    private _resetGame(): void {
+        this._ball.reset();
+        this._scoreManager.reset();
+        this._firstCollision = true;
+        
+        // Reset paddles
+        this._leftPaddle.reset();
+        this._rightPaddle.reset();
     }
     
     private _createPlayingField(): void {
@@ -75,9 +226,20 @@ export class GameManager {
     }
     
     public update(): void {
-        this._handleInput();
-        this._updateGameObjects();
-        this._checkCollisions();
+        // Only update game logic if in PLAYING state
+        if (this._gameState === GameState.PLAYING) {
+            this._handleInput();
+            this._updateGameObjects();
+            this._checkCollisions();
+            
+            // Check for game over condition
+            const score = this._scoreManager.score;
+            if (score.player1 >= 5) {
+                this._showGameOver("Player 1");
+            } else if (score.player2 >= 5) {
+                this._showGameOver("Player 2");
+            }
+        }
     }
     
     private _handleInput(): void {

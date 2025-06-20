@@ -40,4 +40,8 @@ export class ScoreManager {
         this._score = { player1: 0, player2: 0 };
         this.updateDisplay();
     }
+
+    public get score(): { player1: number, player2: number } {
+        return {...this._score};
+    }
 }

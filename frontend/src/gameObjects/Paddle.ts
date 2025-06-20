@@ -66,4 +66,11 @@ export class Paddle extends GameObject {
     public get width(): number {
         return CONFIG.PADDLE.DIMENSIONS.x;
     }
+
+    public reset(): void {
+        const paddlePosition = this._type === PaddleType.LEFT 
+            ? CONFIG.PADDLE.POSITION.LEFT.clone() 
+            : CONFIG.PADDLE.POSITION.RIGHT.clone();
+        this._mesh.position = paddlePosition;
+    }
 }
