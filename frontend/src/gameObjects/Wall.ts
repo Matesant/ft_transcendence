@@ -1,5 +1,6 @@
 import * as BABYLON from "@babylonjs/core";
 import { GameObject } from "./GameObject";
+import { CONFIG } from "../config";
 
 export enum WallType {
     TOP,
@@ -15,15 +16,21 @@ export class Wall extends GameObject {
     private _initMesh(type: WallType): void {
         this._mesh = BABYLON.MeshBuilder.CreateBox(
             type === WallType.TOP ? "topWall" : "bottomWall",
-            {width: 0.1, height: 0.3, depth: 17},
+            {
+                width: CONFIG.WALL.DIMENSIONS.x, 
+                height: CONFIG.WALL.DIMENSIONS.y, 
+                depth: CONFIG.WALL.DIMENSIONS.z
+            },
             this._scene
         );
         
-        const xPosition = type === WallType.TOP ? -6.05 : 6.05;
-        this._mesh.position = new BABYLON.Vector3(xPosition, 0.15, 0);
+        const position = type === WallType.TOP 
+            ? CONFIG.WALL.POSITION.TOP.clone() 
+            : CONFIG.WALL.POSITION.BOTTOM.clone();
+        this._mesh.position = position;
         
         const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", this._scene);
-        wallMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // White glow
+        wallMaterial.emissiveColor = CONFIG.WALL.COLOR;
         this._mesh.material = wallMaterial;
     }
 

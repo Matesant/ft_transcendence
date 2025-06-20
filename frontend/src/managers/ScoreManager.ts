@@ -1,3 +1,5 @@
+import { CONFIG } from "../config";
+
 export class ScoreManager {
     private _scoreText: HTMLDivElement;
     private _score: { player1: number, player2: number } = { player1: 0, player2: 0 };
@@ -9,13 +11,13 @@ export class ScoreManager {
     private _createScoreDisplay(): void {
         this._scoreText = document.createElement("div");
         this._scoreText.style.position = "absolute";
-        this._scoreText.style.top = "20px";
+        this._scoreText.style.top = CONFIG.SCORE.DISPLAY.TOP;
         this._scoreText.style.left = "0";
         this._scoreText.style.width = "100%";
         this._scoreText.style.textAlign = "center";
-        this._scoreText.style.color = "white";
-        this._scoreText.style.fontSize = "24px";
-        this._scoreText.style.fontFamily = "sans-serif";
+        this._scoreText.style.color = CONFIG.SCORE.DISPLAY.COLOR;
+        this._scoreText.style.fontSize = CONFIG.SCORE.DISPLAY.FONT_SIZE;
+        this._scoreText.style.fontFamily = CONFIG.SCORE.DISPLAY.FONT_FAMILY;
         document.body.appendChild(this._scoreText);
         this.updateDisplay();
     }

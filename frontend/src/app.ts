@@ -3,8 +3,7 @@ import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import { GameManager } from "./managers/GameManager";
-
-const SCENE_ROTATION_DEGREES = 90;
+import { CONFIG } from "./config";
 
 class App {
     private _canvas: HTMLCanvasElement;
@@ -17,21 +16,21 @@ class App {
         this._canvas = document.createElement("canvas");
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
-        this._canvas.id = "gameCanvas";
+        this._canvas.id = CONFIG.CANVAS_ID;
         document.body.appendChild(this._canvas);
 
         // Engine and scene setup
         this._engine = new BABYLON.Engine(this._canvas, true);
         this._scene = new BABYLON.Scene(this._engine);
-        this._scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.15, 1); // Dark blue background
+        this._scene.clearColor = CONFIG.SCENE.CLEAR_COLOR;
         
         // Camera setup
         const camera = new BABYLON.ArcRotateCamera(
             "Camera", 
-            Math.PI + BABYLON.Tools.ToRadians(SCENE_ROTATION_DEGREES), // alpha - rotate horizontally
-            Math.PI/4, // beta - looking down at an angle
-            22, // radius - distance
-            new BABYLON.Vector3(0, 0, 0), 
+            Math.PI + BABYLON.Tools.ToRadians(CONFIG.SCENE_ROTATION_DEGREES),
+            CONFIG.CAMERA.BETA,
+            CONFIG.CAMERA.RADIUS,
+            CONFIG.CAMERA.TARGET,
             this._scene
         );
         camera.setTarget(BABYLON.Vector3.Zero());
@@ -39,15 +38,15 @@ class App {
         // Ambient light
         const ambientLight = new BABYLON.HemisphericLight(
             "ambientLight", 
-            new BABYLON.Vector3(0, 1, 0), 
+            CONFIG.AMBIENT_LIGHT.DIRECTION,
             this._scene
         );
-        ambientLight.intensity = 0.7;
-        ambientLight.diffuse = new BABYLON.Color3(1, 1, 1);
+        ambientLight.intensity = CONFIG.AMBIENT_LIGHT.INTENSITY;
+        ambientLight.diffuse = CONFIG.AMBIENT_LIGHT.DIFFUSE;
         
         // Add glow effect
         const glowLayer = new BABYLON.GlowLayer("glowLayer", this._scene);
-        glowLayer.intensity = 0.7;
+        glowLayer.intensity = CONFIG.GLOW.INTENSITY;
         
         // Initialize game manager
         this._gameManager = new GameManager(this._scene);

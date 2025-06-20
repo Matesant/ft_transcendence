@@ -1,9 +1,9 @@
 import * as BABYLON from "@babylonjs/core";
 import { GameObject } from "./GameObject";
+import { CONFIG } from "../config";
 
 export class Ball extends GameObject {
     private _velocity: BABYLON.Vector3;
-    private _initialSpeed: number = 0.1;
     private _active: boolean = false;
 
     constructor(scene: BABYLON.Scene) {
@@ -15,13 +15,13 @@ export class Ball extends GameObject {
     private _initMesh(): void {
         this._mesh = BABYLON.MeshBuilder.CreateSphere(
             "ball", 
-            { diameter: 0.4 }, 
+            { diameter: CONFIG.BALL.DIAMETER }, 
             this._scene
         );
-        this._mesh.position = new BABYLON.Vector3(0, 0.2, 0);
+        this._mesh.position = CONFIG.BALL.POSITION.clone();
         
         const ballMaterial = new BABYLON.StandardMaterial("ballMaterial", this._scene);
-        ballMaterial.emissiveColor = new BABYLON.Color3(1, 1, 0.7); // Yellow glow
+        ballMaterial.emissiveColor = CONFIG.BALL.COLOR;
         this._mesh.material = ballMaterial;
     }
 
@@ -48,7 +48,7 @@ export class Ball extends GameObject {
     }
 
     public reset(): void {
-        this._mesh.position = new BABYLON.Vector3(0, 0.2, 0);
+        this._mesh.position = CONFIG.BALL.POSITION.clone();
         this._velocity = new BABYLON.Vector3(0, 0, 0);
         this._active = false;
     }
@@ -56,14 +56,14 @@ export class Ball extends GameObject {
     public start(): void {
         this._active = true;
         this._velocity = new BABYLON.Vector3(
-            (Math.random() - 0.5) * this._initialSpeed, 
+            (Math.random() - 0.5) * CONFIG.BALL.INITIAL_SPEED, 
             0, 
-            this._initialSpeed * (Math.random() > 0.5 ? 1 : -1)
+            CONFIG.BALL.INITIAL_SPEED * (Math.random() > 0.5 ? 1 : -1)
         );
     }
 
     public addSpin(hitFactor: number): void {
-        this._velocity.x += hitFactor * 0.1;
+        this._velocity.x += hitFactor * CONFIG.BALL.SPIN_FACTOR;
     }
 
     public reverseZ(): void {

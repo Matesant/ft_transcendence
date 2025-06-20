@@ -4,6 +4,7 @@ import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
 import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
+import { CONFIG } from "../config";
 
 export class GameManager {
     private _scene: BABYLON.Scene;
@@ -13,7 +14,6 @@ export class GameManager {
     private _scoreManager: ScoreManager;
     private _inputManager: InputManager;
     private _firstCollision: boolean = true;
-    private _normalBallSpeed: number = 0.15;
     
     constructor(scene: BABYLON.Scene) {
         this._scene = scene;
@@ -37,32 +37,40 @@ export class GameManager {
         // Create ground
         const ground = BABYLON.MeshBuilder.CreateGround(
             "ground", 
-            { width: 12, height: 17 }, 
+            { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
             this._scene
         );
         const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", this._scene);
-        groundMaterial.diffuseColor = new BABYLON.Color3(0.15, 0.35, 0.15); // Green table
+        groundMaterial.diffuseColor = CONFIG.FIELD.COLOR;
         ground.material = groundMaterial;
         
         // Create center lines
         const lineMaterial = new BABYLON.StandardMaterial("lineMaterial", this._scene);
-        lineMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // White glow
-        lineMaterial.alpha = 0.7;
+        lineMaterial.emissiveColor = CONFIG.CENTER_LINE.COLOR;
+        lineMaterial.alpha = CONFIG.CENTER_LINE.ALPHA;
         
         const centerLineVertical = BABYLON.MeshBuilder.CreateBox(
             "centerLineVertical", 
-            {width: 0.05, height: 0.01, depth: 17}, 
+            {
+                width: CONFIG.CENTER_LINE.VERTICAL.DIMENSIONS.x, 
+                height: CONFIG.CENTER_LINE.VERTICAL.DIMENSIONS.y, 
+                depth: CONFIG.CENTER_LINE.VERTICAL.DIMENSIONS.z
+            }, 
             this._scene
         );
-        centerLineVertical.position.y = 0.01;
+        centerLineVertical.position = CONFIG.CENTER_LINE.VERTICAL.POSITION.clone();
         centerLineVertical.material = lineMaterial;
         
         const centerLineHorizontal = BABYLON.MeshBuilder.CreateBox(
             "centerLineHorizontal", 
-            {width: 12, height: 0.01, depth: 0.05}, 
+            {
+                width: CONFIG.CENTER_LINE.HORIZONTAL.DIMENSIONS.x, 
+                height: CONFIG.CENTER_LINE.HORIZONTAL.DIMENSIONS.y, 
+                depth: CONFIG.CENTER_LINE.HORIZONTAL.DIMENSIONS.z
+            }, 
             this._scene
         );
-        centerLineHorizontal.position.y = 0.01;
+        centerLineHorizontal.position = CONFIG.CENTER_LINE.HORIZONTAL.POSITION.clone();
         centerLineHorizontal.material = lineMaterial;
     }
     
@@ -107,14 +115,15 @@ export class GameManager {
         
         const ballPos = this._ball.mesh.position;
         
-        // Ball collision with walls
-        if (ballPos.x <= -5.8 || ballPos.x >= 5.8) {
+        // Ball collision with walls (using field width/height)
+        const wallBoundary = CONFIG.FIELD.WIDTH / 2 - 0.2;  // Slightly inside the walls
+        if (ballPos.x <= -wallBoundary || ballPos.x >= wallBoundary) {
             this._ball.reverseX();
         }
         
         // Left paddle collision
-        if (ballPos.z <= -8.05 && 
-            ballPos.z >= -8.45 &&
+        if (ballPos.z <= CONFIG.PADDLE.COLLISION.LEFT.MAX_Z && 
+            ballPos.z >= CONFIG.PADDLE.COLLISION.LEFT.MIN_Z &&
             Math.abs(ballPos.x - this._leftPaddle.mesh.position.x) < this._leftPaddle.width / 2) {
             
             this._ball.reverseZ();
@@ -124,7 +133,7 @@ export class GameManager {
                 this._firstCollision = false;
                 const currentVelocity = this._ball.velocity;
                 const normalizedVelocity = currentVelocity.normalize();
-                this._ball.velocity = normalizedVelocity.scale(this._normalBallSpeed);
+                this._ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
             }
             
             // Add spin based on hit position
@@ -133,8 +142,8 @@ export class GameManager {
         }
         
         // Right paddle collision
-        if (ballPos.z >= 8.05 && 
-            ballPos.z <= 8.45 &&
+        if (ballPos.z >= CONFIG.PADDLE.COLLISION.RIGHT.MIN_Z && 
+            ballPos.z <= CONFIG.PADDLE.COLLISION.RIGHT.MAX_Z &&
             Math.abs(ballPos.x - this._rightPaddle.mesh.position.x) < this._rightPaddle.width / 2) {
             
             this._ball.reverseZ();
@@ -144,7 +153,7 @@ export class GameManager {
                 this._firstCollision = false;
                 const currentVelocity = this._ball.velocity;
                 const normalizedVelocity = currentVelocity.normalize();
-                this._ball.velocity = normalizedVelocity.scale(this._normalBallSpeed);
+                this._ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
             }
             
             // Add spin based on hit position
@@ -153,14 +162,14 @@ export class GameManager {
         }
         
         // Scoring logic - left player scores
-        if (ballPos.z > 8.5) {
+        if (ballPos.z > CONFIG.SCORE.BOUNDARY.RIGHT) {
             this._scoreManager.player2Scores();
             this._ball.reset();
             this._firstCollision = true;
         }
         
         // Scoring logic - right player scores
-        if (ballPos.z < -8.5) {
+        if (ballPos.z < CONFIG.SCORE.BOUNDARY.LEFT) {
             this._scoreManager.player1Scores();
             this._ball.reset();
             this._firstCollision = true;

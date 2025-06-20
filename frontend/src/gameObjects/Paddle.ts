@@ -1,5 +1,6 @@
 import * as BABYLON from "@babylonjs/core";
 import { GameObject } from "./GameObject";
+import { CONFIG } from "../config";
 
 export enum PaddleType {
     LEFT,
@@ -8,8 +9,6 @@ export enum PaddleType {
 
 export class Paddle extends GameObject {
     private _type: PaddleType;
-    private _moveSpeed: number = 0.175;
-    private _width: number = 1.3;
 
     constructor(scene: BABYLON.Scene, type: PaddleType) {
         super(scene);
@@ -20,13 +19,19 @@ export class Paddle extends GameObject {
     private _initMesh(): void {
         this._mesh = BABYLON.MeshBuilder.CreateBox(
             this._type === PaddleType.LEFT ? "leftPaddle" : "rightPaddle", 
-            {width: this._width, height: 0.3, depth: 0.35}, 
+            {
+                width: CONFIG.PADDLE.DIMENSIONS.x, 
+                height: CONFIG.PADDLE.DIMENSIONS.y, 
+                depth: CONFIG.PADDLE.DIMENSIONS.z
+            }, 
             this._scene
         );
         
         // Position paddles at left/right of field
-        const zPosition = this._type === PaddleType.LEFT ? -8.25 : 8.25;
-        this._mesh.position = new BABYLON.Vector3(0, 0.15, zPosition);
+        const paddlePosition = this._type === PaddleType.LEFT 
+            ? CONFIG.PADDLE.POSITION.LEFT.clone() 
+            : CONFIG.PADDLE.POSITION.RIGHT.clone();
+        this._mesh.position = paddlePosition;
         
         // Create materials with appropriate colors
         const material = new BABYLON.StandardMaterial(
@@ -36,8 +41,8 @@ export class Paddle extends GameObject {
         
         // Blue for left paddle, red for right paddle
         material.emissiveColor = this._type === PaddleType.LEFT 
-            ? new BABYLON.Color3(0.2, 0.6, 1) 
-            : new BABYLON.Color3(1, 0.3, 0.3);
+            ? CONFIG.PADDLE.COLOR.LEFT 
+            : CONFIG.PADDLE.COLOR.RIGHT;
             
         this._mesh.material = material;
     }
@@ -47,18 +52,18 @@ export class Paddle extends GameObject {
     }
 
     public moveLeft(): void {
-        if (this._mesh.position.x > -5) {
-            this._mesh.position.x -= this._moveSpeed;
+        if (this._mesh.position.x > CONFIG.PADDLE.POSITION_LIMIT.MIN) {
+            this._mesh.position.x -= CONFIG.PADDLE.MOVE_SPEED;
         }
     }
 
     public moveRight(): void {
-        if (this._mesh.position.x < 5) {
-            this._mesh.position.x += this._moveSpeed;
+        if (this._mesh.position.x < CONFIG.PADDLE.POSITION_LIMIT.MAX) {
+            this._mesh.position.x += CONFIG.PADDLE.MOVE_SPEED;
         }
     }
 
     public get width(): number {
-        return this._width;
+        return CONFIG.PADDLE.DIMENSIONS.x;
     }
 }
