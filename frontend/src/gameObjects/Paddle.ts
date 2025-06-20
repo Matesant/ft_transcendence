@@ -73,4 +73,9 @@ export class Paddle extends GameObject {
             : CONFIG.PADDLE.POSITION.RIGHT.clone();
         this._mesh.position = paddlePosition;
     }
+
+    public resize(scaleFactor: number): void {
+        // Resize the paddle mesh width
+        this._mesh.scaling.x = scaleFactor;
+    }
 }

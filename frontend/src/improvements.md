@@ -11,10 +11,9 @@ Your BabylonJS Pong game has a solid foundation, but here are several ways to en
 ## Gameplay Enhancements
 
 - **Difficulty progression**: Increase ball speed as the game progresses
-- **Power-ups**: Add collectible items that modify gameplay (larger paddle, slower ball)
+- **Power-ups**: Add collectible items that modify gameplay (larger paddle, faster attack-ball)
 - **AI opponent**: Implement computer-controlled paddle for single-player mode
 - **Ball physics**: Add spin effects and more realistic bouncing
-- **Pause functionality**: Allow pausing with a dedicated key
 
 ## Visual and Audio Improvements
 

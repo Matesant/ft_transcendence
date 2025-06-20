@@ -61,8 +61,8 @@ export const CONFIG = {
         },
         MOVE_SPEED: 0.175,
         POSITION_LIMIT: {
-            MIN: -5,
-            MAX: 5
+            MIN: -5.4, // Changed from -5 to -5.4 to reach the wall
+            MAX: 5.4   // Changed from 5 to 5.4 to reach the wall
         },
         COLOR: {
             LEFT: new BABYLON.Color3(0.2, 0.6, 1),
@@ -102,5 +102,41 @@ export const CONFIG = {
             FONT_FAMILY: "sans-serif",
             COLOR: "white"
         }
+    },
+
+    // AI settings
+    AI: {
+        DIFFICULTY_LEVELS: {
+            EASY: 0.4,
+            MEDIUM: 0.7,
+            HARD: 0.9  
+        },
+        DEFAULT_DIFFICULTY: 0.7
+    },
+    
+    // Power-ups configuration
+    POWER_UPS: {
+        TYPES: {
+            LARGER_PADDLE: "larger_paddle",
+            SMALLER_OPPONENT: "smaller_opponent",
+            FAST_BALL: "fast_ball",
+            MULTI_BALL: "multi_ball"
+        },
+        DURATION: {
+            DEFAULT: 5000, // Default duration in milliseconds
+            LARGER_PADDLE: 10000 // 10 seconds for larger paddle
+        },
+        SPAWN_INTERVAL: {
+            MIN: 5000,  // Minimum time between spawns (ms)
+            MAX: 15000  // Maximum time between spawns (ms)
+        },
+        DIMENSIONS: new BABYLON.Vector3(0.6, 0.1, 0.6),
+        COLORS: {
+            LARGER_PADDLE: new BABYLON.Color3(0.2, 0.8, 0.2),     // Green
+            SMALLER_OPPONENT: new BABYLON.Color3(0.8, 0.2, 0.2),  // Red
+            FAST_BALL: new BABYLON.Color3(1, 0.6, 0.2),           // Orange
+            MULTI_BALL: new BABYLON.Color3(0.8, 0.2, 0.8)         // Purple
+        },
+        ROTATION_SPEED: 0.01
     }
 };

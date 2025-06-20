@@ -44,4 +44,14 @@ export class ScoreManager {
     public get score(): { player1: number, player2: number } {
         return {...this._score};
     }
+
+    public addPointToPlayer1(): void {
+        this._score.player1++;
+        this.updateDisplay();
+    }
+
+    public addPointToPlayer2(): void {
+        this._score.player2++;
+        this.updateDisplay();
+    }
 }

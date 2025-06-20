@@ -2,6 +2,11 @@ import * as BABYLON from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { CONFIG } from "../config";
 
+export const DIRECTION = {
+    LEFT: -1,
+    RIGHT: 1
+};
+
 export class Ball extends GameObject {
     private _velocity: BABYLON.Vector3;
     private _active: boolean = false;
@@ -53,12 +58,25 @@ export class Ball extends GameObject {
         this._active = false;
     }
 
-    public start(): void {
+    public start(directionZ?: number): void {
         this._active = true;
+        
+        // Use provided direction or random if not specified
+        let zDirection;
+        if (directionZ !== undefined) {
+            zDirection = directionZ;
+        } else {
+            if (Math.random() > 0.5) {
+                zDirection = DIRECTION.RIGHT;
+            } else {
+                zDirection = DIRECTION.LEFT;
+            }
+        }
+        
         this._velocity = new BABYLON.Vector3(
             (Math.random() - 0.5) * CONFIG.BALL.INITIAL_SPEED, 
             0, 
-            CONFIG.BALL.INITIAL_SPEED * (Math.random() > 0.5 ? 1 : -1)
+            CONFIG.BALL.INITIAL_SPEED * zDirection
         );
     }
 

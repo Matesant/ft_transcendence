@@ -1,12 +1,13 @@
 import * as BABYLON from "@babylonjs/core";
-import { Ball } from "../gameObjects/Ball";
+import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
 import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
+import { PowerUpManager } from "./PowerUpManager";
 
-// Simple enum for game states
+// Simple enum for game states (removed PAUSED)
 enum GameState {
     MENU,
     PLAYING,
@@ -23,9 +24,12 @@ export class GameManager {
     private _firstCollision: boolean = true;
     private _gameState: GameState = GameState.MENU;
     
-    // UI elements
     private _menuUI: HTMLDivElement;
     private _gameOverUI: HTMLDivElement;
+    private _powerUpManager: PowerUpManager;
+    
+    // Add a field to track the current game mode
+    private _powerUpsEnabled: boolean = false;
     
     constructor(scene: BABYLON.Scene) {
         this._scene = scene;
@@ -44,9 +48,18 @@ export class GameManager {
         // Create playing field
         this._createPlayingField();
         
-        // Create UI elements
+        // Create UI elements (removed pause UI)
         this._createMenuUI();
         this._createGameOverUI();
+        
+        // Initialize power-up manager after creating paddles and ball
+        this._powerUpManager = new PowerUpManager(
+            scene,
+            this._leftPaddle,
+            this._rightPaddle,
+            this._ball,
+            this._scoreManager
+        );
         
         // Show menu initially
         this._showMenu();
@@ -71,22 +84,94 @@ export class GameManager {
         title.style.fontSize = "48px";
         title.style.marginBottom = "30px";
         
-        const startButton = document.createElement("button");
-        startButton.textContent = "START GAME";
-        startButton.style.padding = "10px 20px";
-        startButton.style.fontSize = "20px";
-        startButton.style.cursor = "pointer";
-        startButton.style.backgroundColor = "#4CAF50";
-        startButton.style.border = "none";
-        startButton.style.borderRadius = "5px";
-        startButton.style.color = "white";
+        const subtitle = document.createElement("h2");
+        subtitle.textContent = "Select Game Mode";
+        subtitle.style.color = "white";
+        subtitle.style.fontSize = "24px";
+        subtitle.style.marginBottom = "20px";
         
-        startButton.addEventListener("click", () => {
-            this._startGame();
+        // Container for both buttons
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.style.display = "flex";
+        buttonsContainer.style.flexDirection = "row";
+        buttonsContainer.style.gap = "20px";
+        buttonsContainer.style.justifyContent = "center";
+        buttonsContainer.style.alignItems = "center";
+        
+        // Create button containers (to include label and button)
+        const classicContainer = document.createElement("div");
+        classicContainer.style.display = "flex";
+        classicContainer.style.flexDirection = "column";
+        classicContainer.style.alignItems = "center";
+        classicContainer.style.width = "200px";
+        
+        const powerUpsContainer = document.createElement("div");
+        powerUpsContainer.style.display = "flex";
+        powerUpsContainer.style.flexDirection = "column";
+        powerUpsContainer.style.alignItems = "center"; 
+        powerUpsContainer.style.width = "200px";
+        
+        // Classic mode label
+        const classicLabel = document.createElement("div");
+        classicLabel.textContent = "Classic Mode";
+        classicLabel.style.color = "white";
+        classicLabel.style.fontSize = "18px";
+        classicLabel.style.marginBottom = "10px";
+        
+        // Power-ups mode label
+        const powerUpsLabel = document.createElement("div");
+        powerUpsLabel.textContent = "Power-ups Mode";
+        powerUpsLabel.style.color = "white"; 
+        powerUpsLabel.style.fontSize = "18px";
+        powerUpsLabel.style.marginBottom = "10px";
+        
+        // Classic mode button
+        const classicButton = document.createElement("button");
+        classicButton.textContent = "START";
+        classicButton.style.padding = "10px 20px";
+        classicButton.style.width = "120px";
+        classicButton.style.fontSize = "18px";
+        classicButton.style.cursor = "pointer";
+        classicButton.style.backgroundColor = "#4286f4";
+        classicButton.style.border = "none";
+        classicButton.style.borderRadius = "5px";
+        classicButton.style.color = "white";
+        
+        // Power-ups mode button
+        const powerUpsButton = document.createElement("button");
+        powerUpsButton.textContent = "START";
+        powerUpsButton.style.padding = "10px 20px";
+        powerUpsButton.style.width = "120px";
+        powerUpsButton.style.fontSize = "18px";
+        powerUpsButton.style.cursor = "pointer";
+        powerUpsButton.style.backgroundColor = "#f44283";
+        powerUpsButton.style.border = "none";
+        powerUpsButton.style.borderRadius = "5px";
+        powerUpsButton.style.color = "white";
+        
+        // Add event listeners
+        classicButton.addEventListener("click", () => {
+            this._startGame(false); // Start game without power-ups
         });
         
+        powerUpsButton.addEventListener("click", () => {
+            this._startGame(true); // Start game with power-ups
+        });
+        
+        // Assemble the UI
+        classicContainer.appendChild(classicLabel);
+        classicContainer.appendChild(classicButton);
+        
+        powerUpsContainer.appendChild(powerUpsLabel);
+        powerUpsContainer.appendChild(powerUpsButton);
+        
+        buttonsContainer.appendChild(classicContainer);
+        buttonsContainer.appendChild(powerUpsContainer);
+        
         this._menuUI.appendChild(title);
-        this._menuUI.appendChild(startButton);
+        this._menuUI.appendChild(subtitle);
+        this._menuUI.appendChild(buttonsContainer);
+        
         document.body.appendChild(this._menuUI);
     }
     
@@ -128,7 +213,7 @@ export class GameManager {
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
-            this._startGame();
+            this._startGame(this._powerUpsEnabled); // Use the same mode as before
         });
         
         const menuButton = document.createElement("button");
@@ -157,12 +242,30 @@ export class GameManager {
         this._menuUI.style.display = "flex";
         this._gameOverUI.style.display = "none";
         this._resetGame();
+        
+        // Ensure power-ups are deactivated
+        this._powerUpManager.deactivate();
     }
     
-    private _startGame(): void {
+    // Update _startGame to store the current mode
+    private _startGame(enablePowerUps: boolean = false): void {
         this._gameState = GameState.PLAYING;
         this._menuUI.style.display = "none";
         this._gameOverUI.style.display = "none";
+        
+        // Store the current game mode
+        this._powerUpsEnabled = enablePowerUps;
+        
+        // Start the ball automatically with random direction for first serve
+        this._ball.start(); // No direction specified = random
+        this._firstCollision = true;
+        
+        // Activate power-up spawning only if power-ups mode is enabled
+        if (enablePowerUps) {
+            this._powerUpManager.activate();
+        } else {
+            this._powerUpManager.deactivate();
+        }
     }
     
     private _showGameOver(winner: string): void {
@@ -182,6 +285,10 @@ export class GameManager {
         // Reset paddles
         this._leftPaddle.reset();
         this._rightPaddle.reset();
+        
+        // Reset power-ups
+        this._powerUpManager.reset();
+        this._powerUpManager.deactivate();
     }
     
     private _createPlayingField(): void {
@@ -230,6 +337,7 @@ export class GameManager {
         if (this._gameState === GameState.PLAYING) {
             this._handleInput();
             this._updateGameObjects();
+            this._powerUpManager.update(); // Update power-ups
             this._checkCollisions();
             
             // Check for game over condition
@@ -258,83 +366,124 @@ export class GameManager {
         if (this._inputManager.isKeyPressed("arrowright")) {
             this._leftPaddle.moveRight();
         }
-        
-        // Start game with space
-        if (this._inputManager.isKeyPressed("space") && !this._ball.active) {
-            this._ball.start();
-            this._firstCollision = true;
-        }
     }
     
     private _updateGameObjects(): void {
-        this._ball.update();
+        // Update all balls from the power-up manager instead of just the main ball
+        const balls = this._powerUpManager.balls;
+        for (const ball of balls) {
+            ball.update();
+        }
+        
+        // Continue updating paddles
         this._leftPaddle.update();
         this._rightPaddle.update();
     }
     
     private _checkCollisions(): void {
-        if (!this._ball.active) return;
+        // Get all balls from the power-up manager
+        const balls = this._powerUpManager.balls;
         
-        const ballPos = this._ball.mesh.position;
-        
-        // Ball collision with walls (using field width/height)
-        const wallBoundary = CONFIG.FIELD.WIDTH / 2 - 0.2;  // Slightly inside the walls
-        if (ballPos.x <= -wallBoundary || ballPos.x >= wallBoundary) {
-            this._ball.reverseX();
-        }
-        
-        // Left paddle collision
-        if (ballPos.z <= CONFIG.PADDLE.COLLISION.LEFT.MAX_Z && 
-            ballPos.z >= CONFIG.PADDLE.COLLISION.LEFT.MIN_Z &&
-            Math.abs(ballPos.x - this._leftPaddle.mesh.position.x) < this._leftPaddle.width / 2) {
+        for (const ball of balls) {
+            if (!ball.active) continue;
             
-            this._ball.reverseZ();
+            const ballPos = ball.mesh.position;
             
-            // Speed up ball after first collision
-            if (this._firstCollision) {
-                this._firstCollision = false;
-                const currentVelocity = this._ball.velocity;
-                const normalizedVelocity = currentVelocity.normalize();
-                this._ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+            // Ball collision with walls (using field width/height)
+            const wallBoundary = CONFIG.FIELD.WIDTH / 2 - 0.2;
+            if (ballPos.x <= -wallBoundary || ballPos.x >= wallBoundary) {
+                ball.reverseX();
             }
             
-            // Add spin based on hit position
-            const hitFactor = (ballPos.x - this._leftPaddle.mesh.position.x) / (this._leftPaddle.width / 2);
-            this._ball.addSpin(hitFactor);
-        }
-        
-        // Right paddle collision
-        if (ballPos.z >= CONFIG.PADDLE.COLLISION.RIGHT.MIN_Z && 
-            ballPos.z <= CONFIG.PADDLE.COLLISION.RIGHT.MAX_Z &&
-            Math.abs(ballPos.x - this._rightPaddle.mesh.position.x) < this._rightPaddle.width / 2) {
-            
-            this._ball.reverseZ();
-            
-            // Speed up ball after first collision
-            if (this._firstCollision) {
-                this._firstCollision = false;
-                const currentVelocity = this._ball.velocity;
-                const normalizedVelocity = currentVelocity.normalize();
-                this._ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+            // Left paddle collision
+            if (ballPos.z <= CONFIG.PADDLE.COLLISION.LEFT.MAX_Z && 
+                ballPos.z >= CONFIG.PADDLE.COLLISION.LEFT.MIN_Z &&
+                Math.abs(ballPos.x - this._leftPaddle.mesh.position.x) < this._leftPaddle.width / 2 * this._leftPaddle.mesh.scaling.x) {
+                
+                ball.reverseZ();
+                
+                // Speed up ball after first collision
+                if (this._firstCollision) {
+                    this._firstCollision = false;
+                    const currentVelocity = ball.velocity;
+                    const normalizedVelocity = currentVelocity.normalize();
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                }
+                
+                // Add spin based on hit position
+                const hitFactor = (ballPos.x - this._leftPaddle.mesh.position.x) / (this._leftPaddle.width / 2 * this._leftPaddle.mesh.scaling.x);
+                ball.addSpin(hitFactor);
             }
             
-            // Add spin based on hit position
-            const hitFactor = (ballPos.x - this._rightPaddle.mesh.position.x) / (this._rightPaddle.width / 2);
-            this._ball.addSpin(hitFactor);
-        }
-        
-        // Scoring logic - left player scores
-        if (ballPos.z > CONFIG.SCORE.BOUNDARY.RIGHT) {
-            this._scoreManager.player2Scores();
-            this._ball.reset();
-            this._firstCollision = true;
-        }
-        
-        // Scoring logic - right player scores
-        if (ballPos.z < CONFIG.SCORE.BOUNDARY.LEFT) {
-            this._scoreManager.player1Scores();
-            this._ball.reset();
-            this._firstCollision = true;
+            // Right paddle collision (similar update for scaled width)
+            if (ballPos.z >= CONFIG.PADDLE.COLLISION.RIGHT.MIN_Z && 
+                ballPos.z <= CONFIG.PADDLE.COLLISION.RIGHT.MAX_Z &&
+                Math.abs(ballPos.x - this._rightPaddle.mesh.position.x) < this._rightPaddle.width / 2 * this._rightPaddle.mesh.scaling.x) {
+                
+                ball.reverseZ();
+                
+                // Speed up ball after first collision
+                if (this._firstCollision) {
+                    this._firstCollision = false;
+                    const currentVelocity = ball.velocity;
+                    const normalizedVelocity = currentVelocity.normalize();
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                }
+                
+                // Add spin based on hit position
+                const hitFactor = (ballPos.x - this._rightPaddle.mesh.position.x) / (this._rightPaddle.width / 2 * this._rightPaddle.mesh.scaling.x);
+                ball.addSpin(hitFactor);
+            }
+            
+            // Scoring logic - left player scores (ball went past right side)
+            if (ballPos.z > CONFIG.SCORE.BOUNDARY.RIGHT) {
+                this._scoreManager.player2Scores();
+                
+                // If this is the main ball, reset all balls
+                if (ball === this._ball) {
+                    this._powerUpManager.reset();
+                    this._ball.reset();
+                    this._firstCollision = true;
+                    
+                    // Start ball moving toward player 1 (negative z direction)
+                    // Since player 2 scored, ball should go toward player 1
+                    this._ball.start(DIRECTION.LEFT);
+                } else {
+                    // Just remove this extra ball
+                    ball.reset();
+                    ball.active = false;
+                    const ballIndex = this._powerUpManager.balls.indexOf(ball);
+                    if (ballIndex > 0) { // Don't remove the main ball
+                        this._powerUpManager.balls.splice(ballIndex, 1);
+                        ball.mesh.dispose();
+                    }
+                }
+            }
+            
+            // Scoring logic - right player scores (ball went past left side)
+            if (ballPos.z < CONFIG.SCORE.BOUNDARY.LEFT) {
+                this._scoreManager.player1Scores();
+                
+                // If this is the main ball, reset all balls
+                if (ball === this._ball) {
+                    this._powerUpManager.reset();
+                    this._ball.reset();
+                    this._firstCollision = true;
+                    
+                    // Start ball moving toward player 2 (positive z direction)
+                    // Since player 1 scored, ball should go toward player 2
+                    this._ball.start(DIRECTION.RIGHT);
+                } else {
+                    // Just remove this extra ball
+                    ball.reset();
+                    ball.active = false;
+                    const ballIndex = this._powerUpManager.balls.indexOf(ball);
+                    if (ballIndex > 0) { // Don't remove the main ball
+                        this._powerUpManager.balls.splice(ballIndex, 1);
+                        ball.mesh.dispose();
+                    }
+                }
+            }
         }
     }
 }
