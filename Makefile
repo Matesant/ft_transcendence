@@ -5,7 +5,7 @@
 PROJECT_NAME    = ft_transcendence
 COMPOSE_FILE    = docker-compose.yml
 
-# Cores para terminal
+# Terminal colors
 GREEN   = \033[32m
 RED     = \033[31m
 CYAN    = \033[36m
@@ -21,23 +21,23 @@ RESET   = \033[0m
 all: build up
 
 up:
-	@echo "$(CYAN)Iniciando serviços...$(RESET)"
+	@echo "$(CYAN)Starting services...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) up -d
 
 build:
-	@echo "$(YELLOW)Buildando imagens dos microsserviços...$(RESET)"
+	@echo "$(YELLOW)Building microservices images...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) build
 
 down stop:
-	@echo "$(RED)Parando serviços...$(RESET)"
+	@echo "$(RED)Stopping services...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) down
 
 clean: down
-	@echo "$(RED)Limpando recursos do Docker...$(RESET)"
+	@echo "$(RED)Cleaning Docker resources...$(RESET)"
 	docker system prune -f
 
 fclean: clean
-	@echo "$(RED)Removendo volumes e dados locais...$(RESET)"
+	@echo "$(RED)Removing volumes and local data...$(RESET)"
 	docker system prune -af --volumes
 	@rm -rf services/auth-service/data/*.db
 	@rm -rf services/match-service/data/*.db
@@ -50,7 +50,7 @@ logs:
 setup:
 	@for svc in auth-service match-service game-service user-service; do \
 		if [ ! -f services/$$svc/.env ]; then \
-			echo "$(YELLOW)Criando .env para $$svc$(RESET)"; \
+			echo "$(YELLOW)Creating .env for $$svc$(RESET)"; \
 			mkdir -p services/$$svc/data; \
 			echo "DB_PATH=./data/$$svc.db" > services/$$svc/.env; \
 			echo "JWT_SECRET=jorge-super-secrets" >> services/$$svc/.env; \
