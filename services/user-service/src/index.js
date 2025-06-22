@@ -9,10 +9,24 @@ import avatarRoutes from './routes/users/avatar.js';
 import friendsRoutes from './routes/users/friends.js';
 import publicRoutes from './routes/users/public.js';
 import historyRoutes from './routes/users/history.js';
+import crypto from 'node:crypto'
 
 dotenv.config()
 
-const fastify = Fastify({ logger: true })
+// Configure Fastify with structured logging
+const fastify = Fastify({
+	logger: {
+		level: process.env.LOG_LEVEL || 'info'
+	},
+	disableRequestLogging: true
+})
+
+// Hook to generate request_id and make it available in request.log
+fastify.addHook('onRequest', async (request, reply) => {
+  const reqId = request.headers['x-request-id'] || crypto.randomUUID()
+  request.id = reqId
+  request.log = request.log.child({ request_id: reqId })
+})
 
 fastify.decorate("authenticate", async function (request, reply) {
   try {

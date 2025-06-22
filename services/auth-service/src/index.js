@@ -5,40 +5,55 @@ import dotenv from 'dotenv'
 import dbPlugin from './plugins/db.js'
 import authRoutes from './routes/auth.js'
 import playersRoutes from './routes/players.js'
+import crypto from 'node:crypto'
 
 dotenv.config()
 
-const fastify = Fastify({ logger: true })
+// 1) Configure Fastify logger
+const fastify = Fastify({
+	logger: {
+		level: process.env.LOG_LEVEL || 'info'
+	},
+	disableRequestLogging: true
+})
 
-// JWT Auth decorator
+// 2) Hook to generate request_id and make it available in request.log
+fastify.addHook('onRequest', async (request, reply) => {
+  const reqId = request.headers['x-request-id'] || crypto.randomUUID()
+  // Create a child logger with the request_id
+  request.id = reqId
+  request.log = request.log.child({ request_id: reqId })
+})
+
+// 3) JWT Auth decorator
 fastify.decorate("authenticate", async function (request, reply) {
   try {
     await request.jwtVerify()
   } catch (err) {
+    // The global error handler will catch this
     reply.send(err)
   }
 })
 
-// CORS config
+// 4) CORS
 await fastify.register(cors, {
   origin: true,
   credentials: true
 })
 
-// Plugins
+// 5) Plugins
 await fastify.register(dbPlugin)
 await fastify.register(fastifyJWT, {
   secret: process.env.JWT_SECRET || 'default-secret'
 })
 
-// Rotas
+// 6) Routes
 await fastify.register(authRoutes, { prefix: '/auth' })
 await fastify.register(playersRoutes, { prefix: '/players' })
 
-// ✅ Global Error Handler
+// 7) Global Error Handler
 fastify.setErrorHandler((error, request, reply) => {
-  request.log.error(error)
-
+  request.log.error({ stack: error.stack, message: error.message }, 'Error caught')
   reply.status(error.statusCode || 500).send({
     status: error.statusCode || 500,
     error: error.name || 'InternalServerError',
@@ -47,5 +62,5 @@ fastify.setErrorHandler((error, request, reply) => {
   })
 })
 
-// Inicia servidor
+// 8) Start server
 await fastify.listen({ port: 3000, host: '0.0.0.0' })

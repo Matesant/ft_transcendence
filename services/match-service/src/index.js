@@ -6,11 +6,24 @@ import dbPlugin from './plugins/db.js'
 import setupRoutes from './routes/match/setup.js';
 import playRoutes from './routes/match/play.js';
 import tournamentRoutes from './routes/match/tournament.js';
-
+import crypto from 'node:crypto'
 
 dotenv.config()
 
-const fastify = Fastify({ logger: true })
+// Configure Fastify with structured logging
+const fastify = Fastify({
+	logger: {
+		level: process.env.LOG_LEVEL || 'info'
+	},
+	disableRequestLogging: true
+})
+
+// Hook to generate request_id and make it available in request.log
+fastify.addHook('onRequest', async (request, reply) => {
+  const reqId = request.headers['x-request-id'] || crypto.randomUUID()
+  request.id = reqId
+  request.log = request.log.child({ request_id: reqId })
+})
 
 fastify.decorate("authenticate", async function (request, reply) {
   try {
