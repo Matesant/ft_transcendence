@@ -28,6 +28,13 @@ services:
       - ./services/match-service/data:/app/data
     env_file:
       - ./services/match-service/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "match-service"
     networks:
       - backend
       - monitoring
@@ -41,6 +48,13 @@ services:
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://host.docker.internal:12201"
+        tag: "user-service"
     networks:
       - backend
       - monitoring

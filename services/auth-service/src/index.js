@@ -9,32 +9,20 @@ import crypto from 'node:crypto'
 
 dotenv.config()
 
-// 1) Configura o Fastify para usar Pino com timestamp ISO e nível 'info'
+// 1) Configure Fastify logger
 const fastify = Fastify({
-  logger: {
-    level: process.env.LOG_LEVEL || 'info',
-    // coloco o tempo no campo "time" para facilitar o Logstash
-    timestamp: () => `,"time":"${new Date().toISOString()}"`
-  }
+	logger: {
+		level: process.env.LOG_LEVEL || 'info'
+	},
+	disableRequestLogging: true
 })
 
-// 2) Hook para gerar request_id e tornar disponível em request.log
+// 2) Hook to generate request_id and make it available in request.log
 fastify.addHook('onRequest', async (request, reply) => {
   const reqId = request.headers['x-request-id'] || crypto.randomUUID()
-  // child logger com o request_id
+  // Create a child logger with the request_id
   request.id = reqId
   request.log = request.log.child({ request_id: reqId })
-})
-
-fastify.addHook('onResponse', (request, reply, done) => {
-  request.log.info({
-    method:   request.raw.method,
-    url:      request.raw.url,
-    status:   reply.statusCode,
-    duration: reply.getResponseTime(),   // in ms
-    request_id: request.id               // from your onRequest hook
-  }, 'request completed')
-  done()
 })
 
 // 3) JWT Auth decorator
@@ -42,7 +30,7 @@ fastify.decorate("authenticate", async function (request, reply) {
   try {
     await request.jwtVerify()
   } catch (err) {
-    // já vai para o error handler global
+    // The global error handler will catch this
     reply.send(err)
   }
 })
@@ -59,7 +47,7 @@ await fastify.register(fastifyJWT, {
   secret: process.env.JWT_SECRET || 'default-secret'
 })
 
-// 6) Rotas
+// 6) Routes
 await fastify.register(authRoutes, { prefix: '/auth' })
 await fastify.register(playersRoutes, { prefix: '/players' })
 
@@ -74,5 +62,5 @@ fastify.setErrorHandler((error, request, reply) => {
   })
 })
 
-// 8) Inicia servidor
+// 8) Start server
 await fastify.listen({ port: 3000, host: '0.0.0.0' })
