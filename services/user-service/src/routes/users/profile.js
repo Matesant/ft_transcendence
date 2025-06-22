@@ -1,15 +1,4 @@
 export default async function (fastify, opts) {
-	// Test route for logging
-	fastify.get('/test-log', async (request, reply) => {
-		request.log.info({ test: true, timestamp: new Date().toISOString() }, 'Test log message for user-service')
-		return { 
-			success: true, 
-			message: 'Test log sent',
-			timestamp: new Date().toISOString(),
-			service: 'user-service'
-		}
-	})
-
 	// --- User Synchronization ---
 	fastify.post('/sync', async (request, reply) => {
 		const { alias } = request.body;

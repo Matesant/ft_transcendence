@@ -2,17 +2,6 @@
 import { badRequest } from '../../utils/errors.js';
 
 export default async function (fastify, opts) {
-	// Test route for logging
-	fastify.get('/test-log', async (request, reply) => {
-		request.log.info({ test: true, timestamp: new Date().toISOString() }, 'Test log message for match-service')
-		return { 
-			success: true, 
-			message: 'Test log sent',
-			timestamp: new Date().toISOString(),
-			service: 'match-service'
-		}
-	})
-
 	fastify.post('/', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 		const players = [...request.body.players]; // creates safe copy
 		const { alias } = request.user;
