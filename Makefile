@@ -20,9 +20,18 @@ RESET             = \033[0m
 #--------------------------------------------------------------#
 
 .PHONY: all up down build logs stop re setup fclean clean \
-        elk-up elk-down elk-logs
+        elk-up elk-down elk-logs full-up full-down
 
-all: build up
+all: build full-up
+
+## Full stack (backend + ELK)
+full-up:
+	@echo "$(CYAN)Starting full stack (ELK + backend services)...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) up -d $(ELK_SERVICES) auth-service match-service user-service
+
+full-down:
+	@echo "$(RED)Stopping full stack...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) stop $(ELK_SERVICES) auth-service match-service user-service
 
 ## Backend (auth, match, game, user)
 up:
@@ -63,6 +72,7 @@ fclean: clean
 	docker system prune -af --volumes
 	@rm -rf services/auth-service/data/*.db
 	@rm -rf services/match-service/data/*.db
+	@rm -rf service/user-service/data/*.db
 
 re: fclean build up
 
