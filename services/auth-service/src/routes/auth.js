@@ -2,17 +2,6 @@ import bcrypt from 'bcrypt'
 import { send2FACode } from '../utils/mailer.js'
 
 export default async function (fastify, opts) {
-  // Test route for logging
-  fastify.get('/test-log', async (request, reply) => {
-    request.log.info({ test: true, timestamp: new Date().toISOString() }, 'Test log message for auth-service')
-    return { 
-      success: true, 
-      message: 'Test log sent',
-      timestamp: new Date().toISOString(),
-      service: 'auth-service'
-    }
-  })
-
   fastify.post('/register', async (request, reply) => {
     request.log.info({ action: 'register_attempt', alias: request.body.alias }, 'User registration attempt')
     const { alias, password, email } = request.body

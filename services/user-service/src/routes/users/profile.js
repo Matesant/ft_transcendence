@@ -1,7 +1,7 @@
 export default async function (fastify, opts) {
 	// Test route for logging
 	fastify.get('/test-log', async (request, reply) => {
-		request.log.info({ test: true, timestamp: new Date().toISOString() }, 'Test log message for user-service')
+		request.log.info({ action: 'test_log', timestamp: new Date().toISOString() }, 'Test log message for user-service')
 		return { 
 			success: true, 
 			message: 'Test log sent',
