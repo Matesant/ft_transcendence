@@ -7,7 +7,12 @@ services:
     volumes:
       - ./services/auth-service/data:/app/data
     env_file:
-      - ./services/auth-service/.env
+      - ./services/.env
+    environment:
+      - DB_PATH=${AUTH_DB_PATH}
+      - MAIL_USER=${AUTH_MAIL_USER}
+      - MAIL_PASS=${AUTH_MAIL_PASS}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - logstash
     extra_hosts:
@@ -29,7 +34,10 @@ services:
     volumes:
       - ./services/match-service/data:/app/data
     env_file:
-      - ./services/match-service/.env
+      - ./services/.env
+    environment:
+      - DB_PATH=${MATCH_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - logstash
     extra_hosts:
@@ -42,13 +50,17 @@ services:
     networks:
       - backend
       - monitoring
+
   user-service:
     container_name: user-service
     build: ./services/user-service
     ports:
       - "3003:3000"
     env_file:
-      - ./services/user-service/.env
+      - ./services/.env
+    environment:
+      - DB_PATH=${USER_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
@@ -91,6 +103,7 @@ services:
     networks:
       - backend
       - monitoring
+
   logstash:
     image: docker.elastic.co/logstash/logstash:8.6.2
     container_name: elk_logstash
