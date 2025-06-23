@@ -60,6 +60,8 @@ class App {
         
         // Handle window resize
         window.addEventListener("resize", () => {
+            this._canvas.width = window.innerWidth;
+            this._canvas.height = window.innerHeight;
             this._engine.resize();
         });
     }
