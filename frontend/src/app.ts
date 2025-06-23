@@ -1,6 +1,3 @@
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import { GameManager } from "./managers/GameManager";
 import { CONFIG } from "./config";
