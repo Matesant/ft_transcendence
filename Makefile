@@ -26,8 +26,12 @@ all: build full-up
 
 ## Full stack (backend + ELK)
 full-up:
-	@echo "$(CYAN)Starting full stack (ELK + backend services)...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) up -d $(ELK_SERVICES) auth-service match-service user-service
+	@echo "$(CYAN)Starting ELK stack first...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) up -d $(ELK_SERVICES)
+	@echo "$(YELLOW)Waiting for ELK services to initialize (15 seconds)...$(RESET)"
+	@sleep 15
+	@echo "$(CYAN)Starting backend services...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) up -d auth-service match-service user-service
 
 full-down:
 	@echo "$(RED)Stopping full stack...$(RESET)"

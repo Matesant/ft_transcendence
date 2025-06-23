@@ -8,13 +8,15 @@ services:
       - ./services/auth-service/data:/app/data
     env_file:
       - ./services/auth-service/.env
+    depends_on:
+      - logstash
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: gelf
+      driver: "json-file"
       options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "auth-service"
+        max-size: "10m"
+        max-file: "3"
     networks:
       - backend
       - monitoring
@@ -28,13 +30,15 @@ services:
       - ./services/match-service/data:/app/data
     env_file:
       - ./services/match-service/.env
+    depends_on:
+      - logstash
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: gelf
+      driver: "json-file"
       options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "match-service"
+        max-size: "10m"
+        max-file: "3"
     networks:
       - backend
       - monitoring
@@ -48,13 +52,15 @@ services:
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
+    depends_on:
+      - logstash
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: gelf
+      driver: "json-file"
       options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "user-service"
+        max-size: "10m"
+        max-file: "3"
     networks:
       - backend
       - monitoring
