@@ -7,7 +7,7 @@ services:
     volumes:
       - ./services/auth-service/data:/app/data
     env_file:
-      - ./services/.env
+      - ./.env
     environment:
       - DB_PATH=${AUTH_DB_PATH}
       - MAIL_USER=${AUTH_MAIL_USER}
@@ -34,7 +34,7 @@ services:
     volumes:
       - ./services/match-service/data:/app/data
     env_file:
-      - ./services/.env
+      - ./.env
     environment:
       - DB_PATH=${MATCH_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}
@@ -57,7 +57,7 @@ services:
     ports:
       - "3003:3000"
     env_file:
-      - ./services/.env
+      - ./.env
     environment:
       - DB_PATH=${USER_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}

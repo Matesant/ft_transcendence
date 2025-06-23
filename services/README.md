@@ -58,10 +58,10 @@ JWT is required for all protected endpoints across services.
 
 ## Environment Configuration
 
-All services use a centralized `.env` file located in the `services` directory. This file contains all environment variables needed for the microservices:
+All services use a centralized `.env` file located in the project root directory. This file contains all environment variables needed for the microservices:
 
 ```
-services/
+ft_transcendence/
 └── .env  # Centralized environment variables for all services
 ```
 
