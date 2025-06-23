@@ -7,7 +7,24 @@ services:
     volumes:
       - ./services/auth-service/data:/app/data
     env_file:
-      - ./services/auth-service/.env
+      - ./.env
+    environment:
+      - DB_PATH=${AUTH_DB_PATH}
+      - MAIL_USER=${AUTH_MAIL_USER}
+      - MAIL_PASS=${AUTH_MAIL_PASS}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "auth-service"
+    networks:
+      - backend
+      - monitoring
 
   match-service:
     container_name: match-service
@@ -17,15 +34,94 @@ services:
     volumes:
       - ./services/match-service/data:/app/data
     env_file:
-      - ./services/match-service/.env
+      - ./.env
+    environment:
+      - DB_PATH=${MATCH_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "match-service"
+    networks:
+      - backend
+      - monitoring
+
   user-service:
     container_name: user-service
     build: ./services/user-service
     ports:
       - "3003:3000"
     env_file:
-      - ./services/user-service/.env
+      - ./.env
+    environment:
+      - DB_PATH=${USER_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "user-service"
+    networks:
+      - backend
+      - monitoring
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    container_name: elk_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false   # desliga autenticação para facilitar o teste
+    ports:
+      - "9200:9200"                   # API REST do Elasticsearch
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - backend
+      - monitoring
+    
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    container_name: elk_kibana
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "5601:5601"                   # interface web do Kibana
+    depends_on:
+      - elasticsearch
+    networks:
+      - backend
+      - monitoring
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.6.2
+    container_name: elk_logstash
+    ports:
+      - "12201:12201/udp"    # GELF input for Docker
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - backend
+      - monitoring
+
+volumes:
+  esdata:
+
+networks:
+  backend:
+    name: backend
+  monitoring:
+    name: monitoring

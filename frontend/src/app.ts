@@ -50,8 +50,7 @@ class App {
         
         // Initialize game manager
         this._gameManager = new GameManager(this._scene);
-        
-        // Handle debug inspector toggle
+
         window.addEventListener("keydown", (event) => {
             if (event.shiftKey && event.ctrlKey && event.altKey && event.key === "i") {
                 if (this._scene.debugLayer.isVisible()) {
@@ -72,7 +71,7 @@ class App {
         this._engine.runRenderLoop(() => {
             this._gameManager.update();
             this._scene.render();
-        });
+        })
     }
 }
 
