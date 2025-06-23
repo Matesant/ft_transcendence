@@ -13,10 +13,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: "json-file"
+      driver: "gelf"
       options:
-        max-size: "10m"
-        max-file: "3"
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "auth-service"
     networks:
       - backend
       - monitoring
@@ -35,10 +35,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: "json-file"
+      driver: "gelf"
       options:
-        max-size: "10m"
-        max-file: "3"
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "match-service"
     networks:
       - backend
       - monitoring
@@ -57,10 +57,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     logging:
-      driver: "json-file"
+      driver: "gelf"
       options:
-        max-size: "10m"
-        max-file: "3"
+        gelf-address: "udp://172.18.0.4:12201"
+        tag: "user-service"
     networks:
       - backend
       - monitoring
