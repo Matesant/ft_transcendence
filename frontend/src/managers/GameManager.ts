@@ -14,6 +14,13 @@ enum GameState {
     GAME_OVER
 }
 
+// Insert this near the top of frontend/src/managers/GameManager.ts - add a new enum for multiplayer mode
+enum GameMode {
+    SINGLE_PLAYER,
+    MULTIPLAYER_HOST,
+    MULTIPLAYER_JOIN
+}
+
 export class GameManager {
     private _scene: BABYLON.Scene;
     private _ball: Ball;
@@ -30,6 +37,12 @@ export class GameManager {
     
     // Add a field to track the current game mode
     private _powerUpsEnabled: boolean = false;
+
+    // Add these as new properties to the GameManager class
+    private _socket: WebSocket | null = null;
+    private _roomId: string | null = null;
+    private _playerSide: 'left' | 'right' | null = null;
+    private _gameMode: GameMode = GameMode.SINGLE_PLAYER;
     
     constructor(scene: BABYLON.Scene) {
         this._scene = scene;
@@ -158,19 +171,63 @@ export class GameManager {
             this._startGame(true); // Start game with power-ups
         });
         
-        // Assemble the UI
-        classicContainer.appendChild(classicLabel);
-        classicContainer.appendChild(classicButton);
+        // Add multiplayer section title
+        const multiplayerTitle = document.createElement("h2");
+        multiplayerTitle.textContent = "Multiplayer";
+        multiplayerTitle.style.color = "white";
+        multiplayerTitle.style.fontSize = "24px";
+        multiplayerTitle.style.marginTop = "30px";
+        multiplayerTitle.style.marginBottom = "20px";
         
-        powerUpsContainer.appendChild(powerUpsLabel);
-        powerUpsContainer.appendChild(powerUpsButton);
+        // Container for multiplayer buttons
+        const multiplayerContainer = document.createElement("div");
+        multiplayerContainer.style.display = "flex";
+        multiplayerContainer.style.flexDirection = "row";
+        multiplayerContainer.style.gap = "20px";
         
-        buttonsContainer.appendChild(classicContainer);
-        buttonsContainer.appendChild(powerUpsContainer);
+        // Create button for hosting a game
+        const hostButton = document.createElement("button");
+        hostButton.textContent = "HOST GAME";
+        hostButton.style.padding = "10px 20px";
+        hostButton.style.fontSize = "18px";
+        hostButton.style.cursor = "pointer";
+        hostButton.style.backgroundColor = "#42b4f4";
+        hostButton.style.border = "none";
+        hostButton.style.borderRadius = "5px";
+        hostButton.style.color = "white";
         
+        // Create button for joining a game
+        const joinButton = document.createElement("button");
+        joinButton.textContent = "JOIN GAME";
+        joinButton.style.padding = "10px 20px";
+        joinButton.style.fontSize = "18px";
+        joinButton.style.cursor = "pointer";
+        joinButton.style.backgroundColor = "#f4c542";
+        joinButton.style.border = "none";
+        joinButton.style.borderRadius = "5px";
+        joinButton.style.color = "white";
+        
+        // Add event listeners
+        hostButton.addEventListener("click", () => {
+            this._gameMode = GameMode.MULTIPLAYER_HOST;
+            this._setupMultiplayer(true);
+        });
+        
+        joinButton.addEventListener("click", () => {
+            this._gameMode = GameMode.MULTIPLAYER_JOIN;
+            this._setupMultiplayer(false);
+        });
+        
+        // Add to container
+        multiplayerContainer.appendChild(hostButton);
+        multiplayerContainer.appendChild(joinButton);
+        
+        // Add to menu
         this._menuUI.appendChild(title);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
+        this._menuUI.appendChild(multiplayerTitle);
+        this._menuUI.appendChild(multiplayerContainer);
         
         document.body.appendChild(this._menuUI);
     }
@@ -332,13 +389,165 @@ export class GameManager {
         centerLineHorizontal.material = lineMaterial;
     }
     
+    // Add a new method to handle multiplayer setup
+    private _setupMultiplayer(isHost: boolean): void {
+        if (isHost) {
+            // Create a new game room
+            fetch('http://localhost:3004/create-room')
+                .then(response => response.json())
+                .then(data => {
+                    this._roomId = data.roomId;
+                    this._connectToGameServer();
+                })
+                .catch(error => console.error('Error creating room:', error));
+        } else {
+            // Show a prompt to enter room ID
+            const roomId = prompt('Enter Room ID:');
+            if (roomId) {
+                this._roomId = roomId;
+                this._connectToGameServer();
+            }
+        }
+    }
+
+    private _connectToGameServer(): void {
+        if (!this._roomId) return;
+        
+        // Get the current user's alias (you might need to get this from your auth system)
+        const userAlias = 'player'; // Replace with actual user alias if available
+        
+        // Connect to WebSocket server
+        this._socket = new WebSocket(`ws://localhost:3004/game/${this._roomId}?alias=${userAlias}`);
+        
+        this._socket.onopen = () => {
+            console.log('Connected to game server');
+        };
+        
+        this._socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            
+            switch (message.type) {
+                case 'JOINED':
+                    this._playerSide = message.side;
+                    console.log(`Joined as ${this._playerSide} paddle`);
+                    break;
+                    
+                case 'GAME_START':
+                    this._startGame(this._powerUpsEnabled);
+                    break;
+                    
+                case 'PADDLE_UPDATE':
+                    // Update opponent's paddle position
+                    if (message.side === 'left' && this._playerSide !== 'left') {
+                        this._leftPaddle.mesh.position.x = message.x;
+                    } else if (message.side === 'right' && this._playerSide !== 'right') {
+                        this._rightPaddle.mesh.position.x = message.x;
+                    }
+                    break;
+                    
+                case 'BALL_UPDATE':
+                    // Only update ball if we're not the host (host controls ball physics)
+                    if (this._playerSide !== 'left') {
+                        this._ball.mesh.position.x = message.ball.x;
+                        this._ball.mesh.position.y = message.ball.y;
+                        this._ball.mesh.position.z = message.ball.z;
+                    }
+                    break;
+                    
+                case 'SCORE_UPDATE':
+                    // Update the score
+                    this._scoreManager.updateFromServer(message.score);
+                    break;
+                    
+                case 'PLAYER_LEFT':
+                    alert('Other player disconnected');
+                    this._showMenu();
+                    break;
+                    
+                case 'ERROR':
+                    alert(`Error: ${message.message}`);
+                    this._showMenu();
+                    break;
+            }
+        };
+        
+        this._socket.onclose = () => {
+            console.log('Disconnected from game server');
+            this._socket = null;
+            this._playerSide = null;
+        };
+    }
+
+    // Modify the _handleInput method to send paddle positions in multiplayer mode
+    private _handleInput(): void {
+        // Track if paddle position changed
+        let leftPaddleChanged = false;
+        let rightPaddleChanged = false;
+        
+        // Handle player 1 paddle (left)
+        if (this._playerSide !== 'right') { // Control left paddle if we're player 1 or single player
+            if (this._inputManager.isKeyPressed("arrowleft")) {
+                this._leftPaddle.moveLeft();
+                leftPaddleChanged = true;
+            }
+            if (this._inputManager.isKeyPressed("arrowright")) {
+                this._leftPaddle.moveRight();
+                leftPaddleChanged = true;
+            }
+        }
+        
+        // Handle player 2 paddle (right)
+        if (this._playerSide !== 'left') { // Control right paddle if we're player 2 or single player
+            if (this._inputManager.isKeyPressed("a")) {
+                this._rightPaddle.moveLeft();
+                rightPaddleChanged = true;
+            }
+            if (this._inputManager.isKeyPressed("d")) {
+                this._rightPaddle.moveRight();
+                rightPaddleChanged = true;
+            }
+        }
+        
+        // Send paddle updates in multiplayer mode
+        if (this._socket && this._socket.readyState === WebSocket.OPEN) {
+            if (this._playerSide === 'left' && leftPaddleChanged) {
+                this._socket.send(JSON.stringify({
+                    type: 'PADDLE_MOVE',
+                    x: this._leftPaddle.mesh.position.x
+                }));
+            } else if (this._playerSide === 'right' && rightPaddleChanged) {
+                this._socket.send(JSON.stringify({
+                    type: 'PADDLE_MOVE',
+                    x: this._rightPaddle.mesh.position.x
+                }));
+            }
+        }
+    }
+
+    // Update the update() method to send ball position in multiplayer mode
     public update(): void {
+        // Update input manager
+        this._inputManager.update();
+        
         // Only update game logic if in PLAYING state
         if (this._gameState === GameState.PLAYING) {
             this._handleInput();
             this._updateGameObjects();
             this._powerUpManager.update(); // Update power-ups
             this._checkCollisions();
+            
+            // In multiplayer mode, if we're the host (left paddle), send ball updates
+            if (this._socket && this._socket.readyState === WebSocket.OPEN && 
+                this._playerSide === 'left' && this._ball.active) {
+                this._socket.send(JSON.stringify({
+                    type: 'BALL_UPDATE',
+                    ball: {
+                        x: this._ball.mesh.position.x,
+                        y: this._ball.mesh.position.y,
+                        z: this._ball.mesh.position.z
+                    }
+                }));
+            }
             
             // Check for game over condition
             const score = this._scoreManager.score;
@@ -347,24 +556,6 @@ export class GameManager {
             } else if (score.player2 >= 5) {
                 this._showGameOver("Player 2");
             }
-        }
-    }
-    
-    private _handleInput(): void {
-        // Handle paddle movement
-        if (this._inputManager.isKeyPressed("a")) {
-            this._rightPaddle.moveLeft();
-        }
-        if (this._inputManager.isKeyPressed("d")) {
-            this._rightPaddle.moveRight();
-        }
-        
-        // Use arrow keys for left paddle
-        if (this._inputManager.isKeyPressed("arrowleft")) {
-            this._leftPaddle.moveLeft();
-        }
-        if (this._inputManager.isKeyPressed("arrowright")) {
-            this._leftPaddle.moveRight();
         }
     }
     

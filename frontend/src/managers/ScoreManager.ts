@@ -54,4 +54,9 @@ export class ScoreManager {
         this._score.player2++;
         this.updateDisplay();
     }
+
+    public updateFromServer(score: { player1: number, player2: number }): void {
+        this._score = score;
+        this.updateDisplay();
+    }
 }
