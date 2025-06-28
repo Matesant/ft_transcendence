@@ -20,7 +20,8 @@ module.exports = {
         hot: true,
         devMiddleware: {
             publicPath: "/",
-        }
+        },
+        historyApiFallback: true,
     },
     module: {
         rules: [
