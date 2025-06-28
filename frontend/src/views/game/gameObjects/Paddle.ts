@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { CONFIG } from "../config";
 
@@ -10,14 +10,14 @@ export enum PaddleType {
 export class Paddle extends GameObject {
     private _type: PaddleType;
 
-    constructor(scene: BABYLON.Scene, type: PaddleType) {
+    constructor(scene: Scene, type: PaddleType) {
         super(scene);
         this._type = type;
         this._initMesh();
     }
 
     private _initMesh(): void {
-        this._mesh = BABYLON.MeshBuilder.CreateBox(
+        this._mesh = MeshBuilder.CreateBox(
             this._type === PaddleType.LEFT ? "leftPaddle" : "rightPaddle", 
             {
                 width: CONFIG.PADDLE.DIMENSIONS.x, 
@@ -34,7 +34,7 @@ export class Paddle extends GameObject {
         this._mesh.position = paddlePosition;
         
         // Create materials with appropriate colors
-        const material = new BABYLON.StandardMaterial(
+        const material = new StandardMaterial(
             this._type === PaddleType.LEFT ? "leftPaddleMaterial" : "rightPaddleMaterial", 
             this._scene
         );
