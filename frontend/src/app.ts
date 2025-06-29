@@ -1,10 +1,10 @@
 import { AView } from "./views/AView";
-import { ViewBuilders } from "./views/Builders";
+import { Builders } from "./views/Builders";
 
 let routes: {[key: string]: () => AView } = {
-    "/game": ViewBuilders.GameBuilder,
-    "/login": ViewBuilders.LoginBuilder,
-    "/": ViewBuilders.HomeBuilder
+    "/game": Builders.GameBuilder,
+    "/login": Builders.LoginBuilder,
+    "/": Builders.HomeBuilder
 };
 
 let path: string = location.pathname;

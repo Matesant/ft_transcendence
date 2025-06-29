@@ -3,7 +3,7 @@ import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { AView } from "./AView";
 
-export class ViewBuilders {
+export class Builders {
     public static GameBuilder(): AView {
         return new Game();
     }
