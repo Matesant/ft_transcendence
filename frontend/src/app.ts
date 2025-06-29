@@ -1,19 +1,17 @@
-import { Game } from "./views/game/Game";
-import { Login } from "./views/login/Login";
 import { AView } from "./views/AView";
-import { Home } from "./views/home/Home";
+import { ViewBuilders } from "./views/Builders";
 
-let routes: string[] = ["/game", "/login"];
+let routes: {[key: string]: () => AView } = {
+    "/game": ViewBuilders.GameBuilder,
+    "/login": ViewBuilders.LoginBuilder,
+    "/": ViewBuilders.HomeBuilder
+};
 
-if (location.pathname === "/game") {
-    const gameView: AView = new Game();
-    gameView.render();
-}
-else if (location.pathname === "/login") {
-    const loginView: AView = new Login();
-    loginView.render();
+let path: string = location.pathname;
+let view: AView | undefined = routes[path] ? routes[path]() : undefined;
+if (view) {
+    view.render();
 }
 else {
-    const homeView: AView = new Home();
-    homeView.render();
+    document.body.innerHTML = "<h1>404 Not Found</h1>";
 }
