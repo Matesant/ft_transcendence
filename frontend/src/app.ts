@@ -2,7 +2,7 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
-import { GameManager } from "./managers/GameManager";
+import { GameManager, GameMode } from "./managers/GameManager";
 import { CONFIG } from "./config";
 
 class App {
@@ -68,10 +68,20 @@ class App {
     }
     
     public mainLoop(): void {
-        this._engine.runRenderLoop(() => {
-            this._gameManager.update();
-            this._scene.render();
-        })
+        // Check if we're in multiplayer host mode
+        if (this._gameManager.gameMode === GameMode.MULTIPLAYER_HOST) {
+            // Use setInterval for multiplayer host to prevent pausing when tab loses focus
+            setInterval(() => {
+                this._gameManager.update();
+                this._scene.render();
+            }, 16); // ~60 FPS (1000ms / 60fps ≈ 16.67ms)
+        } else {
+            // Use the normal render loop for single player and multiplayer client
+            this._engine.runRenderLoop(() => {
+                this._gameManager.update();
+                this._scene.render();
+            });
+        }
     }
 }
 

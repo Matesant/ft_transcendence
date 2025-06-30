@@ -15,7 +15,7 @@ enum GameState {
 }
 
 // Insert this near the top of frontend/src/managers/GameManager.ts - add a new enum for multiplayer mode
-enum GameMode {
+export enum GameMode {
     SINGLE_PLAYER,
     MULTIPLAYER_HOST,
     MULTIPLAYER_JOIN
@@ -401,7 +401,7 @@ export class GameManager {
                 .then(data => {
                     console.log("Room created successfully:", data);
                     this._roomId = data.roomId;
-                    alert(`Room created! ID: ${this._roomId}`); // Show room ID to user
+                    alert(`Room created! ID: ${this._roomId}`);
                     this._connectToGameServer();
                 })
                 .catch(error => {
@@ -551,30 +551,46 @@ export class GameManager {
         
         // Only update game logic if in PLAYING state
         if (this._gameState === GameState.PLAYING) {
+            // Always handle input for paddle movement
             this._handleInput();
-            this._updateGameObjects();
-            this._powerUpManager.update(); // Update power-ups
-            this._checkCollisions();
-            
-            // In multiplayer mode, if we're the host (left paddle), send ball updates
-            if (this._socket && this._socket.readyState === WebSocket.OPEN && 
-                this._playerSide === 'left' && this._ball.active) {
-                this._socket.send(JSON.stringify({
-                    type: 'BALL_UPDATE',
-                    ball: {
-                        x: this._ball.mesh.position.x,
-                        y: this._ball.mesh.position.y,
-                        z: this._ball.mesh.position.z
-                    }
-                }));
+
+            // In single player mode, or if we're the host, update the game state
+            if (this._gameMode === GameMode.SINGLE_PLAYER || this._playerSide === 'left') {
+                // Update game objects (ball movement)
+                this._updateGameObjects();
+                
+                // Check collisions
+                this._checkCollisions();
+                
+                // Power-ups (only host handles in multiplayer)
+                if (this._powerUpsEnabled) {
+                    this._powerUpManager.update();
+                }
+                
+                // In multiplayer mode and host, send ball updates
+                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
+                    this._playerSide === 'left' && this._ball.active) {
+                    this._socket.send(JSON.stringify({
+                        type: 'BALL_UPDATE',
+                        ball: {
+                            x: this._ball.mesh.position.x,
+                            y: this._ball.mesh.position.y,
+                            z: this._ball.mesh.position.z
+                        }
+                    }));
+                }
+            } else {
+                // For non-host in multiplayer, don't update ball or check collisions
+                // Just update paddles
+                this._leftPaddle.update();
+                this._rightPaddle.update();
             }
             
             // Check for game over condition
             const score = this._scoreManager.score;
-            if (score.player1 >= 5) {
-                this._showGameOver("Player 1");
-            } else if (score.player2 >= 5) {
-                this._showGameOver("Player 2");
+            if (score.player1 >= 5 || score.player2 >= 5) {
+                const winner = score.player1 >= 5 ? "Player 1" : "Player 2";
+                this._showGameOver(winner);
             }
         }
     }
@@ -650,6 +666,15 @@ export class GameManager {
             if (ballPos.z > CONFIG.SCORE.BOUNDARY.RIGHT) {
                 this._scoreManager.player2Scores();
                 
+                // Send score update in multiplayer mode
+                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
+                    this._playerSide === 'left') {
+                    this._socket.send(JSON.stringify({
+                        type: 'SCORE_UPDATE',
+                        score: this._scoreManager.score
+                    }));
+                }
+                
                 // If this is the main ball, reset all balls
                 if (ball === this._ball) {
                     this._powerUpManager.reset();
@@ -675,6 +700,15 @@ export class GameManager {
             if (ballPos.z < CONFIG.SCORE.BOUNDARY.LEFT) {
                 this._scoreManager.player1Scores();
                 
+                // Send score update in multiplayer mode
+                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
+                    this._playerSide === 'left') {
+                    this._socket.send(JSON.stringify({
+                        type: 'SCORE_UPDATE',
+                        score: this._scoreManager.score
+                    }));
+                }
+                
                 // If this is the main ball, reset all balls
                 if (ball === this._ball) {
                     this._powerUpManager.reset();
@@ -695,6 +729,23 @@ export class GameManager {
                     }
                 }
             }
+        }
+    }
+
+    // Add this getter method
+    public get gameMode(): GameMode {
+        return this._gameMode;
+    }
+
+    public setupMultiplayerRenderLoop(): void {
+        if (this._gameMode === GameMode.MULTIPLAYER_HOST) {
+            // Stop the existing render loop and use setInterval instead
+            this._scene.getEngine().stopRenderLoop();
+            
+            setInterval(() => {
+                this.update();
+                this._scene.render();
+            }, 16);
         }
     }
 }

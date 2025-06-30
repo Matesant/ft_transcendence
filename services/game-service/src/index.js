@@ -7,7 +7,7 @@ const fastify = Fastify({ logger: true });
 
 // Add CORS support - this is the critical fix
 await fastify.register(cors, {
-  origin: 'http://localhost:8080',  // Your frontend URL
+  origin: true,  // Allow all origins (temporary for testing)
   credentials: true
 });
 
@@ -16,7 +16,7 @@ await fastify.register(websocket);
 const gameRooms = new Map();
 
 // Simple endpoint to create game rooms
-fastify.get('/create-room', async (request, reply) => {
+fastify.get('/create-room', async () => {
   const roomId = `room_${Date.now()}`;
   gameRooms.set(roomId, new GameRoom(roomId));
   return { roomId };
