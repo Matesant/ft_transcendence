@@ -20,12 +20,12 @@ RESET             = \033[0m
 #--------------------------------------------------------------#
 
 .PHONY: all up down build logs stop re setup fclean clean \
-        elk-up elk-down elk-logs full-up full-down
+        elk-up elk-down elk-logs restart
 
-all: build full-up
+all: build up
 
-## Full stack (backend + ELK)
-full-up:
+## Main commands (always include ELK for proper logging)
+up:
 	@echo "$(CYAN)Starting ELK stack first...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) up -d $(ELK_SERVICES)
 	@echo "$(YELLOW)Waiting for ELK services to initialize (15 seconds)...$(RESET)"
@@ -33,18 +33,9 @@ full-up:
 	@echo "$(CYAN)Starting backend services...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) up -d auth-service match-service user-service
 
-full-down:
-	@echo "$(RED)Stopping full stack...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) stop $(ELK_SERVICES) auth-service match-service user-service
-
-## Backend (auth, match, game, user)
-up:
-	@echo "$(CYAN)Starting backend services...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) up -d auth-service match-service user-service
-
 down stop:
-	@echo "$(RED)Stopping backend services...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) stop auth-service match-service user-service
+	@echo "$(RED)Stopping all services...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) stop $(ELK_SERVICES) auth-service match-service user-service
 
 ## ELK Stack
 elk-up:
@@ -71,12 +62,15 @@ clean: down
 	@echo "$(RED)Pruning unused Docker objects...$(RESET)"
 	docker system prune -f
 
-fclean: clean
-	@echo "$(RED)Pruning everything including volumes...$(RESET)"
+restart: down build up
+
+fclean: down
+	@echo "$(RED)Removing all containers and volumes...$(RESET)"
+	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
 	docker system prune -af --volumes
 	@rm -rf services/auth-service/data/*.db
 	@rm -rf services/match-service/data/*.db
-	@rm -rf service/user-service/data/*.db
+	@rm -rf services/user-service/data/*.db
 
 re: fclean build up
 
