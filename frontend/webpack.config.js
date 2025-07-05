@@ -39,5 +39,6 @@ module.exports = {
         }),
         new BundleAnalyzerPlugin()
     ],
+    devtool : 'inline-source-map',
     mode: "development",
 };

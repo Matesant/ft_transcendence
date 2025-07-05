@@ -1,17 +1,5 @@
-import { AView } from "./views/AView";
-import { Builders } from "./views/Builders";
+import { router } from "./router/Router";
+import "./components/itemSidebar/itemSidebar"
 
-let routes: {[key: string]: () => AView } = {
-    "/game": Builders.GameBuilder,
-    "/login": Builders.LoginBuilder,
-    "/": Builders.HomeBuilder
-};
-
-let path: string = location.pathname;
-let view: AView | undefined = routes[path] ? routes[path]() : undefined;
-if (view) {
-    view.render();
-}
-else {
-    document.body.innerHTML = "<h1>404 Not Found</h1>";
-}
+window.addEventListener("DOMContentLoaded", router);
+window.addEventListener("popstate", router);
