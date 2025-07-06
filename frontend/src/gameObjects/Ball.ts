@@ -89,6 +89,31 @@ export class Ball extends GameObject {
     }
 
     public reverseX(): void {
+        // Reverse the x direction
         this._velocity.x *= -1;
+        
+        // Calculate the current ball speed
+        const speed = this._velocity.length();
+        
+        // Check if the ball is moving too vertically (small x component)
+        const xRatio = Math.abs(this._velocity.x) / speed;
+        
+        // If the x-component is too small (less than 20% of total velocity)
+        if (xRatio < 0.2) {
+            // Add a minimum horizontal component to prevent vertical-only bouncing
+            // Maintain the same overall speed but ensure a minimum x-component
+            const minXComponent = speed * 0.3; // At least 30% of speed should be horizontal
+            
+            // Determine the direction
+            const xDirection = this._velocity.x >= 0 ? 1 : -1;
+            
+            // Set x velocity to the minimum value while preserving direction
+            this._velocity.x = minXComponent * xDirection;
+            
+            // Recalculate z velocity to maintain the same overall speed
+            const newZMagnitude = Math.sqrt(speed * speed - this._velocity.x * this._velocity.x);
+            const zDirection = this._velocity.z >= 0 ? 1 : -1;
+            this._velocity.z = newZMagnitude * zDirection;
+        }
     }
 }
