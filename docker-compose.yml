@@ -20,7 +20,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://host.docker.internal:12201"
         tag: "auth-service"
     networks:
       - backend
@@ -45,7 +45,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://host.docker.internal:12201"
         tag: "match-service"
     networks:
       - backend
@@ -71,7 +71,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://host.docker.internal:12201"
         tag: "user-service"
     networks:
       - backend
@@ -82,13 +82,17 @@ services:
     container_name: elk_elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false   # desliga autenticação para facilitar o teste
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # Limita a memória JVM para 512MB
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      #TODO descomentar quando necessário
+      - indices.lifecycle.poll_interval=1m
     ports:
-      - "9200:9200"                   # API REST do Elasticsearch
+      - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
-    mem_limit: 1g                     # Limita o container para 1GB máximo
+      #TODO descomentar quando necessário
+      - ./elk-config/elasticsearch:/usr/share/elasticsearch/config/scripts:ro
+    mem_limit: 1g
     networks:
       - backend
       - monitoring
@@ -99,11 +103,16 @@ services:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
+      #TODO descomentar quando necessário
+      - "xpack.security.enabled=false"
+      - "xpack.monitoring.ui.container.elasticsearch.enabled=true"
     ports:
-      - "5601:5601"                   # interface web do Kibana
+      - "5601:5601"
+    volumes:
+      - kibana_data:/usr/share/kibana/data
     depends_on:
       - elasticsearch
-    mem_limit: 512m                   # Limita o container para 512MB máximo
+    mem_limit: 512m
     networks:
       - backend
       - monitoring
@@ -112,20 +121,21 @@ services:
     image: docker.elastic.co/logstash/logstash:8.6.2
     container_name: elk_logstash
     environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"  # Limita JVM do Logstash para 256MB
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
     ports:
-      - "12201:12201/udp"    # GELF input for Docker
+      - "12201:12201/udp"
     volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./services/logs-service/pipeline:/usr/share/logstash/pipeline:ro
     depends_on:
       - elasticsearch
-    mem_limit: 512m                   # Limita o container para 512MB máximo
+    mem_limit: 512m
     networks:
       - backend
       - monitoring
 
 volumes:
   esdata:
+  kibana_data:
 
 networks:
   backend:
