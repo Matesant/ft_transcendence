@@ -79,11 +79,15 @@ services:
     image: docker.elastic.co/kibana/kibana:8.6.2
     container_name: elk_kibana
     environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
-      #TODO descomentar quando necessário
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-that-must-be-32-chars-long"
+      - "xpack.security.encryptionKey=a-very-long-random-key-for-security-that-must-be-32-chars-long-here"
+      - "xpack.reporting.encryptionKey=a-very-long-random-key-for-reporting-that-must-be-32-chars-long"
       - "xpack.security.enabled=false"
       - "xpack.monitoring.ui.container.elasticsearch.enabled=true"
+      - "xpack.reporting.kibanaServer.hostname=localhost"
+      - "server.host=0.0.0.0"
+      - "server.shutdownTimeout=5s"
     ports:
       - "5601:5601"
     volumes:
