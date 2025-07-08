@@ -70,15 +70,22 @@ re: fclean build up
 
 setup:
 	@echo "$(CYAN)Setting up environment files...$(RESET)"
+	@if [ ! -f .env ]; then \
+		echo "$(YELLOW)Creating main .env file$(RESET)"; \
+		cp .env_sample .env; \
+		echo "$(GREEN)✅ Main .env created from .env_sample$(RESET)"; \
+		echo "$(YELLOW)⚠️  Please edit .env with your actual values$(RESET)"; \
+	fi
 	@for svc in auth-service match-service user-service; do \
 		if [ ! -f services/$$svc/.env ]; then \
 			echo "$(YELLOW)Creating .env for $$svc$(RESET)"; \
 			mkdir -p services/$$svc/data; \
-			echo "DB_PATH=./data/$$svc.db" > services/$$svc/.env; \
-			echo "JWT_SECRET=jorge-super-secrets" >> services/$$svc/.env; \
-			if [ "$$svc" = "auth-service" ]; then \
-				echo "MAIL_USER=seu.email@gmail.com" >> services/$$svc/.env; \
-				echo "MAIL_PASS=senha_de_app" >> services/$$svc/.env; \
-			fi \
+			echo "JWT_SECRET=your_secret" > services/$$svc/.env; \
+			echo "AUTH_MAIL_USER=google-email" >> services/$$svc/.env; \
+			echo "AUTH_MAIL_PASS=app password" >> services/$$svc/.env; \
+			echo "AUTH_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
+			echo "USER_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
+			echo "MATCH_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
+			echo "LOG_LEVEL=info" >> services/$$svc/.env; \
 		fi \
 	done
