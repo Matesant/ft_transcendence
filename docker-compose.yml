@@ -13,15 +13,6 @@ services:
       - MAIL_USER=${AUTH_MAIL_USER}
       - MAIL_PASS=${AUTH_MAIL_PASS}
       - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    logging:
-      driver: "gelf"
-      options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "auth-service"
     networks:
       - backend
       - monitoring
@@ -38,15 +29,6 @@ services:
     environment:
       - DB_PATH=${MATCH_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    logging:
-      driver: "gelf"
-      options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "match-service"
     networks:
       - backend
       - monitoring
@@ -64,15 +46,6 @@ services:
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
-    depends_on:
-      - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    logging:
-      driver: "gelf"
-      options:
-        gelf-address: "udp://host.docker.internal:12201"
-        tag: "user-service"
     networks:
       - backend
       - monitoring
@@ -93,6 +66,11 @@ services:
       #TODO descomentar quando necessário
       - ./elk-config/elasticsearch:/usr/share/elasticsearch/config/scripts:ro
     mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - backend
       - monitoring
@@ -111,8 +89,15 @@ services:
     volumes:
       - kibana_data:/usr/share/kibana/data
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - backend
       - monitoring
@@ -127,8 +112,14 @@ services:
     volumes:
       - ./services/logs-service/pipeline:/usr/share/logstash/pipeline:ro
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - backend
       - monitoring
