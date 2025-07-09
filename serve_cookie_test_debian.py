@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Configurações
 PORT = 8080
-HTML_FILE = "cookie-test-fixed.html"
+HTML_FILE = "cookie-tester.html"
 SCRIPT_DIR = Path(__file__).parent.absolute()
 
 # Cores para terminal
