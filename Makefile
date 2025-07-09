@@ -4,6 +4,7 @@
 
 PROJECT_NAME      = ft_transcendence
 COMPOSE_FILE      = docker-compose.yml
+COMPOSE_DEV_FILE  = docker-compose.dev.yml
 
 # Terminal colors
 GREEN             = \033[32m
@@ -19,19 +20,31 @@ RESET             = \033[0m
 # Default target shows help
 .DEFAULT_GOAL := help
 
-.PHONY: all up down build logs stop re setup fclean clean restart dev help
+.PHONY: all up down build logs stop re setup fclean clean restart dev dev-down dev-logs dev-build help
 
 all: setup build up
 
 ## Development - only services, no ELK
 dev:
 	@echo "$(CYAN)Starting development environment (no ELK)...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) up -d auth-service match-service user-service
+	docker compose -f $(COMPOSE_DEV_FILE) up -d
 	@echo "$(GREEN)✅ Development services started!$(RESET)"
 	@echo "$(YELLOW)Services available:$(RESET)"
 	@echo "  • Auth Service: http://localhost:3001"
 	@echo "  • Match Service: http://localhost:3002"
 	@echo "  • User Service: http://localhost:3003"
+
+dev-down:
+	@echo "$(RED)Stopping development services...$(RESET)"
+	docker compose -f $(COMPOSE_DEV_FILE) down
+
+dev-logs:
+	@echo "$(YELLOW)Showing logs from development services...$(RESET)"
+	docker compose -f $(COMPOSE_DEV_FILE) logs -f
+
+dev-build:
+	@echo "$(YELLOW)Building development images...$(RESET)"
+	docker compose -f $(COMPOSE_DEV_FILE) build
 
 ## Main command - full stack with ELK and logging
 up:
