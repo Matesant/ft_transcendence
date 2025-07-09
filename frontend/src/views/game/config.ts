@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Vector3, Color4, Color3 } from "@babylonjs/core";
 
 export const CONFIG = {
     // Scene configuration
@@ -7,15 +7,15 @@ export const CONFIG = {
     CAMERA: {
         BETA: Math.PI / 4,
         RADIUS: 22,
-        TARGET: new BABYLON.Vector3(0, 0, 0)
+        TARGET: new Vector3(0, 0, 0)
     },
     SCENE: {
-        CLEAR_COLOR: new BABYLON.Color4(0.1, 0.1, 0.15, 1)
+        CLEAR_COLOR: new Color4(0.1, 0.1, 0.15, 1)
     },
     AMBIENT_LIGHT: {
-        DIRECTION: new BABYLON.Vector3(0, 1, 0),
+        DIRECTION: new Vector3(0, 1, 0),
         INTENSITY: 0.7,
-        DIFFUSE: new BABYLON.Color3(1, 1, 1)
+        DIFFUSE: new Color3(1, 1, 1)
     },
     GLOW: {
         INTENSITY: 0.7
@@ -25,39 +25,39 @@ export const CONFIG = {
     FIELD: {
         WIDTH: 12,
         HEIGHT: 17,
-        COLOR: new BABYLON.Color3(0.15, 0.35, 0.15)
+        COLOR: new Color3(0.15, 0.35, 0.15)
     },
     
     // Center lines
     CENTER_LINE: {
         VERTICAL: {
-            DIMENSIONS: new BABYLON.Vector3(0.05, 0.01, 17),
-            POSITION: new BABYLON.Vector3(0, 0.01, 0)
+            DIMENSIONS: new Vector3(0.05, 0.01, 17),
+            POSITION: new Vector3(0, 0.01, 0)
         },
         HORIZONTAL: {
-            DIMENSIONS: new BABYLON.Vector3(12, 0.01, 0.05),
-            POSITION: new BABYLON.Vector3(0, 0.01, 0)
+            DIMENSIONS: new Vector3(12, 0.01, 0.05),
+            POSITION: new Vector3(0, 0.01, 0)
         },
-        COLOR: new BABYLON.Color3(1, 1, 1),
+        COLOR: new Color3(1, 1, 1),
         ALPHA: 0.7
     },
     
     // Walls
     WALL: {
-        DIMENSIONS: new BABYLON.Vector3(0.1, 0.3, 17),
+        DIMENSIONS: new Vector3(0.1, 0.3, 17),
         POSITION: {
-            TOP: new BABYLON.Vector3(-6.05, 0.15, 0),
-            BOTTOM: new BABYLON.Vector3(6.05, 0.15, 0)
+            TOP: new Vector3(-6.05, 0.15, 0),
+            BOTTOM: new Vector3(6.05, 0.15, 0)
         },
-        COLOR: new BABYLON.Color3(1, 1, 1)
+        COLOR: new Color3(1, 1, 1)
     },
     
     // Paddles
     PADDLE: {
-        DIMENSIONS: new BABYLON.Vector3(1.3, 0.3, 0.35),
+        DIMENSIONS: new Vector3(1.3, 0.3, 0.35),
         POSITION: {
-            LEFT: new BABYLON.Vector3(0, 0.15, -8.25),
-            RIGHT: new BABYLON.Vector3(0, 0.15, 8.25)
+            LEFT: new Vector3(0, 0.15, -8.25),
+            RIGHT: new Vector3(0, 0.15, 8.25)
         },
         MOVE_SPEED: 0.175,
         POSITION_LIMIT: {
@@ -65,8 +65,8 @@ export const CONFIG = {
             MAX: 5.4   // Changed from 5 to 5.4 to reach the wall
         },
         COLOR: {
-            LEFT: new BABYLON.Color3(0.2, 0.6, 1),
-            RIGHT: new BABYLON.Color3(1, 0.3, 0.3)
+            LEFT: new Color3(0.2, 0.6, 1),
+            RIGHT: new Color3(1, 0.3, 0.3)
         },
         COLLISION: {
             LEFT: {
@@ -83,8 +83,8 @@ export const CONFIG = {
     // Ball
     BALL: {
         DIAMETER: 0.4,
-        POSITION: new BABYLON.Vector3(0, 0.2, 0),
-        COLOR: new BABYLON.Color3(1, 1, 0.7),
+        POSITION: new Vector3(0, 0.2, 0),
+        COLOR: new Color3(1, 1, 0.7),
         INITIAL_SPEED: 0.1,
         NORMAL_SPEED: 0.15,
         SPIN_FACTOR: 0.1
@@ -130,12 +130,12 @@ export const CONFIG = {
             MIN: 5000,  // Minimum time between spawns (ms)
             MAX: 15000  // Maximum time between spawns (ms)
         },
-        DIMENSIONS: new BABYLON.Vector3(0.6, 0.1, 0.6),
+        DIMENSIONS: new Vector3(0.6, 0.1, 0.6),
         COLORS: {
-            LARGER_PADDLE: new BABYLON.Color3(0.2, 0.8, 0.2),     // Green
-            SMALLER_OPPONENT: new BABYLON.Color3(0.8, 0.2, 0.2),  // Red
-            FAST_BALL: new BABYLON.Color3(1, 0.6, 0.2),           // Orange
-            MULTI_BALL: new BABYLON.Color3(0.8, 0.2, 0.8)         // Purple
+            LARGER_PADDLE: new Color3(0.2, 0.8, 0.2),     // Green
+            SMALLER_OPPONENT: new Color3(0.8, 0.2, 0.2),  // Red
+            FAST_BALL: new Color3(1, 0.6, 0.2),           // Orange
+            MULTI_BALL: new Color3(0.8, 0.2, 0.8)         // Purple
         },
         ROTATION_SPEED: 0.01
     }

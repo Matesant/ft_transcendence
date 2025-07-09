@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
@@ -15,7 +15,7 @@ enum GameState {
 }
 
 export class GameManager {
-    private _scene: BABYLON.Scene;
+    private _scene: Scene;
     private _ball: Ball;
     private _leftPaddle: Paddle;
     private _rightPaddle: Paddle;
@@ -31,7 +31,7 @@ export class GameManager {
     // Add a field to track the current game mode
     private _powerUpsEnabled: boolean = false;
     
-    constructor(scene: BABYLON.Scene) {
+    constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
@@ -293,21 +293,21 @@ export class GameManager {
     
     private _createPlayingField(): void {
         // Create ground
-        const ground = BABYLON.MeshBuilder.CreateGround(
+        const ground = MeshBuilder.CreateGround(
             "ground", 
             { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
             this._scene
         );
-        const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", this._scene);
+        const groundMaterial = new StandardMaterial("groundMaterial", this._scene);
         groundMaterial.diffuseColor = CONFIG.FIELD.COLOR;
         ground.material = groundMaterial;
         
         // Create center lines
-        const lineMaterial = new BABYLON.StandardMaterial("lineMaterial", this._scene);
+        const lineMaterial = new StandardMaterial("lineMaterial", this._scene);
         lineMaterial.emissiveColor = CONFIG.CENTER_LINE.COLOR;
         lineMaterial.alpha = CONFIG.CENTER_LINE.ALPHA;
         
-        const centerLineVertical = BABYLON.MeshBuilder.CreateBox(
+        const centerLineVertical = MeshBuilder.CreateBox(
             "centerLineVertical", 
             {
                 width: CONFIG.CENTER_LINE.VERTICAL.DIMENSIONS.x, 
@@ -319,7 +319,7 @@ export class GameManager {
         centerLineVertical.position = CONFIG.CENTER_LINE.VERTICAL.POSITION.clone();
         centerLineVertical.material = lineMaterial;
         
-        const centerLineHorizontal = BABYLON.MeshBuilder.CreateBox(
+        const centerLineHorizontal = MeshBuilder.CreateBox(
             "centerLineHorizontal", 
             {
                 width: CONFIG.CENTER_LINE.HORIZONTAL.DIMENSIONS.x, 

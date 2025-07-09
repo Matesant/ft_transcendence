@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import fastifyJWT from '@fastify/jwt'
+import fastifyCookie from '@fastify/cookie'
 import cors from '@fastify/cors'
 import dotenv from 'dotenv'
 import dbPlugin from './plugins/db.js'
@@ -28,10 +29,16 @@ fastify.addHook('onRequest', async (request, reply) => {
 // 3) JWT Auth decorator
 fastify.decorate("authenticate", async function (request, reply) {
   try {
-    await request.jwtVerify()
+    const token = request.cookies.authToken
+    if (!token) {
+      return reply.status(401).send({ error: 'No authentication token provided' })
+    }
+    
+    const decoded = fastify.jwt.verify(token)
+    request.user = decoded
   } catch (err) {
-    // The global error handler will catch this
-    reply.send(err)
+    request.log.warn({ error: err.message }, 'Authentication failed')
+    return reply.status(401).send({ error: 'Invalid authentication token' })
   }
 })
 
@@ -43,6 +50,9 @@ await fastify.register(cors, {
 
 // 5) Plugins
 await fastify.register(dbPlugin)
+await fastify.register(fastifyCookie, {
+  secret: process.env.COOKIE_SECRET || 'default-cookie-secret'
+})
 await fastify.register(fastifyJWT, {
   secret: process.env.JWT_SECRET || 'default-secret'
 })

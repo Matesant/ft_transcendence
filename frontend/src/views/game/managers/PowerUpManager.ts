@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Scene, Vector3 } from "@babylonjs/core";
 import { PowerUp } from "../gameObjects/PowerUp";
 import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
@@ -6,7 +6,7 @@ import { ScoreManager } from "./ScoreManager";
 import { CONFIG } from "../config";
 
 export class PowerUpManager {
-    private _scene: BABYLON.Scene;
+    private _scene: Scene;
     private _powerUps: PowerUp[] = [];
     private _leftPaddle: Paddle;
     private _rightPaddle: Paddle;
@@ -21,7 +21,7 @@ export class PowerUpManager {
     // Add a flag to track the first spawn after activation
     private _isFirstSpawnAfterActivation: boolean = true;
     
-    constructor(scene: BABYLON.Scene, leftPaddle: Paddle, rightPaddle: Paddle, ball: Ball, scoreManager: ScoreManager) {
+    constructor(scene: Scene, leftPaddle: Paddle, rightPaddle: Paddle, ball: Ball, scoreManager: ScoreManager) {
         this._scene = scene;
         this._leftPaddle = leftPaddle;
         this._rightPaddle = rightPaddle;
@@ -75,7 +75,7 @@ export class PowerUpManager {
         // Create a random position on the field
         const x = (Math.random() * 8) - 4; // Between -4 and 4
         const z = (Math.random() * 12) - 6; // Between -6 and 6
-        const position = new BABYLON.Vector3(x, 0.2, z); // Slightly above the field
+        const position = new Vector3(x, 0.2, z); // Slightly above the field
         
         // Create and add the power-up
         const powerUp = new PowerUp(this._scene, randomType, position);
@@ -94,7 +94,7 @@ export class PowerUpManager {
                 if (!powerUp.active) continue;
                 
                 const powerUpPos = powerUp.mesh.position;
-                const distance = BABYLON.Vector3.Distance(ballPos, powerUpPos);
+                const distance = Vector3.Distance(ballPos, powerUpPos);
                 
                 // If the ball is close enough to the power-up, activate it
                 if (distance < (CONFIG.BALL.DIAMETER / 2 + CONFIG.POWER_UPS.DIMENSIONS.x / 2)) {
@@ -198,7 +198,7 @@ export class PowerUpManager {
         
         // Set its position to a random position near the original ball
         const originalBall = this._balls[0];
-        const offset = new BABYLON.Vector3(
+        const offset = new Vector3(
             (Math.random() - 0.5) * CONFIG.BALL.DIAMETER * 4,
             0,
             (Math.random() - 0.5) * CONFIG.BALL.DIAMETER * 4
