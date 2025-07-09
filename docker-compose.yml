@@ -102,7 +102,9 @@ services:
     container_name: elk_logstash
     hostname: logstash
     environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m" 
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - pipeline.batch.size=250
+      - pipeline.batch.delay=25
     ports:
       - "12201:12201/udp"   
     volumes:

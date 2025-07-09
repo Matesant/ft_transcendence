@@ -171,6 +171,21 @@ check_response "$RESPONSE" "Dashboard" '"id":"elk-dashboard"'
 
 echo -e "${GREEN}🎉 Kibana configuration completed!${NC}"
 echo ""
+
+# Configure auto-refresh for better log visibility
+echo -e "${YELLOW}🔄 Setting up auto-refresh...${NC}"
+curl -s -X POST "$KIBANA_URL/api/kibana/settings" \
+  -H "Content-Type: application/json" \
+  -H "kbn-xsrf: true" \
+  -d '{
+    "changes": {
+      "timepicker:refreshIntervalDefaults": "{\"pause\":false,\"value\":5000}",
+      "timepicker:timeDefaults": "{\"from\":\"now-15m\",\"to\":\"now\"}"
+    }
+  }' > /dev/null 2>&1
+echo -e "${GREEN}✅ Auto-refresh configured (5s interval)${NC}"
+echo ""
+
 echo -e "${YELLOW}📊 Available access:${NC}"
 echo "   • Kibana: $KIBANA_URL"
 echo "   • Discover: $KIBANA_URL/app/discover"

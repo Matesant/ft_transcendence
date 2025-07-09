@@ -50,7 +50,8 @@ curl -X PUT "$ELASTICSEARCH_URL/_index_template/logstash-logs" \
       "settings": {
         "index.lifecycle.name": "logs-policy",
         "number_of_shards": 1,
-        "number_of_replicas": 0
+        "number_of_replicas": 0,
+        "refresh_interval": "2s"
       },
       "mappings": {
         "properties": {
