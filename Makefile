@@ -65,6 +65,9 @@ fclean: down
 	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
 	docker system prune -af --volumes
 	@rm -rf services/*/data/*.db
+	@echo "$(YELLOW)Cleaning ELK data...$(RESET)"
+	docker volume rm -f ft_transcendence_esdata || true
+	@echo "$(GREEN)✅ Complete cleanup finished!$(RESET)"
 
 re: fclean build up
 
