@@ -15,8 +15,6 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
@@ -24,7 +22,6 @@ services:
         tag: "auth-service"
     networks:
       - backend
-      - monitoring
 
   match-service:
     container_name: match-service
@@ -40,8 +37,6 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
@@ -49,7 +44,6 @@ services:
         tag: "match-service"
     networks:
       - backend
-      - monitoring
 
   user-service:
     container_name: user-service
@@ -66,8 +60,6 @@ services:
       - ./services/user-service/uploads:/app/uploads
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
@@ -75,7 +67,6 @@ services:
         tag: "user-service"
     networks:
       - backend
-      - monitoring
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
@@ -91,7 +82,6 @@ services:
     mem_limit: 1g                   
     networks:
       - backend
-      - monitoring
     
   kibana:
     image: docker.elastic.co/kibana/kibana:8.6.2
@@ -106,7 +96,6 @@ services:
     mem_limit: 512m                  
     networks:
       - backend
-      - monitoring
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.6.2
@@ -123,7 +112,6 @@ services:
     mem_limit: 512m                   
     networks:
       - backend
-      - monitoring
 
 volumes:
   esdata:
@@ -131,7 +119,4 @@ volumes:
 networks:
   backend:
     name: backend
-    driver: bridge
-  monitoring:
-    name: monitoring
     driver: bridge
