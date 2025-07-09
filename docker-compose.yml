@@ -13,6 +13,15 @@ services:
       - MAIL_USER=${AUTH_MAIL_USER}
       - MAIL_PASS=${AUTH_MAIL_PASS}
       - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.1:12201"
+        tag: "auth-service"
     networks:
       - backend
       - monitoring
@@ -29,6 +38,15 @@ services:
     environment:
       - DB_PATH=${MATCH_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.1:12201"
+        tag: "match-service"
     networks:
       - backend
       - monitoring
@@ -46,6 +64,15 @@ services:
     volumes:
       - ./services/user-service/data:/app/data
       - ./services/user-service/uploads:/app/uploads
+    depends_on:
+      - logstash
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://172.18.0.1:12201"
+        tag: "user-service"
     networks:
       - backend
       - monitoring
@@ -55,22 +82,13 @@ services:
     container_name: elk_elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      #TODO descomentar quando necessário
-      - indices.lifecycle.poll_interval=1m
+      - xpack.security.enabled=false  
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" 
     ports:
-      - "9200:9200"
+      - "9200:9200"                  
     volumes:
       - esdata:/usr/share/elasticsearch/data
-      #TODO descomentar quando necessário
-      - ./elk-config/elasticsearch:/usr/share/elasticsearch/config/scripts:ro
-    mem_limit: 1g
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    mem_limit: 1g                   
     networks:
       - backend
       - monitoring
@@ -79,29 +97,13 @@ services:
     image: docker.elastic.co/kibana/kibana:8.6.2
     container_name: elk_kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-that-must-be-32-chars-long"
-      - "xpack.security.encryptionKey=a-very-long-random-key-for-security-that-must-be-32-chars-long-here"
-      - "xpack.reporting.encryptionKey=a-very-long-random-key-for-reporting-that-must-be-32-chars-long"
-      - "xpack.security.enabled=false"
-      - "xpack.monitoring.ui.container.elasticsearch.enabled=true"
-      - "xpack.reporting.kibanaServer.hostname=localhost"
-      - "server.host=0.0.0.0"
-      - "server.shutdownTimeout=5s"
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
     ports:
-      - "5601:5601"
-    volumes:
-      - kibana_data:/usr/share/kibana/data
+      - "5601:5601"                  
     depends_on:
-      elasticsearch:
-        condition: service_healthy
-    mem_limit: 512m
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
+      - elasticsearch
+    mem_limit: 512m                  
     networks:
       - backend
       - monitoring
@@ -109,28 +111,22 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:8.6.2
     container_name: elk_logstash
+    hostname: logstash
     environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m" 
     ports:
-      - "12201:12201/udp"
+      - "12201:12201/udp"   
     volumes:
       - ./services/logs-service/pipeline:/usr/share/logstash/pipeline:ro
     depends_on:
-      elasticsearch:
-        condition: service_healthy
-    mem_limit: 512m
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - elasticsearch
+    mem_limit: 512m                   
     networks:
       - backend
       - monitoring
 
 volumes:
   esdata:
-  kibana_data:
 
 networks:
   backend:
