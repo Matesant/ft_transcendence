@@ -392,6 +392,14 @@ export class GameManager {
             // Ball collision with walls (using field width/height)
             const wallBoundary = CONFIG.FIELD.WIDTH / 2 - 0.2;
             if (ballPos.x <= -wallBoundary || ballPos.x >= wallBoundary) {
+                // Push the ball slightly away from the wall to prevent sticking
+                if (ballPos.x <= -wallBoundary) {
+                    ballPos.x = -wallBoundary + 0.05; // Push right slightly
+                } else {
+                    ballPos.x = wallBoundary - 0.05; // Push left slightly
+                }
+                
+                // Apply our improved reverseX which ensures minimum horizontal velocity
                 ball.reverseX();
             }
             
