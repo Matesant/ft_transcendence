@@ -20,7 +20,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.1:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "auth-service"
     networks:
       - backend
@@ -45,7 +45,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.1:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "match-service"
     networks:
       - backend
@@ -71,7 +71,7 @@ services:
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.1:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "user-service"
     networks:
       - backend
@@ -132,10 +132,6 @@ networks:
   backend:
     name: backend
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.18.0.0/16
-          gateway: 172.18.0.1
   monitoring:
     name: monitoring
     driver: bridge
