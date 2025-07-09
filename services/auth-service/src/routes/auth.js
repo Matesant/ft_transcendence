@@ -82,6 +82,7 @@ export default async function (fastify, opts) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/',
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     })
 
@@ -126,6 +127,7 @@ export default async function (fastify, opts) {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'strict',
+			path: '/',
 			maxAge: 24 * 60 * 60 * 1000 // 24 hours
 		})
 
@@ -283,7 +285,8 @@ export default async function (fastify, opts) {
 		reply.clearCookie('authToken', {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict'
+			sameSite: 'strict',
+			path: '/'
 		})
 		
 		request.log.info({ action: 'logout_success', alias }, 'User logout successful')

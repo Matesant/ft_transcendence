@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🍪 Cookie Authentication Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+        .section h2 {
+            color: #2d3748;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"], input[type="password"], input[type="email"], select {
+            width: 200px;
+            padding: 10px;
+            border: 2px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        .success { background: #48bb78; }
+        .success:hover { background: #38a169; }
+        .danger { background: #f56565; }
+        .danger:hover { background: #e53e3e; }
+        .warning { background: #ed8936; }
+        .warning:hover { background: #dd6b20; }
+        .info { background: #4299e1; }
+        .info:hover { background: #3182ce; }
+        
+        #result {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .clear-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #718096;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .results-container {
+            position: relative;
+        }
+        
+        .warning-box {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #9b2c2c;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success-box {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-indicator.authenticated {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-indicator.not-authenticated {
+            background: #f56565;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Cookie Authentication Test</h1>
+        
+        <div class="section">
+            <h2>🌐 Server Configuration</h2>
+            <div class="form-group">
+                <label for="baseUrl">Base URL:</label>
+                <select id="baseUrl" onchange="updateBaseUrl()">
+                    <option value="http://localhost">localhost (Default)</option>
+                    <option value="http://127.0.0.1">127.0.0.1</option>
+                    <option value="http://host.docker.internal">Docker Desktop (Windows)</option>
+                </select>
+                <button onclick="testConnection()" class="info">Test Connection</button>
+                <span id="connectionStatus"></span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Debugging & Diagnostics</h2>
+            <div class="button-grid">
+                <button onclick="testAllServices()" class="warning">Test All Services</button>
+                <button onclick="debugAuth()" class="info">Debug Auth Flow</button>
+                <button onclick="checkCookies()" class="info">Check Cookies</button>
+                <button onclick="clearCookies()" class="danger">Clear All Cookies</button>
+            </div>
+            <div class="warning-box">
+                <strong>⚠️ Common Issues:</strong>
+                <ul>
+                    <li>Cookies don't work across different ports in some browsers</li>
+                    <li>Try different base URLs if localhost doesn't work</li>
+                    <li>Check if CORS headers allow credentials</li>
+                    <li>Verify that services are running and accessible</li>
+                </ul>
+            </div>
+            <div class="success-box">
+                <strong>💡 Windows Testing Tips:</strong>
+                <ul>
+                    <li><strong>Step 1:</strong> Click "Test All Services" to verify services are running</li>
+                    <li><strong>Step 2:</strong> Click "Debug Auth Flow" for detailed authentication testing</li>
+                    <li><strong>Step 3:</strong> If cookies don't work, try different base URLs</li>
+                    <li><strong>Alternative:</strong> Use the Python script in WSL/Linux for more reliable testing</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔐 Authentication</h2>
+            <div class="form-group">
+                <input type="text" id="alias" placeholder="Alias" value="middleware_test">
+                <input type="password" id="password" placeholder="Password" value="password123">
+                <button onclick="login()" class="success">Login</button>
+                <button onclick="verify()" class="info">Verify Auth</button>
+                <button onclick="logout()" class="danger">Logout</button>
+            </div>
+            <div id="authStatus" style="margin-top: 10px; padding: 10px; border-radius: 5px; background: #f7fafc;">
+                <strong>Status:</strong> 
+                <span id="statusText">Not authenticated</span>
+                <span id="statusIndicator" class="status-indicator not-authenticated">❌</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👤 User Service (Port 3003)</h2>
+            <div class="button-grid">
+                <button onclick="getUserProfile()" class="info">Get My Profile</button>
+                <button onclick="updateProfile()" class="warning">Update Profile</button>
+                <button onclick="getFriends()" class="success">Get Friends</button>
+                <button onclick="getHistory()" class="info">Get Match History</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚔️ Match Service (Port 3002)</h2>
+            <div class="button-grid">
+                <button onclick="createMatch()" class="success">Create Match</button>
+                <button onclick="getMatches()" class="info">Get Matches</button>
+                <button onclick="createTournament()" class="warning">Create Tournament</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔑 Auth Service (Port 3001)</h2>
+            <div class="button-grid">
+                <button onclick="register()" class="success">Register New User</button>
+                <button onclick="request2FA()" class="warning">Request 2FA</button>
+                <button onclick="enable2FA()" class="info">Enable 2FA</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Registration Form</h2>
+            <div class="form-group">
+                <input type="text" id="newAlias" placeholder="New Alias" value="test_user_new">
+                <input type="email" id="newEmail" placeholder="Email" value="test@example.com">
+                <input type="password" id="newPassword" placeholder="Password" value="password123">
+            </div>
+        </div>
+
+        <div class="section results-container">
+            <h2>📊 Results</h2>
+            <button onclick="clearResults()" class="clear-btn">Clear</button>
+            <pre id="result"></pre>
+        </div>
+    </div>
+
+    <script>
+        let BASE_URL = 'http://localhost';
+        const PORTS = {
+            auth: 3001,
+            match: 3002,
+            user: 3003
+        };
+
+        const log = (msg, status = 'info') => {
+            const timestamp = new Date().toLocaleTimeString();
+            const resultDiv = document.getElementById('result');
+            
+            const logEntry = `[${timestamp}] ${JSON.stringify(msg, null, 2)}\n\n`;
+            resultDiv.textContent += logEntry;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        const clearResults = () => {
+            document.getElementById('result').textContent = '';
+        }
+
+        const updateAuthStatus = (isAuthenticated) => {
+            const statusElement = document.getElementById('statusText');
+            const indicator = document.getElementById('statusIndicator');
+            
+            if (isAuthenticated) {
+                statusElement.textContent = 'Authenticated';
+                indicator.textContent = '✅';
+                indicator.className = 'status-indicator authenticated';
+            } else {
+                statusElement.textContent = 'Not authenticated';
+                indicator.textContent = '❌';
+                indicator.className = 'status-indicator not-authenticated';
+            }
+        }
+
+        const updateBaseUrl = () => {
+            BASE_URL = document.getElementById('baseUrl').value;
+            log({ action: 'BASE_URL_CHANGED', newBaseUrl: BASE_URL }, 'info');
+        }
+
+        const testConnection = async () => {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.innerHTML = ' <span style="color: orange;">Testing...</span>';
+            
+            try {
+                const response = await fetch(`${BASE_URL}:${PORTS.auth}/`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (response.ok || response.status === 404) {
+                    statusElement.innerHTML = ' <span style="color: green;">✅ Connected</span>';
+                    log({ action: 'CONNECTION_TEST', status: 'success', baseUrl: BASE_URL }, 'success');
+                } else {
+                    statusElement.innerHTML = ' <span style="color: red;">❌ Failed</span>';
+                    log({ action: 'CONNECTION_TEST', status: 'failed', baseUrl: BASE_URL, httpStatus: response.status }, 'error');
+                }
+            } catch (error) {
+                statusElement.innerHTML = ' <span style="color: red;">❌ Error</span>';
+                log({ action: 'CONNECTION_TEST', status: 'error', baseUrl: BASE_URL, error: error.message }, 'error');
+            }
+        }
+
+        const makeRequest = async (url, options = {}) => {
+            try {
+                log({ action: 'REQUEST_START', url, method: options.method || 'GET' }, 'pending');
+                
+                const response = await fetch(url, {
+                    ...options,
+                    credentials: 'include',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                const status = response.ok ? 'success' : 'error';
+                
+                log({ 
+                    action: 'REQUEST_COMPLETE',
+                    url, 
+                    status: response.status, 
+                    statusText: response.statusText,
+                    data,
+                    cookies: document.cookie || 'No cookies found'
+                }, status);
+                
+                return { response, data };
+            } catch (error) {
+                log({ 
+                    action: 'REQUEST_ERROR',
+                    url, 
+                    error: error.message,
+                    cookies: document.cookie || 'No cookies found'
+                }, 'error');
+                throw error;
+            }
+        }
+
+        const checkCookies = () => {
+            const cookies = document.cookie;
+            log({ 
+                action: 'CHECK_COOKIES',
+                cookies: cookies || 'No cookies found',
+                cookieCount: cookies ? cookies.split(';').length : 0,
+                domain: window.location.hostname,
+                protocol: window.location.protocol
+            }, 'info');
+        }
+
+        const clearCookies = () => {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            }
+            
+            log({ action: 'COOKIES_CLEARED', message: 'All cookies cleared' }, 'success');
+            updateAuthStatus(false);
+        }
+
+        // ===== DEBUGGING FUNCTIONS =====
+        async function testAllServices() {
+            log({ action: 'SERVICE_TEST_START', message: 'Testing all services availability...' }, 'pending');
+            
+            for (const [service, port] of Object.entries(PORTS)) {
+                try {
+                    const response = await fetch(`${BASE_URL}:${port}/`, {
+                        credentials: 'include'
+                    });
+                    
+                    log({
+                        action: 'SERVICE_TEST',
+                        service,
+                        port,
+                        status: response.status,
+                        available: response.ok || response.status === 404,
+                        url: `${BASE_URL}:${port}/`
+                    }, response.ok || response.status === 404 ? 'success' : 'error');
+                } catch (error) {
+                    log({
+                        action: 'SERVICE_TEST_ERROR',
+                        service,
+                        port,
+                        error: error.message,
+                        suggestion: `Make sure ${service} service is running on port ${port}`
+                    }, 'error');
+                }
+            }
+        }
+
+        async function debugAuth() {
+            log({ action: 'AUTH_DEBUG_START', message: 'Running complete auth debug...' }, 'pending');
+            
+            const alias = document.getElementById('alias').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Step 1: Login
+                const loginResponse = await fetch(`${BASE_URL}:${PORTS.auth}/auth/login`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alias, password })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                log({
+                    action: 'AUTH_DEBUG_LOGIN',
+                    status: loginResponse.status,
+                    data: loginData,
+                    cookiesAfterLogin: document.cookie || 'No cookies found'
+                }, loginResponse.ok ? 'success' : 'error');
+                
+                if (!loginResponse.ok) {
+                    log({ action: 'AUTH_DEBUG_FAILED', message: 'Login failed, stopping debug' }, 'error');
+                    return;
+                }
+                
+                // Step 2: Wait and check cookies
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                log({
+                    action: 'AUTH_DEBUG_COOKIES_CHECK',
+                    cookies: document.cookie || 'No cookies found'
+                }, 'info');
+                
+                // Step 3: Test verify
+                const verifyResponse = await fetch(`${BASE_URL}:${PORTS.auth}/auth/verify`, {
+                    credentials: 'include'
+                });
+                
+                const verifyData = await verifyResponse.json();
+                
+                log({
+                    action: 'AUTH_DEBUG_VERIFY',
+                    status: verifyResponse.status,
+                    data: verifyData
+                }, verifyResponse.ok ? 'success' : 'error');
+                
+                // Step 4: Test user service
+                const userResponse = await fetch(`${BASE_URL}:${PORTS.user}/users/me`, {
+                    credentials: 'include'
+                });
+                
+                const userData = await userResponse.json();
+                
+                log({
+                    action: 'AUTH_DEBUG_USER_SERVICE',
+                    status: userResponse.status,
+                    data: userData
+                }, userResponse.ok ? 'success' : 'error');
+                
+                updateAuthStatus(verifyResponse.ok && verifyData.authenticated);
+                
+            } catch (error) {
+                log({
+                    action: 'AUTH_DEBUG_ERROR',
+                    error: error.message
+                }, 'error');
+            }
+        }
+
+        // ===== AUTHENTICATION =====
+        async function login() {
+            const alias = document.getElementById('alias').value;
+            const password = document.getElementById('password').value;
+            
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ alias, password })
+            });
+            
+            if (result.response.ok) {
+                updateAuthStatus(true);
+                log({ action: 'LOGIN_SUCCESS', message: 'Successfully logged in!' }, 'success');
+            }
+        }
+
+        async function verify() {
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/verify`);
+            if (result.response.ok && result.data.authenticated) {
+                updateAuthStatus(true);
+            }
+        }
+
+        async function logout() {
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/logout`, {
+                method: 'POST'
+            });
+            if (result.response.ok) {
+                updateAuthStatus(false);
+            }
+        }
+
+        async function register() {
+            const alias = document.getElementById('newAlias').value;
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+            
+            await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ alias, email, password })
+            });
+        }
+
+        async function request2FA() {
+            const alias = document.getElementById('alias').value;
+            await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/2fa/request`, {
+                method: 'POST',
+                body: JSON.stringify({ alias })
+            });
+        }
+
+        async function enable2FA() {
+            await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/2fa/enable`, {
+                method: 'POST',
+                body: JSON.stringify({ alias: document.getElementById('alias').value })
+            });
+        }
+
+        // ===== USER SERVICE =====
+        async function getUserProfile() {
+            await makeRequest(`${BASE_URL}:${PORTS.user}/users/me`);
+        }
+
+        async function updateProfile() {
+            await makeRequest(`${BASE_URL}:${PORTS.user}/users/me`, {
+                method: 'PUT',
+                body: JSON.stringify({ display_name: 'Updated Name' })
+            });
+        }
+
+        async function getFriends() {
+            await makeRequest(`${BASE_URL}:${PORTS.user}/users/friends`);
+        }
+
+        async function getHistory() {
+            await makeRequest(`${BASE_URL}:${PORTS.user}/users/history`);
+        }
+
+        // ===== MATCH SERVICE =====
+        async function createMatch() {
+            const alias = document.getElementById('alias').value;
+            await makeRequest(`${BASE_URL}:${PORTS.match}/match/`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    players: [alias, 'opponent1', 'opponent2'] 
+                })
+            });
+        }
+
+        async function getMatches() {
+            await makeRequest(`${BASE_URL}:${PORTS.match}/match/list`);
+        }
+
+        async function createTournament() {
+            const alias = document.getElementById('alias').value;
+            await makeRequest(`${BASE_URL}:${PORTS.match}/match/tournament`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    players: [alias, 'player1', 'player2', 'player3'] 
+                })
+            });
+        }
+
+        // Initialize
+        window.onload = () => {
+            log({
+                message: '🚀 Cookie Authentication Test Ready!',
+                services: {
+                    auth: `${BASE_URL}:${PORTS.auth}`,
+                    match: `${BASE_URL}:${PORTS.match}`,
+                    user: `${BASE_URL}:${PORTS.user}`
+                },
+                instructions: [
+                    '1. First test connection and services',
+                    '2. Try "Debug Auth Flow" for complete testing',
+                    '3. If issues persist, try different base URLs'
+                ]
+            }, 'success');
+            
+            checkCookies();
+        }
+    </script>
+</body>
+</html>
