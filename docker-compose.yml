@@ -13,6 +13,7 @@ services:
       - MAIL_USER=${AUTH_MAIL_USER}
       - MAIL_PASS=${AUTH_MAIL_PASS}
       - JWT_SECRET=${JWT_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
     depends_on:
       - logstash
     logging:

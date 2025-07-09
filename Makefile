@@ -16,9 +16,12 @@ RESET             = \033[0m
 #                         TARGETS                              #
 #--------------------------------------------------------------#
 
-.PHONY: all up down build logs stop re setup fclean clean restart dev
+# Default target shows help
+.DEFAULT_GOAL := help
 
-all: build up
+.PHONY: all up down build logs stop re setup fclean clean restart dev help
+
+all: setup build up
 
 ## Development - only services, no ELK
 dev:
@@ -71,24 +74,48 @@ fclean: down
 
 re: fclean build up
 
+## Setup - Initialize environment with centralized .env
 setup:
 	@echo "$(CYAN)Setting up environment files...$(RESET)"
 	@if [ ! -f .env ]; then \
 		echo "$(YELLOW)Creating main .env file$(RESET)"; \
-		cp .env_sample .env; \
-		echo "$(GREEN)✅ Main .env created from .env_sample$(RESET)"; \
+		cp .env.sample .env; \
+		echo "$(GREEN)✅ Main .env created from .env.sample$(RESET)"; \
 		echo "$(YELLOW)⚠️  Please edit .env with your actual values$(RESET)"; \
+	else \
+		echo "$(GREEN)✅ Main .env already exists$(RESET)"; \
 	fi
+	@echo "$(CYAN)Creating data directories...$(RESET)"
 	@for svc in auth-service match-service user-service; do \
-		if [ ! -f services/$$svc/.env ]; then \
-			echo "$(YELLOW)Creating .env for $$svc$(RESET)"; \
-			mkdir -p services/$$svc/data; \
-			echo "JWT_SECRET=your_secret" > services/$$svc/.env; \
-			echo "AUTH_MAIL_USER=google-email" >> services/$$svc/.env; \
-			echo "AUTH_MAIL_PASS=app password" >> services/$$svc/.env; \
-			echo "AUTH_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
-			echo "USER_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
-			echo "MATCH_DB_PATH=./data/$$svc.db" >> services/$$svc/.env; \
-			echo "LOG_LEVEL=info" >> services/$$svc/.env; \
-		fi \
+		mkdir -p services/$$svc/data; \
+		echo "$(GREEN)✅ Created data directory for $$svc$(RESET)"; \
 	done
+	@echo "$(GREEN)🎉 Setup complete! All services will use the centralized .env file$(RESET)"
+
+## Help - Document all available commands
+help:
+	@echo "$(CYAN)🚀 ft_transcendence - Available Commands$(RESET)"
+	@echo ""
+	@echo "$(GREEN)📋 Main Commands:$(RESET)"
+	@echo "  $(YELLOW)make all$(RESET)      - Complete setup: environment + build + start all services"
+	@echo "  $(YELLOW)make setup$(RESET)    - Initialize environment with centralized .env file"
+	@echo "  $(YELLOW)make up$(RESET)       - Start full stack (all services + ELK logging)"
+	@echo "  $(YELLOW)make dev$(RESET)      - Start development environment (no ELK)"
+	@echo ""
+	@echo "$(GREEN)🔧 Development Commands:$(RESET)"
+	@echo "  $(YELLOW)make build$(RESET)    - Build all Docker images"
+	@echo "  $(YELLOW)make logs$(RESET)     - Show logs from all services"
+	@echo "  $(YELLOW)make restart$(RESET)  - Restart all services (down + build + up)"
+	@echo ""
+	@echo "$(GREEN)🧹 Cleanup Commands:$(RESET)"
+	@echo "  $(YELLOW)make down$(RESET)     - Stop all services"
+	@echo "  $(YELLOW)make clean$(RESET)    - Stop services + prune unused Docker objects"
+	@echo "  $(YELLOW)make fclean$(RESET)   - Complete cleanup (removes containers, volumes, data)"
+	@echo "  $(YELLOW)make re$(RESET)       - Fresh restart (fclean + build + up)"
+	@echo ""
+	@echo "$(GREEN)🔗 Service URLs (when running):$(RESET)"
+	@echo "  • Auth Service:  http://localhost:3001"
+	@echo "  • Match Service: http://localhost:3002"
+	@echo "  • User Service:  http://localhost:3003"
+	@echo "  • Kibana Logs:   http://localhost:5601"
+	@echo ""
