@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Enhanced Kibana setup script with better cross-platform compatibility
-# Handles interactive setup scenarios common in Arch Linux
-
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -11,7 +8,6 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 KIBANA_URL="http://localhost:5601"
-ELASTICSEARCH_URL="http://localhost:9200"
 
 # Function to check API response
 check_response() {
@@ -25,125 +21,19 @@ check_response() {
         echo -e "${YELLOW}⚠️  $object_name already exists${NC}"
     else
         echo -e "${RED}❌ Failed to create $object_name${NC}"
-        echo "Response: $response"
     fi
 }
 
-# Function to wait for Elasticsearch
-wait_for_elasticsearch() {
-    echo -e "${YELLOW}⏳ Waiting for Elasticsearch to be ready...${NC}"
-    timeout=300  # 5 minutes timeout
-    elapsed=0
-    
-    while [ $elapsed -lt $timeout ]; do
-        if curl -s "$ELASTICSEARCH_URL/_cluster/health" | grep -q '"status":"green\|yellow"'; then
-            echo -e "${GREEN}✅ Elasticsearch is ready!${NC}"
-            return 0
-        fi
-        sleep 2
-        elapsed=$((elapsed + 2))
-    done
-    
-    echo -e "${RED}❌ Timeout waiting for Elasticsearch${NC}"
-    return 1
-}
+echo -e "${CYAN}🔍 Setting up Kibana automatically...${NC}"
 
-# Function to handle Kibana setup
-setup_kibana() {
-    echo -e "${YELLOW}⏳ Setting up Kibana connection...${NC}"
-    
-    # Try to setup Kibana with Elasticsearch connection
-    SETUP_RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/interactive_setup/enroll" \
-        -H "Content-Type: application/json" \
-        -H "kbn-xsrf: true" \
-        -d '{
-            "hosts": ["http://elasticsearch:9200"]
-        }' 2>/dev/null)
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Kibana setup initiated${NC}"
-        return 0
-    else
-        echo -e "${YELLOW}⚠️  Standard setup failed, trying alternative method...${NC}"
-        
-        # Alternative: Try to verify connection
-        VERIFY_RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/interactive_setup/verify" \
-            -H "Content-Type: application/json" \
-            -H "kbn-xsrf: true" \
-            -d '{
-                "host": "http://elasticsearch:9200"
-            }' 2>/dev/null)
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}✅ Kibana connection verified${NC}"
-            return 0
-        fi
-    fi
-    
-    return 1
-}
+# Wait for Kibana
+echo -e "${YELLOW}⏳ Waiting for Kibana to initialize...${NC}"
+until curl -s "$KIBANA_URL/api/status" | grep -q '"level":"available"'; do
+  sleep 2
+done
+echo -e "${GREEN}✅ Kibana is ready!${NC}"
 
-# Function to wait for Kibana to be ready
-wait_for_kibana() {
-    echo -e "${YELLOW}⏳ Waiting for Kibana to initialize...${NC}"
-    timeout=300  # 5 minutes timeout
-    elapsed=0
-    setup_attempted=false
-    
-    while [ $elapsed -lt $timeout ]; do
-        # Check if Kibana is available
-        STATUS_RESPONSE=$(curl -s "$KIBANA_URL/api/status" 2>/dev/null)
-        
-        if echo "$STATUS_RESPONSE" | grep -q '"level":"available"'; then
-            echo -e "${GREEN}✅ Kibana is ready!${NC}"
-            return 0
-        fi
-        
-        # Check if Kibana requires interactive setup
-        if echo "$STATUS_RESPONSE" | grep -q '"level":"unavailable"' && [ "$setup_attempted" = false ]; then
-            echo -e "${YELLOW}⚠️  Kibana requires interactive setup. Attempting to configure...${NC}"
-            
-            if setup_kibana; then
-                setup_attempted=true
-                echo -e "${GREEN}✅ Setup completed, waiting for Kibana to start...${NC}"
-                sleep 10  # Give Kibana time to restart
-                continue
-            else
-                echo -e "${RED}❌ Failed to setup Kibana automatically${NC}"
-                echo -e "${YELLOW}Manual setup required. Please visit: $KIBANA_URL${NC}"
-                return 1
-            fi
-        fi
-        
-        # Check if we can access Kibana (might be ready but not reporting status correctly)
-        if curl -s "$KIBANA_URL/app/home" >/dev/null 2>&1; then
-            echo -e "${GREEN}✅ Kibana is accessible!${NC}"
-            return 0
-        fi
-        
-        sleep 2
-        elapsed=$((elapsed + 2))
-    done
-    
-    echo -e "${RED}❌ Timeout waiting for Kibana to be ready${NC}"
-    return 1
-}
-
-echo -e "${CYAN}🔍 Setting up Kibana automatically (Enhanced version)...${NC}"
-
-# Step 1: Wait for Elasticsearch
-if ! wait_for_elasticsearch; then
-    echo -e "${RED}❌ Elasticsearch is not ready. Cannot continue.${NC}"
-    exit 1
-fi
-
-# Step 2: Wait for Kibana and handle setup
-if ! wait_for_kibana; then
-    echo -e "${RED}❌ Kibana setup failed. Please check manually.${NC}"
-    exit 1
-fi
-
-# Step 3: Create index pattern
+# Create index pattern
 echo -e "${YELLOW}📋 Creating index pattern logstash-*...${NC}"
 RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/saved_objects/index-pattern/logstash-*" \
   -H "Content-Type: application/json" \
@@ -156,7 +46,7 @@ RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/saved_objects/index-pattern/logstash
   }')
 check_response "$RESPONSE" "Index pattern" '"id":"logstash-\*"'
 
-# Step 4: Set default index pattern
+# Set default index pattern
 echo -e "${YELLOW}🎯 Setting default index pattern...${NC}"
 curl -s -X POST "$KIBANA_URL/api/kibana/settings/defaultIndex" \
   -H "Content-Type: application/json" \
@@ -164,7 +54,7 @@ curl -s -X POST "$KIBANA_URL/api/kibana/settings/defaultIndex" \
   -d '{"value": "logstash-*"}' > /dev/null 2>&1
 echo -e "${GREEN}✅ Default index pattern set${NC}"
 
-# Step 5: Create visualizations
+# Create visualizations
 echo -e "${YELLOW}📊 Creating visualization: Logs by Service...${NC}"
 RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/saved_objects/visualization/logs-by-service" \
   -H "Content-Type: application/json" \
@@ -237,7 +127,7 @@ RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/saved_objects/visualization/total-lo
   }')
 check_response "$RESPONSE" "Total Logs visualization" '"id":"total-logs"'
 
-# Step 6: Create dashboard
+# Create dashboard
 echo -e "${YELLOW}📊 Creating main dashboard...${NC}"
 RESPONSE=$(curl -s -X POST "$KIBANA_URL/api/saved_objects/dashboard/elk-dashboard" \
   -H "Content-Type: application/json" \

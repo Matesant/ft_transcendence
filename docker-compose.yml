@@ -88,12 +88,7 @@ services:
     container_name: elk_kibana
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
-      - "xpack.security.encryptionKey=a-very-long-random-key-for-encrypting-sessions-32-chars"
-      - "xpack.reporting.encryptionKey=a-very-long-random-key-for-encrypting-reports-32-chars"
-      - xpack.security.enabled=false
-      - xpack.encryptedSavedObjects.enabled=true
     ports:
       - "5601:5601"                  
     depends_on:
