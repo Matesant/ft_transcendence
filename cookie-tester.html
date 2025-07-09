@@ -341,6 +341,26 @@
             </div>
 
             <div class="section">
+                <h2>📝 Registro de Usuário</h2>
+                <div class="form-group">
+                    <label for="newUsername">Novo Usuário:</label>
+                    <input type="text" id="newUsername" value="test_user_new" placeholder="Digite o novo usuário">
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email:</label>
+                    <input type="email" id="newEmail" value="test@example.com" placeholder="Digite o email">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Senha:</label>
+                    <input type="password" id="newPassword" value="password123" placeholder="Digite a senha">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="registerUser()">📝 Registrar Usuário</button>
+                    <button class="btn btn-warning" onclick="clearRegisterForm()">🧹 Limpar Formulário</button>
+                </div>
+            </div>
+
+            <div class="section">
                 <h2>🧪 Testes de Serviços</h2>
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="testUserService()">👤 Testar User Service</button>
@@ -537,6 +557,53 @@
             }
         }
 
+        async function registerUser() {
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+
+            if (!username || !email || !password) {
+                log('❌ Usuário, email e senha são obrigatórios para registro', 'error');
+                return;
+            }
+
+            // Validação básica de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                log('❌ Email inválido', 'error');
+                return;
+            }
+
+            log(`📝 Tentando registrar usuário: ${username} (${email})`, 'info');
+
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    alias: username, 
+                    email: email, 
+                    password: password 
+                })
+            });
+
+            if (result.response && result.response.ok) {
+                log('✅ Usuário registrado com sucesso!', 'success');
+                log('💡 Agora você pode fazer login com as credenciais criadas', 'info');
+                
+                // Opcional: preencher automaticamente o formulário de login
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = password;
+            } else if (result.response && result.response.status === 409) {
+                log('❌ Usuário ou email já existe', 'error');
+            }
+        }
+
+        function clearRegisterForm() {
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newEmail').value = '';
+            document.getElementById('newPassword').value = '';
+            log('🧹 Formulário de registro limpo', 'info');
+        }
+
         function updateAuthStatus(isAuthenticated) {
             const status = document.getElementById('auth-status');
             if (isAuthenticated) {
@@ -564,10 +631,42 @@
             // Primeiro testar conectividade
             await testConnectivity();
             
-            // Depois testar autenticação
-            await verifyAuth();
+            // Testar registro (opcional)
+            log('📝 Testando registro de usuário...', 'info');
+            const testUser = `test_${Date.now()}`;
+            const testEmail = `${testUser}@example.com`;
+            const testPassword = 'password123';
             
-            // Finalmente testar serviços
+            const registerResult = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    alias: testUser, 
+                    email: testEmail, 
+                    password: testPassword 
+                })
+            });
+            
+            if (registerResult.response && registerResult.response.ok) {
+                log('✅ Registro de teste bem-sucedido', 'success');
+                
+                // Testar login com usuário recém-criado
+                log('🔑 Testando login com usuário recém-criado...', 'info');
+                const loginResult = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/login`, {
+                    method: 'POST',
+                    body: JSON.stringify({ alias: testUser, password: testPassword })
+                });
+                
+                if (loginResult.response && loginResult.response.ok) {
+                    log('✅ Login com usuário recém-criado bem-sucedido', 'success');
+                    updateAuthStatus(true);
+                }
+            } else {
+                // Se o registro falhar, testar com usuário existente
+                log('⚠️ Registro falhou, testando com usuário existente...', 'warning');
+                await verifyAuth();
+            }
+            
+            // Testar serviços
             await testUserService();
             await testMatchService();
             

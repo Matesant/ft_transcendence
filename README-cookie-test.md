@@ -46,8 +46,14 @@ python3 -m http.server 8080
 
 ### 🔐 Autenticação
 - **Login**: Usar credenciais de teste (`middleware_test` / `password123`)
+- **Registro**: Criar novos usuários no sistema
 - **Verificação**: Confirma se o JWT está válido
 - **Logout**: Limpa a sessão
+
+### 📝 Registro de Usuários
+- **Formulário de registro**: Campos para alias, email e senha
+- **Validação**: Verificação básica de email e campos obrigatórios
+- **Auto-preenchimento**: Após registro, preenche automaticamente o formulário de login
 
 ### 🧪 Testes de Serviços
 - **User Service** (porta 3003): Testa endpoints de usuário
