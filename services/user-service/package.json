@@ -6,6 +6,7 @@
     "dev": "node src/index.js"
   },
   "dependencies": {
+    "@fastify/cookie": "^9.4.0",
     "@fastify/cors": "^8",
     "@fastify/jwt": "^6",
     "@fastify/multipart": "^7",

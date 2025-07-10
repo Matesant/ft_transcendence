@@ -1,0 +1,54 @@
+services:
+  auth-service:
+    container_name: auth-service
+    build: ./services/auth-service
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./services/auth-service/data:/app/data
+    env_file:
+      - ./.env
+    environment:
+      - DB_PATH=${AUTH_DB_PATH}
+      - MAIL_USER=${AUTH_MAIL_USER}
+      - MAIL_PASS=${AUTH_MAIL_PASS}
+      - JWT_SECRET=${JWT_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+    networks:
+      - backend
+
+  match-service:
+    container_name: match-service
+    build: ./services/match-service
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./services/match-service/data:/app/data
+    env_file:
+      - ./.env
+    environment:
+      - DB_PATH=${MATCH_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - backend
+
+  user-service:
+    container_name: user-service
+    build: ./services/user-service
+    ports:
+      - "3003:3000"
+    env_file:
+      - ./.env
+    environment:
+      - DB_PATH=${USER_DB_PATH}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./services/user-service/data:/app/data
+      - ./services/user-service/uploads:/app/uploads
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: backend
+    driver: bridge

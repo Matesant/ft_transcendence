@@ -13,18 +13,16 @@ services:
       - MAIL_USER=${AUTH_MAIL_USER}
       - MAIL_PASS=${AUTH_MAIL_PASS}
       - JWT_SECRET=${JWT_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "auth-service"
     networks:
       - backend
-      - monitoring
 
   match-service:
     container_name: match-service
@@ -40,16 +38,13 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "match-service"
     networks:
       - backend
-      - monitoring
 
   user-service:
     container_name: user-service
@@ -66,63 +61,70 @@ services:
       - ./services/user-service/uploads:/app/uploads
     depends_on:
       - logstash
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     logging:
       driver: "gelf"
       options:
-        gelf-address: "udp://172.18.0.4:12201"
+        gelf-address: "udp://127.0.0.1:12201"
         tag: "user-service"
     networks:
       - backend
-      - monitoring
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     container_name: elk_elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false   # desliga autenticação para facilitar o teste
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # Limita a memória JVM para 512MB
+      - xpack.security.enabled=false  
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" 
     ports:
-      - "9200:9200"                   # API REST do Elasticsearch
+      - "9200:9200"                  
     volumes:
       - esdata:/usr/share/elasticsearch/data
-    mem_limit: 1g                     # Limita o container para 1GB máximo
+    mem_limit: 1g                   
     networks:
       - backend
-      - monitoring
     
   kibana:
     image: docker.elastic.co/kibana/kibana:8.6.2
     container_name: elk_kibana
-    environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
+    restart: unless-stopped
     ports:
-      - "5601:5601"                   # interface web do Kibana
+      - "5601:5601"
     depends_on:
       - elasticsearch
-    mem_limit: 512m                   # Limita o container para 512MB máximo
+    mem_limit: 512m
     networks:
       - backend
-      - monitoring
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      SERVER_HOST: "0.0.0.0"
+      XPACK_SECURITY_ENABLED: "false"
+      XPACK_ENCRYPTED_SAVED_OBJECTS_ENCRYPTIONKEY: "a-very-long-random-key-for-encrypting-saved-objects-32-chars"
+      XPACK_REPORTING_ROLES_ENABLED: "false"
+      XPACK_REPORTING_KIBANASERVER_HOSTNAME: "localhost"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.6.2
     container_name: elk_logstash
+    hostname: logstash
     environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"  # Limita JVM do Logstash para 256MB
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - pipeline.batch.size=250
+      - pipeline.batch.delay=25
     ports:
-      - "12201:12201/udp"    # GELF input for Docker
+      - "12201:12201/udp"   
     volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./services/logs-service/pipeline:/usr/share/logstash/pipeline:ro
     depends_on:
       - elasticsearch
-    mem_limit: 512m                   # Limita o container para 512MB máximo
+    mem_limit: 512m                   
     networks:
       - backend
-      - monitoring
 
 volumes:
   esdata:
@@ -130,5 +132,4 @@ volumes:
 networks:
   backend:
     name: backend
-  monitoring:
-    name: monitoring
+    driver: bridge

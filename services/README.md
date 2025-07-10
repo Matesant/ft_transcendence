@@ -2,6 +2,19 @@
 
 Each service in this project has its own local README.
 
+## 🚀 Quick Start
+
+```bash
+# Start everything
+make up
+
+# Stop everything  
+make down
+
+# Clean restart
+make restart
+```
+
 ## Available Services
 
 | Service        | Description                         | Docs                                          |
@@ -9,8 +22,35 @@ Each service in this project has its own local README.
 | auth-service   | Handles registration and 2FA        | [auth-service/README.md](./auth-service/README.md)   |
 | match-service  | Manages tournament logic            | [match-service/README.md](./match-service/README.md) |
 | user-service   | Profiles, avatars, friends, history | [user-service/README.md](./user-service/README.md)   |
+| logs-service   | ELK stack for log monitoring        | [logs-service/README.md](./logs-service/README.md)   |
 
 ---
+
+## 🏗️ Architecture
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Auth        │    │ Match       │    │ User        │
+│ Service     │    │ Service     │    │ Service     │
+│ :3001       │    │ :3002       │    │ :3003       │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+       └──────────────────┼──────────────────┘
+                          │ GELF Logs
+                          ▼
+                 ┌─────────────┐
+                 │ Logs        │
+                 │ Service     │ ← Process/Transform
+                 │ ELK Stack   │   (Logstash:12201)
+                 └──────┬──────┘
+                        │
+                        ▼
+                 ┌─────────────┐    ┌─────────────┐
+                 │Elasticsearch│    │   Kibana    │
+                 │ :9200       │ ←→ │ :5601       │
+                 │ + ILM       │    │ + Dashboards│
+                 └─────────────┘    └─────────────┘
+```
 
 ## Service Communication
 
@@ -25,9 +65,15 @@ flowchart LR
   subgraph User
     U[user-service]
   end
+  subgraph Logs
+    L[logs-service<br/>ELK Stack]
+  end
 
   A -->|POST /users/sync| U
   M -->|POST /users/history| U
+  A -.->|GELF logs| L
+  M -.->|GELF logs| L
+  U -.->|GELF logs| L
 ```
 
 - **auth-service** ⟶ **user-service**  
@@ -52,7 +98,7 @@ flowchart LR
   { "alias":"loser", "opponent":"winner", "result":"loss", "date":"<ISO>" }
   ```
 
-JWT is required for all protected endpoints across services.
+Cookie-based authentication is used for all protected endpoints across services.
 
 ---
 
@@ -67,7 +113,7 @@ ft_transcendence/
 
 The environment variables include:
 - **Shared variables**: 
-  - `JWT_SECRET`: Shared secret key for JWT authentication
+  - `COOKIE_SECRET`: Shared secret key for cookie signing and session management
   - `LOG_LEVEL`: Logging level for all services (default: "info")
 
 - **Service-specific variables**:
@@ -102,3 +148,5 @@ Example log entry in Kibana:
 ```
 
 Each service provides a `/test-log` endpoint to verify log delivery to the ELK stack.
+
+---

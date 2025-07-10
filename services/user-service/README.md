@@ -14,11 +14,7 @@ http://localhost:3003/users
 
 ## Authentication
 
-All routes marked with 🔒 require the following header:
-
-```
-Authorization: Bearer <JWT>
-```
+All routes marked with 🔒 use cookie-based authentication. The authentication cookie is automatically sent with requests.
 
 ---
 
@@ -58,8 +54,7 @@ Returns the authenticated user's profile.
 **Request**
 
 ```bash
-curl -X GET http://localhost:3003/users/me \
-     -H "Authorization: Bearer <JWT>"
+curl -X GET http://localhost:3003/users/me
 ```
 
 **Response** (200 OK)
@@ -87,7 +82,6 @@ Updates the authenticated user's `display_name`.
 
 ```bash
 curl -X PATCH http://localhost:3003/users/me \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "display_name": "Alice Liddell" }'
 ```
@@ -114,8 +108,7 @@ Retrieves a public profile by alias, including the last 10 matches.
 **Request**
 
 ```bash
-curl -X GET http://localhost:3003/users/bob \
-     -H "Authorization: Bearer <JWT>"
+curl -X GET http://localhost:3003/users/bob
 ```
 
 **Response** (200 OK)
@@ -148,7 +141,6 @@ Uploads a JPG or PNG avatar image and updates the user's avatar.
 
 ```bash
 curl -X POST http://localhost:3003/users/avatar \
-     -H "Authorization: Bearer <JWT>" \
      -F "file=@/path/to/avatar.png"
 ```
 
@@ -176,7 +168,6 @@ Sets an existing uploaded avatar by filename.
 
 ```bash
 curl -X PATCH http://localhost:3003/users/avatar \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "avatar": "alice-1618033988.png" }'
 ```
@@ -229,7 +220,6 @@ Sends a friendship request to another user.
 
 ```bash
 curl -X POST http://localhost:3003/users/friends/add \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "friend": "bob" }'
 ```
@@ -255,7 +245,6 @@ Accepts a pending friend request.
 
 ```bash
 curl -X POST http://localhost:3003/users/friends/accept \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "from": "bob" }'
 ```
@@ -281,7 +270,6 @@ Rejects a pending friend request.
 
 ```bash
 curl -X POST http://localhost:3003/users/friends/reject \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "from": "bob" }'
 ```
@@ -307,7 +295,6 @@ Removes an existing friendship.
 
 ```bash
 curl -X POST http://localhost:3003/users/friends/remove \
-     -H "Authorization: Bearer <JWT>" \
      -H "Content-Type: application/json" \
      -d '{ "friend": "bob" }'
 ```
@@ -333,7 +320,6 @@ Lists all friends (both pending and accepted).
 
 ```bash
 curl -X GET http://localhost:3003/users/friends \
-     -H "Authorization: Bearer <JWT>"
 ```
 
 **Response** (200 OK)
@@ -359,7 +345,6 @@ Lists incoming friend requests that are not yet accepted.
 
 ```bash
 curl -X GET http://localhost:3003/users/friends/pending \
-     -H "Authorization: Bearer <JWT>"
 ```
 
 **Response** (200 OK)
@@ -414,7 +399,6 @@ Retrieves the authenticated user's complete match history, sorted from newest to
 
 ```bash
 curl -X GET http://localhost:3003/users/history \
-     -H "Authorization: Bearer <JWT>"
 ```
 
 **Response** (200 OK)

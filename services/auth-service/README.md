@@ -7,11 +7,8 @@ Handles user registration, login, and two-factor authentication (2FA).
 http://localhost:3001/auth
 ```
 
-## Authentication Header
-All protected routes require:
-```
-Authorization: Bearer <JWT>
-```
+## Authentication
+All protected routes use cookie-based authentication. The authentication cookie is automatically set after successful login and sent with subsequent requests.
 
 ---
 
@@ -48,7 +45,7 @@ Content-Type: application/json
 
 **Response (2FA off) 200**
 ```json
-{ "token": "eyJ...XYZ" }
+{ "success": true, "message": "Login successful. Cookie set." }
 ```
 
 **Response (2FA on) 200**
@@ -77,7 +74,7 @@ Content-Type: application/json
 ---
 
 ### 4. POST /auth/2fa/verify 🔐
-Verify the one-time code and receive JWT.
+Verify the one-time code and set authentication cookie.
 
 **Request**
 ```http
@@ -89,7 +86,7 @@ Content-Type: application/json
 
 **Response 200**
 ```json
-{ "token": "eyJ...ABC" }
+{ "success": true, "message": "2FA verification successful. Cookie set." }
 ```
 
 ---
@@ -100,7 +97,6 @@ Enable 2FA for the logged-in user.
 **Request**
 ```http
 POST /auth/2fa/enable
-Authorization: Bearer <JWT>
 Content-Type: application/json
 
 { "alias": "john" }
@@ -119,7 +115,6 @@ Disable 2FA for the logged-in user.
 **Request**
 ```http
 POST /auth/2fa/disable
-Authorization: Bearer <JWT>
 Content-Type: application/json
 
 { "alias": "john" }

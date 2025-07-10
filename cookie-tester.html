@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍪 Testador de Cookies - ft_transcendence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4299e1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-bar {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-ok {
+            color: #48bb78;
+        }
+
+        .status-error {
+            color: #f56565;
+        }
+
+        .status-warning {
+            color: #ed8936;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        .log-container {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-timestamp {
+            color: #a0aec0;
+            font-size: 11px;
+        }
+
+        .log-success {
+            color: #48bb78;
+        }
+
+        .log-error {
+            color: #f56565;
+        }
+
+        .log-warning {
+            color: #ed8936;
+        }
+
+        .log-info {
+            color: #4299e1;
+        }
+
+        .clear-log {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #718096;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .instructions {
+            background: #e6fffa;
+            border: 2px solid #81e6d9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .instructions h3 {
+            color: #2c7a7b;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            color: #2d3748;
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .instructions code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍪 Testador de Cookies</h1>
+            <p>Teste de autenticação JWT com cookies para ft_transcendence</p>
+        </div>
+
+        <div class="content">
+            <div class="instructions">
+                <h3>📋 Como usar este testador:</h3>
+                <ol>
+                    <li>Abra um terminal e navegue até o diretório do projeto</li>
+                    <li>Execute: <code>python3 serve_cookie_test_debian.py</code></li>
+                    <li>O navegador abrirá automaticamente nesta página</li>
+                    <li>Verifique se os serviços estão rodando (botão "Testar Conectividade")</li>
+                    <li>Faça login com as credenciais de teste</li>
+                    <li>Teste as funcionalidades dos serviços</li>
+                </ol>
+            </div>
+
+            <div class="section">
+                <h2>📊 Status do Sistema</h2>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span>🔗 Conectividade:</span>
+                        <span id="connectivity-status" class="status-warning">Não testado</span>
+                    </div>
+                    <div class="status-item">
+                        <span>🔐 Autenticação:</span>
+                        <span id="auth-status" class="status-error">Não autenticado</span>
+                    </div>
+                    <div class="status-item">
+                        <span>🍪 Cookies:</span>
+                        <span id="cookie-status" class="status-warning">Verificando...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>🌐 Protocolo:</span>
+                        <span id="protocol-status" class="status-ok">HTTP (OK)</span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testConnectivity()">🔗 Testar Conectividade</button>
+                    <button class="btn btn-warning" onclick="checkCookies()">🍪 Verificar Cookies</button>
+                    <button class="btn btn-danger" onclick="clearAllCookies()">🗑️ Limpar Cookies</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔐 Autenticação</h2>
+                <div class="form-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" value="middleware_test" placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" value="password123" placeholder="Digite sua senha">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="login()">🔑 Fazer Login</button>
+                    <button class="btn btn-primary" onclick="verifyAuth()">✅ Verificar Autenticação</button>
+                    <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📝 Registro de Usuário</h2>
+                <div class="form-group">
+                    <label for="newUsername">Novo Usuário:</label>
+                    <input type="text" id="newUsername" value="test_user_new" placeholder="Digite o novo usuário">
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email:</label>
+                    <input type="email" id="newEmail" value="test@example.com" placeholder="Digite o email">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Senha:</label>
+                    <input type="password" id="newPassword" value="password123" placeholder="Digite a senha">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="registerUser()">📝 Registrar Usuário</button>
+                    <button class="btn btn-warning" onclick="clearRegisterForm()">🧹 Limpar Formulário</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🧪 Testes de Serviços</h2>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testUserService()">👤 Testar User Service</button>
+                    <button class="btn btn-warning" onclick="testMatchService()">⚔️ Testar Match Service</button>
+                    <button class="btn btn-success" onclick="testAllServices()">🔍 Teste Completo</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📝 Log de Atividades</h2>
+                <div class="log-container">
+                    <button class="clear-log" onclick="clearLog()">Limpar</button>
+                    <div id="log-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const BASE_URL = 'http://localhost';
+        const PORTS = {
+            auth: 3001,
+            user: 3003,
+            match: 3002
+        };
+
+        // Função para logging
+        function log(message, type = 'info') {
+            const logContent = document.getElementById('log-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            logEntry.innerHTML = `
+                <div class="log-timestamp">[${timestamp}]</div>
+                <div>${typeof message === 'object' ? JSON.stringify(message, null, 2) : message}</div>
+            `;
+            
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log-content').innerHTML = '';
+        }
+
+        // Função para fazer requisições
+        async function makeRequest(url, options = {}) {
+            try {
+                log(`🔄 Requisição para: ${url}`, 'info');
+                
+                const response = await fetch(url, {
+                    ...options,
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Sucesso: ${response.status} - ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ Erro: ${response.status} - ${JSON.stringify(data)}`, 'error');
+                }
+
+                return { response, data };
+            } catch (error) {
+                log(`💥 Erro de conexão: ${error.message}`, 'error');
+                return { error };
+            }
+        }
+
+        // Funções de teste
+        async function testConnectivity() {
+            log('🔍 Testando conectividade dos serviços...', 'info');
+            let allOk = true;
+
+            for (const [service, port] of Object.entries(PORTS)) {
+                try {
+                    const response = await fetch(`${BASE_URL}:${port}/`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok || response.status === 404) {
+                        log(`✅ ${service.toUpperCase()} (${port}): Conectado`, 'success');
+                    } else {
+                        log(`⚠️ ${service.toUpperCase()} (${port}): Status ${response.status}`, 'warning');
+                        allOk = false;
+                    }
+                } catch (error) {
+                    log(`❌ ${service.toUpperCase()} (${port}): Erro de conexão`, 'error');
+                    allOk = false;
+                }
+            }
+
+            const status = document.getElementById('connectivity-status');
+            if (allOk) {
+                status.textContent = 'Todos os serviços OK';
+                status.className = 'status-ok';
+            } else {
+                status.textContent = 'Alguns serviços com problema';
+                status.className = 'status-error';
+            }
+        }
+
+        async function checkCookies() {
+            const cookies = document.cookie;
+            const cookieCount = cookies ? cookies.split(';').length : 0;
+            
+            log(`🍪 Cookies encontrados: ${cookieCount}`, 'info');
+            if (cookies) {
+                log(`📋 Cookies: ${cookies}`, 'info');
+            } else {
+                log('⚠️ Nenhum cookie encontrado', 'warning');
+            }
+
+            const status = document.getElementById('cookie-status');
+            if (cookieCount > 0) {
+                status.textContent = `${cookieCount} cookie(s) encontrado(s)`;
+                status.className = 'status-ok';
+            } else {
+                status.textContent = 'Nenhum cookie';
+                status.className = 'status-warning';
+            }
+
+            // Verificar protocolo
+            const protocol = window.location.protocol;
+            const protocolStatus = document.getElementById('protocol-status');
+            if (protocol === 'http:') {
+                protocolStatus.textContent = 'HTTP (OK para cookies)';
+                protocolStatus.className = 'status-ok';
+            } else {
+                protocolStatus.textContent = 'file:// (Cookies não funcionam)';
+                protocolStatus.className = 'status-error';
+            }
+        }
+
+        function clearAllCookies() {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            }
+            
+            log('🗑️ Todos os cookies foram limpos', 'success');
+            updateAuthStatus(false);
+            checkCookies();
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                log('❌ Usuário e senha são obrigatórios', 'error');
+                return;
+            }
+
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ alias: username, password })
+            });
+
+            if (result.response && result.response.ok) {
+                updateAuthStatus(true);
+                checkCookies();
+            }
+        }
+
+        async function verifyAuth() {
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/verify`);
+            
+            if (result.response && result.response.ok && result.data.authenticated) {
+                updateAuthStatus(true);
+            } else {
+                updateAuthStatus(false);
+            }
+        }
+
+        async function logout() {
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/logout`, {
+                method: 'POST'
+            });
+
+            if (result.response && result.response.ok) {
+                updateAuthStatus(false);
+                checkCookies();
+            }
+        }
+
+        async function registerUser() {
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+
+            if (!username || !email || !password) {
+                log('❌ Usuário, email e senha são obrigatórios para registro', 'error');
+                return;
+            }
+
+            // Validação básica de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                log('❌ Email inválido', 'error');
+                return;
+            }
+
+            log(`📝 Tentando registrar usuário: ${username} (${email})`, 'info');
+
+            const result = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    alias: username, 
+                    email: email, 
+                    password: password 
+                })
+            });
+
+            if (result.response && result.response.ok) {
+                log('✅ Usuário registrado com sucesso!', 'success');
+                log('💡 Agora você pode fazer login com as credenciais criadas', 'info');
+                
+                // Opcional: preencher automaticamente o formulário de login
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = password;
+            } else if (result.response && result.response.status === 409) {
+                log('❌ Usuário ou email já existe', 'error');
+            }
+        }
+
+        function clearRegisterForm() {
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newEmail').value = '';
+            document.getElementById('newPassword').value = '';
+            log('🧹 Formulário de registro limpo', 'info');
+        }
+
+        function updateAuthStatus(isAuthenticated) {
+            const status = document.getElementById('auth-status');
+            if (isAuthenticated) {
+                status.textContent = 'Autenticado';
+                status.className = 'status-ok';
+            } else {
+                status.textContent = 'Não autenticado';
+                status.className = 'status-error';
+            }
+        }
+
+        async function testUserService() {
+            log('👤 Testando User Service...', 'info');
+            await makeRequest(`${BASE_URL}:${PORTS.user}/users/me`);
+        }
+
+        async function testMatchService() {
+            log('⚔️ Testando Match Service...', 'info');
+            await makeRequest(`${BASE_URL}:${PORTS.match}/match/list`);
+        }
+
+        async function testAllServices() {
+            log('🔍 Iniciando teste completo...', 'info');
+            
+            // Primeiro testar conectividade
+            await testConnectivity();
+            
+            // Testar registro (opcional)
+            log('📝 Testando registro de usuário...', 'info');
+            const testUser = `test_${Date.now()}`;
+            const testEmail = `${testUser}@example.com`;
+            const testPassword = 'password123';
+            
+            const registerResult = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    alias: testUser, 
+                    email: testEmail, 
+                    password: testPassword 
+                })
+            });
+            
+            if (registerResult.response && registerResult.response.ok) {
+                log('✅ Registro de teste bem-sucedido', 'success');
+                
+                // Testar login com usuário recém-criado
+                log('🔑 Testando login com usuário recém-criado...', 'info');
+                const loginResult = await makeRequest(`${BASE_URL}:${PORTS.auth}/auth/login`, {
+                    method: 'POST',
+                    body: JSON.stringify({ alias: testUser, password: testPassword })
+                });
+                
+                if (loginResult.response && loginResult.response.ok) {
+                    log('✅ Login com usuário recém-criado bem-sucedido', 'success');
+                    updateAuthStatus(true);
+                }
+            } else {
+                // Se o registro falhar, testar com usuário existente
+                log('⚠️ Registro falhou, testando com usuário existente...', 'warning');
+                await verifyAuth();
+            }
+            
+            // Testar serviços
+            await testUserService();
+            await testMatchService();
+            
+            log('✅ Teste completo finalizado!', 'success');
+        }
+
+        // Inicialização
+        window.onload = function() {
+            log('🚀 Cookie Tester iniciado!', 'success');
+            log('💡 Certifique-se de que os serviços estão rodando', 'info');
+            
+            checkCookies();
+            
+            // Verificar se estamos em HTTP
+            if (window.location.protocol === 'file:') {
+                log('⚠️ AVISO: Você está acessando via file://. Cookies não funcionarão!', 'warning');
+                log('💡 Use o script Python para servir via HTTP: python3 serve_cookie_test_debian.py', 'warning');
+            }
+        };
+    </script>
+</body>
+</html>
