@@ -87,16 +87,26 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:8.6.2
     container_name: elk_kibana
-    environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - "xpack.encryptedSavedObjects.encryptionKey=a-very-long-random-key-for-encrypting-saved-objects-32-chars"
+    restart: unless-stopped
     ports:
-      - "5601:5601"                  
+      - "5601:5601"
     depends_on:
       - elasticsearch
-    mem_limit: 512m                  
+    mem_limit: 512m
     networks:
       - backend
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      SERVER_HOST: "0.0.0.0"
+      XPACK_SECURITY_ENABLED: "false"
+      XPACK_ENCRYPTED_SAVED_OBJECTS_ENCRYPTIONKEY: "a-very-long-random-key-for-encrypting-saved-objects-32-chars"
+      XPACK_REPORTING_ROLES_ENABLED: "false"
+      XPACK_REPORTING_KIBANASERVER_HOSTNAME: "localhost"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.6.2
