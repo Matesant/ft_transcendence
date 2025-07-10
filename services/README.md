@@ -98,7 +98,7 @@ flowchart LR
   { "alias":"loser", "opponent":"winner", "result":"loss", "date":"<ISO>" }
   ```
 
-JWT is required for all protected endpoints across services.
+Cookie-based authentication is used for all protected endpoints across services.
 
 ---
 
@@ -113,7 +113,7 @@ ft_transcendence/
 
 The environment variables include:
 - **Shared variables**: 
-  - `JWT_SECRET`: Shared secret key for JWT authentication
+  - `COOKIE_SECRET`: Shared secret key for cookie signing and session management
   - `LOG_LEVEL`: Logging level for all services (default: "info")
 
 - **Service-specific variables**:
