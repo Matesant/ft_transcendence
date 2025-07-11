@@ -5,7 +5,6 @@ export default async function (fastify, opts) {
 	fastify.post('/', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 		const players = [...request.body.players]; // creates safe copy
 		const { alias } = request.user;
-		request.log.info({ action: 'match_setup_attempt', organizer: alias, player_count: players.length }, 'User attempting to setup matches')
 		
 		// Shuffle players array
 		for (let i = players.length - 1; i > 0; i--) {
@@ -14,7 +13,6 @@ export default async function (fastify, opts) {
 		}
 
 		if (!Array.isArray(players) || players.length < 2) {
-			request.log.warn({ action: 'match_setup_failed', organizer: alias, reason: 'invalid_players_array', player_count: players?.length || 0 }, 'Invalid players array')
 			return badRequest(reply, 'Field "players" must be an array with at least 2 items.', 'Example: { "players": ["ana", "lucas"] }');
 		}
 
@@ -41,10 +39,8 @@ export default async function (fastify, opts) {
 				matches.push({ wo });
 			}
 
-			request.log.info({ action: 'match_setup_success', organizer: alias, matches_created: matches.length, player_count: players.length }, 'Match setup completed successfully')
 			return { matches };
 		} catch (err) {
-			request.log.error({ action: 'match_setup_failed', organizer: alias, error: err.message }, 'Failed to setup matches')
 			return reply.status(500).send({ error: 'Failed to setup matches' })
 		}
 	});

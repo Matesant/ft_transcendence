@@ -10,20 +10,14 @@ import crypto from 'node:crypto'
 
 dotenv.config()
 
-// 1) Configure Fastify logger
+// 1) Configure Fastify
 const fastify = Fastify({
-	logger: {
-		level: process.env.LOG_LEVEL || 'info'
-	},
-	disableRequestLogging: true
+	logger: false
 })
 
-// 2) Hook to generate request_id and make it available in request.log
 fastify.addHook('onRequest', async (request, reply) => {
   const reqId = request.headers['x-request-id'] || crypto.randomUUID()
-  // Create a child logger with the request_id
   request.id = reqId
-  request.log = request.log.child({ request_id: reqId })
 })
 
 // 3) JWT Auth decorator
@@ -37,7 +31,6 @@ fastify.decorate("authenticate", async function (request, reply) {
     const decoded = fastify.jwt.verify(token)
     request.user = decoded
   } catch (err) {
-    request.log.warn({ error: err.message }, 'Authentication failed')
     return reply.status(401).send({ error: 'Invalid authentication token' })
   }
 })
@@ -63,7 +56,6 @@ await fastify.register(playersRoutes, { prefix: '/players' })
 
 // 7) Global Error Handler
 fastify.setErrorHandler((error, request, reply) => {
-  request.log.error({ stack: error.stack, message: error.message }, 'Error caught')
   reply.status(error.statusCode || 500).send({
     status: error.statusCode || 500,
     error: error.name || 'InternalServerError',

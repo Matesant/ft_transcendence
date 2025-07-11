@@ -3,7 +3,6 @@ import { send2FACode } from '../utils/mailer.js'
 
 export default async function (fastify, opts) {
   fastify.post('/register', async (request, reply) => {
-    request.log.info({ action: 'register_attempt', alias: request.body.alias }, 'User registration attempt')
     const { alias, password, email } = request.body
 
     if (!alias || !password || !email) {
@@ -22,22 +21,18 @@ export default async function (fastify, opts) {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ alias })
 		})
-		request.log.info({ action: 'register_success', alias, email }, 'User registration successful')
 		return { success: true, alias }
     } catch (err) {
-      request.log.error({ action: 'register_failed', alias, email, error: err.message }, 'User registration failed')
       return reply.status(409).send({ error: 'Alias or email already exists' })
     }
   })
 
   fastify.post('/2fa/request', async (request, reply) => {
     const { alias } = request.body
-    request.log.info({ action: '2fa_request_attempt', alias }, 'User requesting 2FA code')
     
     const player = await fastify.db.get('SELECT * FROM players WHERE alias = ?', [alias])
 
     if (!player) {
-      request.log.warn({ action: '2fa_request_failed', alias, reason: 'invalid_alias' }, 'Invalid alias for 2FA request')
       return reply.status(401).send({ error: 'Invalid alias' })
     }
 
@@ -51,17 +46,14 @@ export default async function (fastify, opts) {
 
     try {
       await send2FACode(player.email, code)
-      request.log.info({ action: '2fa_code_sent', alias, email: player.email }, '2FA code sent successfully')
       return { success: true, message: 'Code sent by email' }
     } catch (err) {
-      request.log.error({ action: '2fa_code_send_failed', alias, error: err.message }, 'Failed to send 2FA code')
       return reply.status(500).send({ error: 'Error sending authentication code' })
     }
   })
 
   fastify.post('/2fa/verify', async (request, reply) => {
     const { alias, code } = request.body
-    request.log.info({ action: '2fa_verify_attempt', alias }, 'User attempting 2FA verification')
 
     const record = await fastify.db.get(
       'SELECT * FROM two_factor_codes WHERE alias = ? AND code = ? ORDER BY created_at DESC LIMIT 1',
@@ -69,7 +61,6 @@ export default async function (fastify, opts) {
     )
 
     if (!record || new Date(record.expires_at) < new Date()) {
-      request.log.warn({ action: '2fa_verify_failed', alias, reason: 'invalid_or_expired_code' }, 'Invalid or expired 2FA code')
       return reply.status(401).send({ error: 'Invalid or expired code' })
     }
 
@@ -86,16 +77,13 @@ export default async function (fastify, opts) {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     })
 
-    request.log.info({ action: '2fa_verify_success', alias, player_id: player.id }, '2FA verification successful')
     return { success: true, message: 'Authentication successful' }
   })
 
 	fastify.post('/login', async (request, reply) => {
 		const { alias, password } = request.body
-		request.log.info({ action: 'login_attempt', alias }, 'User login attempt')
 		
 		if (!alias || !password) {
-			request.log.warn({ action: 'login_failed', alias, reason: 'missing_credentials' }, 'Login failed: missing credentials')
 			return reply.status(400).send({ error: 'Alias and password are required' })
 		}
 
@@ -105,19 +93,16 @@ export default async function (fastify, opts) {
 		)
 
 		if (!player) {
-			request.log.warn({ action: 'login_failed', alias, reason: 'invalid_alias' }, 'Login failed: invalid alias')
 			return reply.status(401).send({ error: 'Invalid alias or password' })
 		}
 
 		if (player.is_2fa_enabled) {
-			request.log.info({ action: 'login_2fa_required', alias, player_id: player.id }, 'Login requires 2FA')
 			return { require2FA: true, message: '2FA required' }
 		}
 
 		const match = await bcrypt.compare(password, player.password)
 
 		if (!match) {
-			request.log.warn({ action: 'login_failed', alias, reason: 'invalid_password' }, 'Login failed: invalid password')
 			return reply.status(401).send({ error: 'Invalid alias or password' })
 		}
 
@@ -131,16 +116,13 @@ export default async function (fastify, opts) {
 			maxAge: 24 * 60 * 60 * 1000 // 24 hours
 		})
 
-		request.log.info({ action: 'login_success', alias, player_id: player.id }, 'User login successful')
 		return { success: true, message: 'Login successful' }
   })
 
     fastify.post('/2fa/enable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	  const { alias } = request.body
-	  request.log.info({ action: '2fa_enable_attempt', alias, user_alias: request.user.alias }, 'User attempting to enable 2FA')
 
 	  if (request.user.alias !== alias) {
-		request.log.warn({ action: '2fa_enable_failed', alias, user_alias: request.user.alias, reason: 'unauthorized' }, 'Unauthorized 2FA enable attempt')
 		return reply.status(403).send({ error: 'Not authorized' })
 	}
 
@@ -149,17 +131,14 @@ export default async function (fastify, opts) {
 		[alias]
 	)
 
-	  request.log.info({ action: '2fa_enable_success', alias }, '2FA enabled successfully')
 	  return { success: true, message: '2FA enabled successfully.' }
 	})
 
 
 	fastify.post('/2fa/disable', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	const { alias } = request.body
-	request.log.info({ action: '2fa_disable_attempt', alias, user_alias: request.user.alias }, 'User attempting to disable 2FA')
 
 	if (request.user.alias !== alias) {
-		request.log.warn({ action: '2fa_disable_failed', alias, user_alias: request.user.alias, reason: 'unauthorized' }, 'Unauthorized 2FA disable attempt')
 		return reply.status(403).send({ error: 'Not authorized' })
 	}
 
@@ -168,31 +147,26 @@ export default async function (fastify, opts) {
 		[alias]
 	)
 	
-	request.log.info({ action: '2fa_disable_success', alias }, '2FA disabled successfully')
 	return { success: true, message: '2FA disabled successfully.' }
 	})
 
 	fastify.patch('/update-credentials', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 	const { alias } = request.user
 	const { currentPassword, newPassword, newEmail } = request.body
-	request.log.info({ action: 'update_credentials_attempt', alias, has_new_password: !!newPassword, has_new_email: !!newEmail }, 'User attempting to update credentials')
 
 	if (!currentPassword) {
-		request.log.warn({ action: 'update_credentials_failed', alias, reason: 'missing_current_password' }, 'Missing current password')
 		return reply.status(400).send({ error: 'Current password is required' })
 	}
 
 	// Busca usuário
 	const player = await fastify.db.get('SELECT * FROM players WHERE alias = ?', [alias])
 	if (!player) {
-		request.log.error({ action: 'update_credentials_failed', alias, reason: 'user_not_found' }, 'User not found during credential update')
 		return reply.status(404).send({ error: 'User not found' })
 	}
 
 	// Confirma senha atual
 	const isValid = await bcrypt.compare(currentPassword, player.password)
 	if (!isValid) {
-		request.log.warn({ action: 'update_credentials_failed', alias, reason: 'invalid_current_password' }, 'Invalid current password')
 		return reply.status(401).send({ error: 'Invalid current password' })
 	}
 
@@ -202,7 +176,6 @@ export default async function (fastify, opts) {
 
 	if (newPassword) {
 		if (newPassword.length < 4) {
-			request.log.warn({ action: 'update_credentials_failed', alias, reason: 'password_too_short' }, 'New password too short')
 			return reply.status(400).send({ error: 'New password is too short' })
 		}
 		const hashed = await bcrypt.hash(newPassword, 10)
@@ -212,7 +185,6 @@ export default async function (fastify, opts) {
 
 	if (newEmail) {
 		if (!newEmail.includes('@')) {
-			request.log.warn({ action: 'update_credentials_failed', alias, reason: 'invalid_email' }, 'Invalid email format')
 			return reply.status(400).send({ error: 'Invalid email' })
 		}
 		updates.push('email = ?')
@@ -220,7 +192,6 @@ export default async function (fastify, opts) {
 	}
 
 	if (updates.length === 0) {
-		request.log.warn({ action: 'update_credentials_failed', alias, reason: 'no_fields_to_update' }, 'No fields to update')
 		return reply.status(400).send({ error: 'No fields to update' })
 	}
 
@@ -232,16 +203,13 @@ export default async function (fastify, opts) {
 		values
 	)
 
-	request.log.info({ action: 'update_credentials_success', alias, updated_fields: updates.map(u => u.split(' ')[0]) }, 'Credentials updated successfully')
 	return { success: true, message: 'Credentials updated' }
 	})
 
 	fastify.get('/verify', async (request, reply) => {
 		const token = request.cookies.authToken
-		request.log.info({ action: 'verify_attempt', has_token: !!token }, 'User attempting to verify authentication')
 		
 		if (!token) {
-			request.log.warn({ action: 'verify_failed', reason: 'no_token' }, 'No auth token provided')
 			return reply.status(401).send({ authenticated: false, error: 'No authentication token' })
 		}
 
@@ -250,11 +218,9 @@ export default async function (fastify, opts) {
 			const player = await fastify.db.get('SELECT id, alias, email, is_2fa_enabled FROM players WHERE alias = ?', [decoded.alias])
 			
 			if (!player) {
-				request.log.warn({ action: 'verify_failed', alias: decoded.alias, reason: 'user_not_found' }, 'User not found during verification')
 				return reply.status(401).send({ authenticated: false, error: 'User not found' })
 			}
 
-			request.log.info({ action: 'verify_success', alias: decoded.alias, player_id: player.id }, 'Authentication verification successful')
 			return { 
 				authenticated: true, 
 				user: { 
@@ -265,7 +231,6 @@ export default async function (fastify, opts) {
 				} 
 			}
 		} catch (err) {
-			request.log.warn({ action: 'verify_failed', reason: 'invalid_token', error: err.message }, 'Invalid token during verification')
 			return reply.status(401).send({ authenticated: false, error: 'Invalid token' })
 		}
 	})
@@ -280,7 +245,6 @@ export default async function (fastify, opts) {
 			}
 		})() : 'unknown'
 		
-		request.log.info({ action: 'logout_attempt', alias }, 'User attempting to logout')
 		
 		reply.clearCookie('authToken', {
 			httpOnly: true,
@@ -289,7 +253,6 @@ export default async function (fastify, opts) {
 			path: '/'
 		})
 		
-		request.log.info({ action: 'logout_success', alias }, 'User logout successful')
 		return { success: true, message: 'Logged out successfully' }
 	})
 
