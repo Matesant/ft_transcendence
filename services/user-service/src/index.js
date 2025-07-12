@@ -14,19 +14,14 @@ import crypto from 'node:crypto'
 
 dotenv.config()
 
-// Configure Fastify with structured logging
+// Configure Fastify
 const fastify = Fastify({
-	logger: {
-		level: process.env.LOG_LEVEL || 'info'
-	},
-	disableRequestLogging: true
+	logger: false
 })
 
-// Hook to generate request_id and make it available in request.log
 fastify.addHook('onRequest', async (request, reply) => {
   const reqId = request.headers['x-request-id'] || crypto.randomUUID()
   request.id = reqId
-  request.log = request.log.child({ request_id: reqId })
 })
 
 fastify.decorate("authenticate", async function (request, reply) {

@@ -1,10 +1,8 @@
 export default async function sessionRoutes(fastify, opts) {
   fastify.get('/verify', async (request, reply) => {
     const token = request.cookies.authToken
-    request.log.info({ action: 'verify_attempt', has_token: !!token }, 'User attempting to verify authentication')
     
     if (!token) {
-      request.log.warn({ action: 'verify_failed', reason: 'no_token' }, 'No auth token provided')
       return reply.status(401).send({ authenticated: false, error: 'No authentication token' })
     }
 
@@ -13,11 +11,9 @@ export default async function sessionRoutes(fastify, opts) {
       const player = await fastify.db.get('SELECT id, alias, email, is_2fa_enabled FROM players WHERE alias = ?', [decoded.alias])
       
       if (!player) {
-        request.log.warn({ action: 'verify_failed', alias: decoded.alias, reason: 'user_not_found' }, 'User not found during verification')
         return reply.status(401).send({ authenticated: false, error: 'User not found' })
       }
 
-      request.log.info({ action: 'verify_success', alias: decoded.alias, player_id: player.id }, 'Authentication verification successful')
       return { 
         authenticated: true, 
         user: { 
@@ -28,7 +24,6 @@ export default async function sessionRoutes(fastify, opts) {
         } 
       }
     } catch (err) {
-      request.log.warn({ action: 'verify_failed', reason: 'invalid_token', error: err.message }, 'Invalid token during verification')
       return reply.status(401).send({ authenticated: false, error: 'Invalid token' })
     }
   })
@@ -43,7 +38,6 @@ export default async function sessionRoutes(fastify, opts) {
       }
     })() : 'unknown'
     
-    request.log.info({ action: 'logout_attempt', alias }, 'User attempting to logout')
     
     reply.clearCookie('authToken', {
       httpOnly: true,
@@ -52,7 +46,6 @@ export default async function sessionRoutes(fastify, opts) {
       path: '/'
     })
     
-    request.log.info({ action: 'logout_success', alias }, 'User logout successful')
     return { success: true, message: 'Logged out successfully' }
   })
 }

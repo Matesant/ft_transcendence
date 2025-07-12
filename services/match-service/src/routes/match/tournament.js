@@ -3,7 +3,6 @@
 export default async function (fastify, opts) {
 	fastify.post('/advance', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 		const { alias } = request.user;
-		request.log.info({ action: 'tournament_advance_attempt', organizer: alias }, 'User attempting to advance tournament')
 		
 		try {
 			const { last } = await fastify.db.get(`
@@ -12,7 +11,6 @@ export default async function (fastify, opts) {
 			`)
 
 			if (!last) {
-				request.log.info({ action: 'tournament_advance_failed', organizer: alias, reason: 'no_completed_round' }, 'No completed round yet')
 				return reply.send({ message: 'No completed round yet' })
 			}
 
@@ -23,13 +21,11 @@ export default async function (fastify, opts) {
 			`, [last])
 
 			if (winners.length < 2) {
-				request.log.info({ action: 'tournament_advance_failed', organizer: alias, reason: 'not_enough_winners', winners_count: winners.length }, 'Not enough winners to advance')
 				return reply.send({ message: 'Not enough winners to advance' });
 			}
 
 			if (winners.length === 1) {
 				const champion = winners[0].winner;
-				request.log.info({ action: 'tournament_complete', organizer: alias, champion }, 'Tournament completed')
 				return reply.send({
 					message: `Tournament complete. Champion: ${champion}`
 				})
@@ -56,17 +52,14 @@ export default async function (fastify, opts) {
 				matches.push({ wo });
 			}
 
-			request.log.info({ action: 'tournament_advance_success', organizer: alias, round, matches_created: matches.length, winners_count: winners.length }, 'Tournament advanced successfully')
 			return { round, matches };
 		} catch (err) {
-			request.log.error({ action: 'tournament_advance_failed', organizer: alias, error: err.message }, 'Failed to advance tournament')
 			return reply.status(500).send({ error: 'Failed to advance tournament' });
 		}
 	});
 
 	fastify.get('/tournament', { preValidation: [fastify.authenticate] }, async (request, reply) => {
 		const { alias } = request.user;
-		request.log.info({ action: 'tournament_get_attempt', alias }, 'User requesting tournament data')
 		
 		try {
 			const all = await fastify.db.all('SELECT * FROM matches ORDER BY round ASC, created_at ASC');
@@ -82,10 +75,8 @@ export default async function (fastify, opts) {
 				matches
 			}));
 
-			request.log.info({ action: 'tournament_get_success', alias, rounds_count: rounds.length, total_matches: all.length }, 'Tournament data retrieved successfully')
 			return { rounds };
 		} catch (err) {
-			request.log.error({ action: 'tournament_get_failed', alias, error: err.message }, 'Failed to get tournament data')
 			return reply.status(500).send({ error: 'Failed to retrieve tournament data' });
 		}
 	});
