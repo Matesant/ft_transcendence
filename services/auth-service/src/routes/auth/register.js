@@ -16,7 +16,7 @@ export default async function registerRoutes(fastify, opts) {
         'INSERT INTO players (alias, email, password) VALUES (?, ?, ?)',
         [alias, email, hashedPassword]
       )
-      await fetch('http://user-service:3000/users/sync', {
+      await fetch('http://user-service:3003/users/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ alias })
