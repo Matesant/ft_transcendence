@@ -4,7 +4,7 @@
 
 ```sh
 $ npm install # instala as dependencias
-$ npx @tailwindcss/cli -i src/style.css -o public/style.css --watch # builda as classes css
+$ npx tailwindcss -i src/style.css -o public/style.css --watch # builda as classes css
 $ npm run start # inicia o servidor (em um segundo terminal)
 ```
 

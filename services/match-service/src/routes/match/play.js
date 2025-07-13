@@ -63,7 +63,7 @@ export default async function (fastify, opts) {
 			const opponent = (match.player1 === winner) ? match.player2 : match.player1
 
 			try {
-				await fetch('http://user-service:3000/users/history', {
+				await fetch('http://user-service:3003/users/history', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
@@ -75,7 +75,7 @@ export default async function (fastify, opts) {
 				})
 
 				if (match.status !== 'wo' && opponent) {
-					await fetch('http://user-service:3000/users/history', {
+					await fetch('http://user-service:3003/users/history', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
