@@ -79,9 +79,4 @@ fastify.setErrorHandler((error, request, reply) => {
   })
 })
 
-<<<<<<< HEAD
-// 8) Start server
 await fastify.listen({ port: 3001, host: '0.0.0.0' })
-=======
-await fastify.listen({ port: 3000, host: '0.0.0.0' })
->>>>>>> 7bf7c8629559a10a4a56e6f0f3fa9ff431baa90b

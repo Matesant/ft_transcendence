@@ -284,6 +284,7 @@ export class GameManager {
         playAgainButton.style.borderRadius = "5px";
         playAgainButton.style.color = "white";
         playAgainButton.style.marginBottom = "10px";
+        playAgainButton.id = "playAgainButton";
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
@@ -345,15 +346,104 @@ export class GameManager {
     private async _showGameOver(winner: string): Promise<void> {
         this._gameState = GameState.GAME_OVER;
         const winnerText = document.getElementById("winnerText");
-        if (winnerText) {
-            winnerText.textContent = `${winner} Wins!`;
-        }
-        this._gameOverUI.style.display = "flex";
-        
-        // Submit match result to backend if this is a tournament match
+        const playAgainButton = document.getElementById("playAgainButton");
+        const menuButton = Array.from(this._gameOverUI.querySelectorAll("button"))
+            .find(btn => btn.textContent === "MAIN MENU") as HTMLButtonElement;
+
+        // Remove any previous banner
+        const oldBanner = document.getElementById("tournamentBanner");
+        if (oldBanner) oldBanner.remove();
+
         if (this._currentMatch) {
             await this._submitMatchResult(winner);
+
+            const response = await fetch('http://localhost:3002/match/next', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.tournamentComplete) {
+                    // Tournament is over, show champion and hide play again
+                    if (winnerText) winnerText.style.display = "none";
+                    if (playAgainButton) playAgainButton.style.display = "none";
+                    if (menuButton) menuButton.style.display = "inline-block"; // Ensure menu button is visible
+
+                    // Add a banner animation with champion name
+                    const banner = document.createElement("div");
+                    banner.id = "tournamentBanner";
+                    banner.innerHTML = `
+                        <div style="font-size:3rem;font-weight:bold;color:#ffd700;text-shadow:0 0 20px #fff,0 0 10px #ffd700;">
+                            🎉 TOURNAMENT COMPLETE! 🎉
+                        </div>
+                        <div style="font-size:2.2rem;margin-top:20px;color:#fff;">
+                            🏆 Champion: <span style="color:#ffd700;">${data.champion}</span> 🏆
+                        </div>
+                    `;
+                    banner.style.position = "fixed";
+                    banner.style.top = "15%";
+                    banner.style.left = "50%";
+                    banner.style.transform = "translateX(-50%)";
+                    banner.style.background = "rgba(0,0,0,0.85)";
+                    banner.style.padding = "30px 60px";
+                    banner.style.borderRadius = "20px";
+                    banner.style.boxShadow = "0 0 40px #ffd70088";
+                    banner.style.zIndex = "9999";
+                    banner.style.textAlign = "center";
+                    banner.style.animation = "banner-pop 1s cubic-bezier(.68,-0.55,.27,1.55)";
+
+                    // Add keyframes for a pop-in animation
+                    const styleSheet = document.createElement("style");
+                    styleSheet.innerHTML = `
+                    @keyframes banner-pop {
+                        0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
+                        70% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }`;
+                    document.head.appendChild(styleSheet);
+
+                    // Create Main Menu button for the banner
+                    const bannerMenuButton = document.createElement("button");
+                    bannerMenuButton.textContent = "MAIN MENU";
+                    bannerMenuButton.style.padding = "12px 32px";
+                    bannerMenuButton.style.fontSize = "1.5rem";
+                    bannerMenuButton.style.cursor = "pointer";
+                    bannerMenuButton.style.backgroundColor = "#f44336";
+                    bannerMenuButton.style.border = "none";
+                    bannerMenuButton.style.borderRadius = "10px";
+                    bannerMenuButton.style.color = "white";
+                    bannerMenuButton.style.marginTop = "32px";
+                    bannerMenuButton.style.fontWeight = "bold";
+                    bannerMenuButton.style.boxShadow = "0 0 10px #ffd70088";
+                    bannerMenuButton.addEventListener("click", () => {
+                        this._showMenu();
+                        banner.remove();
+                    });
+
+                    banner.appendChild(bannerMenuButton);
+
+                    document.body.appendChild(banner);
+
+                    // Optionally hide the original menu button in the game over UI
+                    if (menuButton) menuButton.style.display = "none";
+
+                    return;
+                }
+            }
         }
+
+        // Default: show normal winner and play again button
+        if (winnerText) {
+            winnerText.textContent = `${winner} Wins!`;
+            winnerText.style.fontSize = "24px";
+            winnerText.style.color = "white";
+            winnerText.style.fontWeight = "normal";
+            winnerText.style.textShadow = "none";
+            winnerText.style.display = "block";
+        }
+        if (playAgainButton) playAgainButton.style.display = "block";
+        if (menuButton) menuButton.style.display = "inline-block";
+        this._gameOverUI.style.display = "flex";
     }
     
     private async _submitMatchResult(winner: string): Promise<void> {
