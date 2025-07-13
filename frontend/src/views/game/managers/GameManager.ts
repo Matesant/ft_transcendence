@@ -78,7 +78,9 @@ export class GameManager {
         this._loadCurrentMatch();
         
         // Show menu initially
-        this._showMenu();
+        (async () => {
+            await this._showMenu();
+        })();
     }
     
     private async _loadCurrentMatch(): Promise<void> {
@@ -90,6 +92,18 @@ export class GameManager {
             
             if (response.ok) {
                 const data = await response.json();
+                
+                // Check if tournament is complete - if yes, reset to practice mode
+                if (data.tournamentComplete) {
+                    console.log('Tournament is complete, using practice mode');
+                    this._currentMatch = null;
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    return;
+                }
+                
+                // Normal match loading logic
                 if (data.match) {
                     this._currentMatch = data.match;
                     this._player1Name = data.match.player1;
@@ -104,6 +118,7 @@ export class GameManager {
                     // Set default names if no match
                     this._player1Name = "Player 1";
                     this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
                 }
             }
         } catch (error) {
@@ -111,6 +126,7 @@ export class GameManager {
             // Use default names on error
             this._player1Name = "Player 1";
             this._player2Name = "Player 2";
+            this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
         }
     }
     
@@ -241,6 +257,15 @@ export class GameManager {
                 <div>${this._player1Name} vs ${this._player2Name}</div>
                 <div>Round ${this._currentMatch.round}</div>
             `;
+        } else if (
+            this._player1Name !== "Player 1" &&
+            this._player2Name !== "Player 2"
+        ) {
+            element.innerHTML = `
+                <div><strong>Current Match</strong></div>
+                <div>${this._player1Name} vs ${this._player2Name}</div>
+                <div>Practice mode</div>
+            `;
         } else {
             element.innerHTML = `
                 <div style="color: #ffa500;">No tournament match loaded</div>
@@ -275,7 +300,7 @@ export class GameManager {
         winnerText.id = "winnerText";
         
         const playAgainButton = document.createElement("button");
-        playAgainButton.textContent = "PLAY AGAIN";
+        playAgainButton.id = "playAgainButton";
         playAgainButton.style.padding = "10px 20px";
         playAgainButton.style.fontSize = "20px";
         playAgainButton.style.cursor = "pointer";
@@ -284,7 +309,8 @@ export class GameManager {
         playAgainButton.style.borderRadius = "5px";
         playAgainButton.style.color = "white";
         playAgainButton.style.marginBottom = "10px";
-        playAgainButton.id = "playAgainButton";
+        playAgainButton.style.width = "180px"; // Set fixed width
+        playAgainButton.style.textAlign = "center"; // Center the text
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
@@ -300,9 +326,13 @@ export class GameManager {
         menuButton.style.border = "none";
         menuButton.style.borderRadius = "5px";
         menuButton.style.color = "white";
+        menuButton.style.width = "180px"; // Match the width of the play again button
+        menuButton.style.textAlign = "center"; // Center the text
         
         menuButton.addEventListener("click", () => {
-            this._showMenu();
+             (async () => {
+                 await this._showMenu();
+             })();
         });
         
         this._gameOverUI.appendChild(gameOverText);
@@ -312,29 +342,38 @@ export class GameManager {
         document.body.appendChild(this._gameOverUI);
     }
     
-    private _showMenu(): void {
+    private async _showMenu(): Promise<void> {
         this._gameState = GameState.MENU;
         this._menuUI.style.display = "flex";
         this._gameOverUI.style.display = "none";
         this._resetGame();
-        
-        // Ensure power-ups are deactivated
         this._powerUpManager.deactivate();
+
+        // ← await the load so _currentMatch is set before we update the UI
+        await this._loadCurrentMatch();
+
+        const matchInfoElement = document.getElementById("matchInfo");
+        if (matchInfoElement) {
+          this._updateMatchInfoDisplay(matchInfoElement);
+        }
     }
     
     // Update _startGame to store the current mode
-    private _startGame(enablePowerUps: boolean = false): void {
+    private async _startGame(enablePowerUps: boolean = false): Promise<void> {
         this._gameState = GameState.PLAYING;
         this._menuUI.style.display = "none";
         this._gameOverUI.style.display = "none";
-        
+
         // Store the current game mode
         this._powerUpsEnabled = enablePowerUps;
-        
+
+        // Try to load a new match (if available)
+        await this._loadCurrentMatch();
+
         // Start the ball automatically with random direction for first serve
         this._ball.start(); // No direction specified = random
         this._firstCollision = true;
-        
+
         // Activate power-up spawning only if power-ups mode is enabled
         if (enablePowerUps) {
             this._powerUpManager.activate();
@@ -428,11 +467,23 @@ export class GameManager {
                     if (menuButton) menuButton.style.display = "none";
 
                     return;
+                } else {
+                    // Tournament continues - show "NEXT MATCH" button
+                    if (playAgainButton) {
+                        playAgainButton.textContent = "NEXT MATCH";
+                        playAgainButton.style.display = "block";
+                    }
                 }
+            }
+        } else {
+            // Practice mode - show "PLAY AGAIN" button
+            if (playAgainButton) {
+                playAgainButton.textContent = "PLAY AGAIN";
+                playAgainButton.style.display = "block";
             }
         }
 
-        // Default: show normal winner and play again button
+        // Default display settings for winner text and buttons
         if (winnerText) {
             winnerText.textContent = `${winner} Wins!`;
             winnerText.style.fontSize = "24px";
@@ -441,7 +492,6 @@ export class GameManager {
             winnerText.style.textShadow = "none";
             winnerText.style.display = "block";
         }
-        if (playAgainButton) playAgainButton.style.display = "block";
         if (menuButton) menuButton.style.display = "inline-block";
         this._gameOverUI.style.display = "flex";
     }
