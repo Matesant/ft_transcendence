@@ -9,9 +9,9 @@ O `node` dentro do container está configurado para fazer um reload dos arquivos
 
 Quando ocorre erros de sintaxe, você pode obter informações úteis analisando o log do container:
 
-Implementado na branch `init_ui_components` (sim, fiz coisa de backend na branch de front, só percebi quando era tarde demais, vacilo meu)
-
 ```bash
 docker ps # lista os nomes dos containers
 docker logs nome_do_container
 ```
+
+OBSERVAÇÃO: Implementado na branch `init_ui_components` (sim, fiz coisa de backend na branch de front, só percebi quando era tarde demais, vacilo meu)
