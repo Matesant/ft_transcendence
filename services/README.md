@@ -1,6 +1,6 @@
 # 📦 Microservices Overview – ft_transcendence
 
-Each service in this project has its own local README.
+A microservices architecture for a Pong-based transcendence project, featuring authentication, match management, and user profile services.
 
 ## 🚀 Quick Start
 
@@ -22,34 +22,32 @@ make restart
 | auth-service   | Handles registration and 2FA        | [auth-service/README.md](./auth-service/README.md)   |
 | match-service  | Manages tournament logic            | [match-service/README.md](./match-service/README.md) |
 | user-service   | Profiles, avatars, friends, history | [user-service/README.md](./user-service/README.md)   |
-| logs-service   | ELK stack for log monitoring        | [logs-service/README.md](./logs-service/README.md)   |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ Auth        │    │ Match       │    │ User        │
-│ Service     │    │ Service     │    │ Service     │
-│ :3001       │    │ :3002       │    │ :3003       │
-└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
-       │                  │                  │
-       └──────────────────┼──────────────────┘
-                          │ GELF Logs
-                          ▼
-                 ┌─────────────┐
-                 │ Logs        │
-                 │ Service     │ ← Process/Transform
-                 │ ELK Stack   │   (Logstash:12201)
-                 └──────┬──────┘
-                        │
-                        ▼
-                 ┌─────────────┐    ┌─────────────┐
-                 │Elasticsearch│    │   Kibana    │
-                 │ :9200       │ ←→ │ :5601       │
-                 │ + ILM       │    │ + Dashboards│
-                 └─────────────┘    └─────────────┘
+                           Frontend (TypeScript)
+                           Port: 3000 (via Webpack)
+                                    ↓
+                              HTTP/HTTPS Requests
+                                    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Backend Services                         │
+│                                                             │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│   │Auth Service │    │Match Service│    │User Service │   │
+│   │ :3001       │    │ :3002       │    │ :3003       │   │
+│   │ + JWT       │    │ + Game Logic│    │ + Profiles  │   │
+│   │ + 2FA       │    │ + Tournament│    │ + Friends   │   │
+│   └─────────────┘    └─────────────┘    └─────────────┘   │
+│            ↓                   ↓                   ↓        │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│   │ SQLite      │    │ SQLite      │    │ SQLite      │   │
+│   │ auth.db     │    │ match.db    │    │ user.db     │   │
+│   └─────────────┘    └─────────────┘    └─────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Service Communication
@@ -65,15 +63,9 @@ flowchart LR
   subgraph User
     U[user-service]
   end
-  subgraph Logs
-    L[logs-service<br/>ELK Stack]
-  end
 
   A -->|POST /users/sync| U
   M -->|POST /users/history| U
-  A -.->|GELF logs| L
-  M -.->|GELF logs| L
-  U -.->|GELF logs| L
 ```
 
 - **auth-service** ⟶ **user-service**  
@@ -121,32 +113,6 @@ The environment variables include:
   - `USER_DB_PATH`: User service database path
   - `MATCH_DB_PATH`: Match service database path
 
-## Logging System
 
-All services implement structured logging with the following features:
-
-- **ELK Stack Integration**: All logs are sent to an ELK (Elasticsearch, Logstash, Kibana) stack for centralized monitoring
-- **GELF Format**: Logs are transmitted using the GELF format via Docker's logging driver
-- **Request Tracking**: Every request receives a unique `request_id` for tracing across services
-- **Structured Data**: Log entries include standardized fields:
-  - `action`: The specific action being performed
-  - `service_name`: The service generating the log
-  - `level`: Log severity level (info, warn, error)
-  - `request_id`: Unique identifier for request tracing
-  - `alias`: User alias when applicable
-
-Example log entry in Kibana:
-```json
-{
-  "@timestamp": "2025-06-23T01:57:38.416Z",
-  "service_name": "auth-service",
-  "level": 30,
-  "log_message": "Server listening at http://0.0.0.0:3000",
-  "container_name": "auth-service",
-  "tag": "auth-service"
-}
-```
-
-Each service provides a `/test-log` endpoint to verify log delivery to the ELK stack.
 
 ---

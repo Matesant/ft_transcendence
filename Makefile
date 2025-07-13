@@ -24,9 +24,9 @@ RESET             = \033[0m
 
 all: setup build up
 
-## Development - only services, no ELK
+## Development - services only
 dev:
-	@echo "$(CYAN)Starting development environment (no ELK)...$(RESET)"
+	@echo "$(CYAN)Starting development environment...$(RESET)"
 	docker compose -f $(COMPOSE_DEV_FILE) up -d
 	@echo "$(GREEN)✅ Development services started!$(RESET)"
 	@echo "$(YELLOW)Services available:$(RESET)"
@@ -46,17 +46,11 @@ dev-build:
 	@echo "$(YELLOW)Building development images...$(RESET)"
 	docker compose -f $(COMPOSE_DEV_FILE) build
 
-## Main command - full stack with ELK and logging
+## Main command - start all services
 up:
-	@echo "$(CYAN)Starting full stack with ELK and logging...$(RESET)"
+	@echo "$(CYAN)Starting all services...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) up -d
 	@echo "$(GREEN)✅ All services started!$(RESET)"
-	@echo "$(CYAN)Setting up Kibana...$(RESET)"
-	@chmod +x services/logs-service/scripts/setup-*.sh
-	@./services/logs-service/scripts/setup-elasticseach-policies.sh || true
-	@./services/logs-service/scripts/setup-kibana.sh || true
-	@echo "$(GREEN)🎉 Everything ready!$(RESET)"
-	@echo "$(CYAN)📊 Kibana: http://localhost:5601$(RESET)"
 
 down stop:
 	@echo "$(RED)Stopping all services...$(RESET)"
@@ -81,8 +75,6 @@ fclean: down
 	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
 	docker system prune -af --volumes
 	@rm -rf services/*/data/*.db
-	@echo "$(YELLOW)Cleaning ELK data...$(RESET)"
-	docker volume rm -f ft_transcendence_esdata || true
 	@echo "$(GREEN)✅ Complete cleanup finished!$(RESET)"
 
 re: fclean build up
@@ -112,8 +104,8 @@ help:
 	@echo "$(GREEN)📋 Main Commands:$(RESET)"
 	@echo "  $(YELLOW)make all$(RESET)      - Complete setup: environment + build + start all services"
 	@echo "  $(YELLOW)make setup$(RESET)    - Initialize environment with centralized .env file"
-	@echo "  $(YELLOW)make up$(RESET)       - Start full stack (all services + ELK logging)"
-	@echo "  $(YELLOW)make dev$(RESET)      - Start development environment (no ELK)"
+	@echo "  $(YELLOW)make up$(RESET)       - Start all services"
+	@echo "  $(YELLOW)make dev$(RESET)      - Start development environment"
 	@echo ""
 	@echo "$(GREEN)🔧 Development Commands:$(RESET)"
 	@echo "  $(YELLOW)make build$(RESET)    - Build all Docker images"
@@ -130,5 +122,4 @@ help:
 	@echo "  • Auth Service:  http://localhost:3001"
 	@echo "  • Match Service: http://localhost:3002"
 	@echo "  • User Service:  http://localhost:3003"
-	@echo "  • Kibana Logs:   http://localhost:5601"
 	@echo ""

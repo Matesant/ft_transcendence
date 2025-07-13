@@ -50,6 +50,7 @@ export class Register extends AView {
                         headers: {
                             "Content-Type": "application/json",
                         },
+                        credentials: 'include',
                         body: JSON.stringify(data)
                     });
     
