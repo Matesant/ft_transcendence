@@ -1,4 +1,5 @@
 import { Game } from "./game/Game";
+import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
@@ -19,5 +20,9 @@ export class Builders {
 
     public static RegisterBuilder(): AView {
         return new Register();
+    }
+
+    public static TournamentBuilder(): AView {
+        return new Tournament(); // Assuming Tournament is similar to Game for now
     }
 }
