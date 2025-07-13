@@ -3,7 +3,7 @@ services:
     container_name: auth-service
     build: ./services/auth-service
     ports:
-      - "3001:3000"
+      - "3001:3001"
     volumes:
       - ./services/auth-service:/app
     env_file:
@@ -22,7 +22,7 @@ services:
     container_name: match-service
     build: ./services/match-service
     ports:
-      - "3002:3000"
+      - "3002:3002"
     volumes:
       - ./services/match-service:/app
     env_file:
@@ -38,7 +38,7 @@ services:
     container_name: user-service
     build: ./services/user-service
     ports:
-      - "3003:3000"
+      - "3003:3003"
     env_file:
       - ./.env
     environment:

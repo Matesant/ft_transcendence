@@ -3,6 +3,8 @@ import { CONFIG } from "../config";
 export class ScoreManager {
     private _scoreText: HTMLDivElement;
     private _score: { player1: number, player2: number } = { player1: 0, player2: 0 };
+    private _player1Name: string = "Player 1";
+    private _player2Name: string = "Player 2";
     
     constructor() {
         this._createScoreDisplay();
@@ -33,7 +35,7 @@ export class ScoreManager {
     }
     
     public updateDisplay(): void {
-        this._scoreText.textContent = `Player_1: ${this._score.player1} vs Player_2: ${this._score.player2}`;
+        this._scoreText.textContent = `${this._player1Name}: ${this._score.player1} vs ${this._player2Name}: ${this._score.player2}`;
     }
     
     public reset(): void {
@@ -52,6 +54,12 @@ export class ScoreManager {
 
     public addPointToPlayer2(): void {
         this._score.player2++;
+        this.updateDisplay();
+    }
+
+    public setPlayerNames(player1: string, player2: string): void {
+        this._player1Name = player1;
+        this._player2Name = player2;
         this.updateDisplay();
     }
 }

@@ -55,7 +55,7 @@ fastify.setErrorHandler((error, request, reply) => {
 
 // #TODO: Replace `origin: true` with specific URL before delivery
 await fastify.register(cors, {
-  origin: true,
+  origin: ['http://localhost:8080'],
   credentials: true
 })
 
@@ -66,4 +66,4 @@ await fastify.register(dbPlugin)
 await fastify.register(jwt, { secret: process.env.JWT_SECRET })
 await fastify.register(cookie, { secret: process.env.COOKIE_SECRET })
 
-await fastify.listen({ port: 3000, host: '0.0.0.0' })
+await fastify.listen({ port: 3002, host: '0.0.0.0' })

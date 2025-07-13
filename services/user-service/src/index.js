@@ -53,4 +53,4 @@ await fastify.register(friendsRoutes, { prefix: '/users' });
 await fastify.register(publicRoutes, { prefix: '/users' });
 await fastify.register(historyRoutes, { prefix: '/users' });
 
-await fastify.listen({ port: 3000, host: '0.0.0.0' })
+await fastify.listen({ port: 3003, host: '0.0.0.0' })

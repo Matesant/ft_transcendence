@@ -14,6 +14,14 @@ enum GameState {
     GAME_OVER
 }
 
+interface MatchInfo {
+    id: number;
+    player1: string;
+    player2: string;
+    round: number;
+    status: string;
+}
+
 export class GameManager {
     private _scene: Scene;
     private _ball: Ball;
@@ -30,6 +38,11 @@ export class GameManager {
     
     // Add a field to track the current game mode
     private _powerUpsEnabled: boolean = false;
+    
+    // Add match-related fields
+    private _currentMatch: MatchInfo | null = null;
+    private _player1Name: string = "Player 1";
+    private _player2Name: string = "Player 2";
     
     constructor(scene: Scene) {
         this._scene = scene;
@@ -61,8 +74,44 @@ export class GameManager {
             this._scoreManager
         );
         
+        // Load current match on initialization
+        this._loadCurrentMatch();
+        
         // Show menu initially
         this._showMenu();
+    }
+    
+    private async _loadCurrentMatch(): Promise<void> {
+        try {
+            const response = await fetch('http://localhost:3002/match/next', {
+                method: 'GET',
+                credentials: 'include' // Include authentication cookies
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.match) {
+                    this._currentMatch = data.match;
+                    this._player1Name = data.match.player1;
+                    this._player2Name = data.match.player2;
+                    
+                    // Update score manager with player names
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    
+                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
+                } else {
+                    console.log('No matches available');
+                    // Set default names if no match
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load match:', error);
+            // Use default names on error
+            this._player1Name = "Player 1";
+            this._player2Name = "Player 2";
+        }
     }
     
     private _createMenuUI(): void {
@@ -83,6 +132,15 @@ export class GameManager {
         title.style.color = "white";
         title.style.fontSize = "48px";
         title.style.marginBottom = "30px";
+        
+        // Show current match info
+        const matchInfo = document.createElement("div");
+        matchInfo.id = "matchInfo";
+        matchInfo.style.color = "white";
+        matchInfo.style.fontSize = "20px";
+        matchInfo.style.marginBottom = "20px";
+        matchInfo.style.textAlign = "center";
+        this._updateMatchInfoDisplay(matchInfo);
         
         const subtitle = document.createElement("h2");
         subtitle.textContent = "Select Game Mode";
@@ -169,10 +227,26 @@ export class GameManager {
         buttonsContainer.appendChild(powerUpsContainer);
         
         this._menuUI.appendChild(title);
+        this._menuUI.appendChild(matchInfo);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
         
         document.body.appendChild(this._menuUI);
+    }
+    
+    private _updateMatchInfoDisplay(element: HTMLElement): void {
+        if (this._currentMatch) {
+            element.innerHTML = `
+                <div><strong>Current Match</strong></div>
+                <div>${this._player1Name} vs ${this._player2Name}</div>
+                <div>Round ${this._currentMatch.round}</div>
+            `;
+        } else {
+            element.innerHTML = `
+                <div style="color: #ffa500;">No tournament match loaded</div>
+                <div>Playing in practice mode</div>
+            `;
+        }
     }
     
     private _createGameOverUI(): void {
@@ -210,6 +284,7 @@ export class GameManager {
         playAgainButton.style.borderRadius = "5px";
         playAgainButton.style.color = "white";
         playAgainButton.style.marginBottom = "10px";
+        playAgainButton.id = "playAgainButton";
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
@@ -268,13 +343,144 @@ export class GameManager {
         }
     }
     
-    private _showGameOver(winner: string): void {
+    private async _showGameOver(winner: string): Promise<void> {
         this._gameState = GameState.GAME_OVER;
         const winnerText = document.getElementById("winnerText");
+        const playAgainButton = document.getElementById("playAgainButton");
+        const menuButton = Array.from(this._gameOverUI.querySelectorAll("button"))
+            .find(btn => btn.textContent === "MAIN MENU") as HTMLButtonElement;
+
+        // Remove any previous banner
+        const oldBanner = document.getElementById("tournamentBanner");
+        if (oldBanner) oldBanner.remove();
+
+        if (this._currentMatch) {
+            await this._submitMatchResult(winner);
+
+            const response = await fetch('http://localhost:3002/match/next', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.tournamentComplete) {
+                    // Tournament is over, show champion and hide play again
+                    if (winnerText) winnerText.style.display = "none";
+                    if (playAgainButton) playAgainButton.style.display = "none";
+                    if (menuButton) menuButton.style.display = "inline-block"; // Ensure menu button is visible
+
+                    // Add a banner animation with champion name
+                    const banner = document.createElement("div");
+                    banner.id = "tournamentBanner";
+                    banner.innerHTML = `
+                        <div style="font-size:3rem;font-weight:bold;color:#ffd700;text-shadow:0 0 20px #fff,0 0 10px #ffd700;">
+                            🎉 TOURNAMENT COMPLETE! 🎉
+                        </div>
+                        <div style="font-size:2.2rem;margin-top:20px;color:#fff;">
+                            🏆 Champion: <span style="color:#ffd700;">${data.champion}</span> 🏆
+                        </div>
+                    `;
+                    banner.style.position = "fixed";
+                    banner.style.top = "15%";
+                    banner.style.left = "50%";
+                    banner.style.transform = "translateX(-50%)";
+                    banner.style.background = "rgba(0,0,0,0.85)";
+                    banner.style.padding = "30px 60px";
+                    banner.style.borderRadius = "20px";
+                    banner.style.boxShadow = "0 0 40px #ffd70088";
+                    banner.style.zIndex = "9999";
+                    banner.style.textAlign = "center";
+                    banner.style.animation = "banner-pop 1s cubic-bezier(.68,-0.55,.27,1.55)";
+
+                    // Add keyframes for a pop-in animation
+                    const styleSheet = document.createElement("style");
+                    styleSheet.innerHTML = `
+                    @keyframes banner-pop {
+                        0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
+                        70% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }`;
+                    document.head.appendChild(styleSheet);
+
+                    // Create Main Menu button for the banner
+                    const bannerMenuButton = document.createElement("button");
+                    bannerMenuButton.textContent = "MAIN MENU";
+                    bannerMenuButton.style.padding = "12px 32px";
+                    bannerMenuButton.style.fontSize = "1.5rem";
+                    bannerMenuButton.style.cursor = "pointer";
+                    bannerMenuButton.style.backgroundColor = "#f44336";
+                    bannerMenuButton.style.border = "none";
+                    bannerMenuButton.style.borderRadius = "10px";
+                    bannerMenuButton.style.color = "white";
+                    bannerMenuButton.style.marginTop = "32px";
+                    bannerMenuButton.style.fontWeight = "bold";
+                    bannerMenuButton.style.boxShadow = "0 0 10px #ffd70088";
+                    bannerMenuButton.addEventListener("click", () => {
+                        this._showMenu();
+                        banner.remove();
+                    });
+
+                    banner.appendChild(bannerMenuButton);
+
+                    document.body.appendChild(banner);
+
+                    // Optionally hide the original menu button in the game over UI
+                    if (menuButton) menuButton.style.display = "none";
+
+                    return;
+                }
+            }
+        }
+
+        // Default: show normal winner and play again button
         if (winnerText) {
             winnerText.textContent = `${winner} Wins!`;
+            winnerText.style.fontSize = "24px";
+            winnerText.style.color = "white";
+            winnerText.style.fontWeight = "normal";
+            winnerText.style.textShadow = "none";
+            winnerText.style.display = "block";
         }
+        if (playAgainButton) playAgainButton.style.display = "block";
+        if (menuButton) menuButton.style.display = "inline-block";
         this._gameOverUI.style.display = "flex";
+    }
+    
+    private async _submitMatchResult(winner: string): Promise<void> {
+        if (!this._currentMatch) return;
+        
+        try {
+            const response = await fetch('http://localhost:3002/match/score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    matchId: this._currentMatch.id,
+                    winner: winner
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Match result submitted successfully:', result);
+                
+                // Clear current match and try to load next one
+                this._currentMatch = null;
+                await this._loadCurrentMatch();
+                
+                // Update the match info display
+                const matchInfoElement = document.getElementById("matchInfo");
+                if (matchInfoElement) {
+                    this._updateMatchInfoDisplay(matchInfoElement);
+                }
+            } else {
+                console.error('Failed to submit match result:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error submitting match result:', error);
+        }
     }
     
     private _resetGame(): void {
@@ -343,9 +549,9 @@ export class GameManager {
             // Check for game over condition
             const score = this._scoreManager.score;
             if (score.player1 >= 5) {
-                this._showGameOver("Player 1");
+                this._showGameOver(this._player1Name);
             } else if (score.player2 >= 5) {
-                this._showGameOver("Player 2");
+                this._showGameOver(this._player2Name);
             }
         }
     }
