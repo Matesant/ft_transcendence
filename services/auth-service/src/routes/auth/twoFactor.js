@@ -46,9 +46,10 @@ export default async function twoFactorRoutes(fastify, opts) {
     reply.setCookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       path: '/',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost'
     })
 
     return { success: true, message: 'Authentication successful' }
