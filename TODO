@@ -1,41 +1,39 @@
-#TODO: MAJOR — Use a framework to build the backend
-✔ auth-service (parcial – falta Google Verify)
-✔ match-service
-❌ game-service
-✔ user-management-service
+# ft_transcendence Frontend Development TODO
 
-#TODO: MAJOR — Implement remote authentication
-❌ Autenticação remota (Google)
+## ✅ COMPLETED
 
-#TODO: MINOR — Use a database for the backend and more
-✔ game-service
-✔ auth-service
-✔ user-management-service
+### 1. UI Components Implementation
+- [x] Implement all reusable UI components (pong-card, pong-btn, pong-btn-primary, pong-btn-secondary, pong-btn-danger, pong-input, pong-alert, pong-spinner, neon-glow-*) as per the guideline, using Tailwind CSS and custom CSS utilities where needed.
+- [x] Update or create custom CSS utilities in style.css for neon glows, box-shadows, Orbitron font, and spinner animation as required by the components and views.
+- [x] Create the Home view (src/views/home/Home.ts) as a class extending AView, following the specified HTML structure, styling, and navigation logic.
 
-#TODO: MAJOR — Standard user management, authentication and users across tournaments
-✔ Users can securely subscribe to the website
-✔ Registered users can securely log in
-✔ Users can select a unique display name to participate in tournaments
-✔ Users can update their information
-✔ Users can upload an avatar (default if none is provided)
-❌ Users can add others as friends and view their online status (parcial, falta status online)
-✔ User profiles display stats (e.g. wins, losses)
-✔ Each user has a Match History (1v1 games, dates, details – visible to logged-in users)
+### 2. Authentication Views
+- [x] Create the Login view (src/views/login/Login.ts) as a class extending AView, with form handling, feedback, and navigation as described.
+- [x] Create the Register view (src/views/register/Register.ts) as a class extending AView, with form validation, feedback, and navigation as described.
+- [x] Create the TwoFactorAuth view (src/views/TwoFactorAuth.ts) as a class extending AView, with TOTP code input, feedback, and navigation as described.
 
-#TODO: MAJOR — Design the backend as microservices
-✔ auth-service
-✔ match-service
-❌ game-service
-✔ user-management-service
+### 3. Navigation Fix
+- [x] Fix navigation to use proper URLs (http://localhost:8080/login, http://localhost:8080/register) instead of hash-based routing.
+- [x] Implement navigateTo function using history.pushState for proper SPA navigation.
+- [x] Update all views to use navigateTo instead of window.location.hash.
 
-#TODO: MAJOR — Implement advanced 3D techniques (Babylon.js)
-❌ Engine setup
-❌ 3D arena and player rendering
-❌ Camera and lighting
-❌ Real-time updates from backend
+## 🔄 IN PROGRESS
 
-#TODO: MAJOR — Implement Two-Factor Authentication (2FA) and JWT
-✔ Implement 2FA as an additional layer of security
-✔ Use JWT for secure authentication and session control
-❌ Provide a user-friendly setup for enabling 2FA (email)
-✔ Ensure JWT tokens are issued and validated securely
+### 4. Main Application Views
+- [ ] Create the Dashboard view (src/views/Dashboard.ts) as a class extending AView, with user data loading, logout, quick match, and responsive grid layout as described.
+- [ ] Create the Game view (src/views/game/Game.ts) as a class extending AView, implementing the Pong game logic, controls, and responsive canvas as described.
+
+## ⏳ PENDING
+
+### 5. Final Integration
+- [ ] Ensure all views use the reusable UI components, follow the Pong neon theme, and are fully responsive with correct Tailwind classes and Orbitron font.
+- [ ] Test navigation and event handling between all views, ensuring correct routing, state management, and cleanup via dispose methods.
+
+## 🎯 NEXT STEPS
+1. ✅ Implement Login view with form handling and API integration
+2. ✅ Implement Register view with validation
+3. ✅ Implement TwoFactorAuth view
+4. ✅ Fix navigation to use proper URLs
+5. Implement Dashboard view
+6. Implement Game view
+7. Test all navigation flows

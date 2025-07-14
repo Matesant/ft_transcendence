@@ -1,1 +1,129 @@
 @import "tailwindcss";
+
+/* Import Orbitron Font */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+/* Custom CSS Variables for Pong Theme */
+:root {
+  --pong-neon-green: #00ff00;
+  --pong-neon-blue: #00ffff;
+  --pong-neon-pink: #ff00ff;
+  --pong-neon-yellow: #ffff00;
+}
+
+/* Pong Card Styles */
+.pong-card {
+  @apply bg-gray-900 border-2 border-gray-700 p-6 md:p-4 rounded-none shadow-lg;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+}
+
+/* Pong Button Base Styles */
+.pong-btn {
+  @apply px-6 py-3 md:px-4 md:py-2 font-bold text-lg md:text-base border-2 transition-all duration-300 ease-in-out uppercase tracking-wide;
+  font-family: 'Orbitron', monospace;
+}
+
+/* Pong Button Variants */
+.pong-btn-primary {
+  @apply bg-transparent text-green-400 border-green-400;
+}
+
+.pong-btn-primary:hover {
+  @apply bg-green-400 text-black hover:shadow-lg;
+  box-shadow: 0 0 20px var(--pong-neon-green);
+}
+
+.pong-btn-secondary {
+  @apply bg-transparent text-cyan-400 border-cyan-400;
+}
+
+.pong-btn-secondary:hover {
+  @apply bg-cyan-400 text-black hover:shadow-lg;
+  box-shadow: 0 0 20px var(--pong-neon-blue);
+}
+
+.pong-btn-danger {
+  @apply bg-transparent text-pink-400 border-pink-400;
+}
+
+.pong-btn-danger:hover {
+  @apply bg-pink-400 text-black hover:shadow-lg;
+  box-shadow: 0 0 20px var(--pong-neon-pink);
+}
+
+/* Pong Input Styles */
+.pong-input {
+  @apply w-full px-4 py-3 md:px-3 md:py-2 bg-transparent border-2 border-gray-600 text-white text-lg md:text-base transition-all duration-300 ease-in-out placeholder:text-gray-500;
+  font-family: 'Courier New', monospace;
+}
+
+.pong-input:focus {
+  @apply outline-none border-green-400;
+  box-shadow: 0 0 10px var(--pong-neon-green);
+}
+
+/* Pong Alert Styles */
+.pong-alert {
+  @apply p-4 border-2 font-bold text-center;
+  font-family: 'Orbitron', monospace;
+}
+
+.pong-alert-success {
+  @apply bg-green-900 border-green-400 text-green-400;
+}
+
+.pong-alert-error {
+  @apply bg-red-900 border-red-400 text-red-400;
+}
+
+.pong-alert-info {
+  @apply bg-blue-900 border-blue-400 text-blue-400;
+}
+
+/* Pong Spinner Styles */
+.pong-spinner {
+  @apply w-10 h-10 border-4 border-gray-600 border-t-green-400 rounded-full;
+  animation: spin 1s linear infinite;
+}
+
+/* Pong Background */
+.pong-bg {
+  @apply bg-black;
+}
+
+/* Neon Glow Classes */
+.neon-glow-green {
+  text-shadow: 0 0 10px var(--pong-neon-green);
+}
+
+.neon-glow-blue {
+  text-shadow: 0 0 10px var(--pong-neon-blue);
+}
+
+.neon-glow-pink {
+  text-shadow: 0 0 10px var(--pong-neon-pink);
+}
+
+.neon-glow-yellow {
+  text-shadow: 0 0 10px var(--pong-neon-yellow);
+}
+
+/* Custom Box Shadow Classes */
+.shadow-neon-green {
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.1);
+}
+
+.shadow-neon-blue {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+}
+
+.shadow-neon-pink {
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.1);
+}
+
+/* Custom Spinner Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

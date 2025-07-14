@@ -6,25 +6,51 @@ const routes: {[key: string]: () => AView } = {
     "/tournament": Builders.TournamentBuilder,
     "/login": Builders.LoginBuilder,
     "/register": Builders.RegisterBuilder,
+    "/2fa": Builders.TwoFactorAuthBuilder,
     "/": Builders.HomeBuilder
 };
 
-let view: AView | undefined = undefined;
+let currentView: AView | undefined = undefined;
 
-export function router (){
+// Navigation function
+export function navigateTo(path: string) {
+    history.pushState(null, '', path);
+    router();
+}
 
-    if (view) {
-        view.dispose();
+export function router() {
+    // Dispose current view if exists
+    if (currentView) {
+        currentView.dispose();
     }
 
+    // Clear body
     document.body.innerHTML = "";
-    let path: string = location.pathname;
-    view = routes[path] ? routes[path]() : undefined;
     
-    if (view) {
-        view.render();
-    }
-    else {
-        document.body.innerHTML = "<h1>404 Not Found</h1>";
+    // Get current path
+    let path: string = location.pathname;
+    
+    // Get view builder
+    const viewBuilder = routes[path];
+    
+    if (viewBuilder) {
+        // Create new view
+        currentView = viewBuilder();
+        
+        // Render view with body as parent
+        currentView.render(document.body);
+    } else {
+        // 404 page
+        document.body.innerHTML = `
+            <div class="min-h-screen flex items-center justify-center p-4 pong-bg">
+                <div class="text-center">
+                    <h1 class="text-6xl font-bold neon-glow-red mb-4">404</h1>
+                    <p class="text-xl text-white mb-8">Page not found</p>
+                    <button class="pong-btn pong-btn-primary" onclick="window.location.pathname = '/'">
+                        GO HOME
+                    </button>
+                </div>
+            </div>
+        `;
     }
 }
