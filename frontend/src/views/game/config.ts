@@ -59,10 +59,10 @@ export const CONFIG = {
             LEFT: new Vector3(0, 0.15, -8.25),
             RIGHT: new Vector3(0, 0.15, 8.25)
         },
-        MOVE_SPEED: 0.175,
+        MOVE_SPEED: 0.250,
         POSITION_LIMIT: {
-            MIN: -5.4, // Changed from -5 to -5.4 to reach the wall
-            MAX: 5.4   // Changed from 5 to 5.4 to reach the wall
+            MIN: -5.4,
+            MAX: 5.4
         },
         COLOR: {
             LEFT: new Color3(0.2, 0.6, 1),

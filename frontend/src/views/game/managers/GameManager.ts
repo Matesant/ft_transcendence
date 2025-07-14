@@ -6,6 +6,7 @@ import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 import { PowerUpManager } from "./PowerUpManager";
+import { STRINGS, Language } from "../../i18n";
 
 // Simple enum for game states (removed PAUSED)
 enum GameState {
@@ -44,28 +45,27 @@ export class GameManager {
     private _player1Name: string = "Player 1";
     private _player2Name: string = "Player 2";
     
+    private _lang: Language = "ptBR"; // Set Brazilian Portuguese as default
+
     constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
-        
+
         // Initialize game objects
         this._ball = new Ball(scene);
         this._leftPaddle = new Paddle(scene, PaddleType.LEFT);
         this._rightPaddle = new Paddle(scene, PaddleType.RIGHT);
-        
-        // Create walls
         new Wall(scene, WallType.TOP);
         new Wall(scene, WallType.BOTTOM);
-        
-        // Create playing field
+
+        // Create playing field and UI
         this._createPlayingField();
-        
-        // Create UI elements (removed pause UI)
         this._createMenuUI();
         this._createGameOverUI();
-        
-        // Initialize power-up manager after creating paddles and ball
+        this._createLanguageSelector();  // ← add language selector here
+
+        // Initialize power-up manager
         this._powerUpManager = new PowerUpManager(
             scene,
             this._leftPaddle,
@@ -73,11 +73,9 @@ export class GameManager {
             this._ball,
             this._scoreManager
         );
-        
-        // Load current match on initialization
+
+        // Load current match and show menu
         this._loadCurrentMatch();
-        
-        // Show menu initially
         (async () => {
             await this._showMenu();
         })();
@@ -144,12 +142,11 @@ export class GameManager {
         this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
         
         const title = document.createElement("h1");
-        title.textContent = "PONG";
+        title.textContent = "PONG"; // game title stays constant (or add i18n if desired)
         title.style.color = "white";
         title.style.fontSize = "48px";
         title.style.marginBottom = "30px";
         
-        // Show current match info
         const matchInfo = document.createElement("div");
         matchInfo.id = "matchInfo";
         matchInfo.style.color = "white";
@@ -159,7 +156,7 @@ export class GameManager {
         this._updateMatchInfoDisplay(matchInfo);
         
         const subtitle = document.createElement("h2");
-        subtitle.textContent = "Select Game Mode";
+        subtitle.textContent = STRINGS[this._lang].selectGameMode;
         subtitle.style.color = "white";
         subtitle.style.fontSize = "24px";
         subtitle.style.marginBottom = "20px";
@@ -187,21 +184,21 @@ export class GameManager {
         
         // Classic mode label
         const classicLabel = document.createElement("div");
-        classicLabel.textContent = "Classic Mode";
+        classicLabel.textContent = STRINGS[this._lang].classicMode;
         classicLabel.style.color = "white";
         classicLabel.style.fontSize = "18px";
         classicLabel.style.marginBottom = "10px";
         
         // Power-ups mode label
         const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = "Power-ups Mode";
+        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
         powerUpsLabel.style.color = "white"; 
         powerUpsLabel.style.fontSize = "18px";
         powerUpsLabel.style.marginBottom = "10px";
         
         // Classic mode button
         const classicButton = document.createElement("button");
-        classicButton.textContent = "START";
+        classicButton.textContent = STRINGS[this._lang].start;
         classicButton.style.padding = "10px 20px";
         classicButton.style.width = "120px";
         classicButton.style.fontSize = "18px";
@@ -213,7 +210,7 @@ export class GameManager {
         
         // Power-ups mode button
         const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = "START";
+        powerUpsButton.textContent = STRINGS[this._lang].start;
         powerUpsButton.style.padding = "10px 20px";
         powerUpsButton.style.width = "120px";
         powerUpsButton.style.fontSize = "18px";
@@ -253,23 +250,23 @@ export class GameManager {
     private _updateMatchInfoDisplay(element: HTMLElement): void {
         if (this._currentMatch) {
             element.innerHTML = `
-                <div><strong>Current Match</strong></div>
+                <div><strong>${STRINGS[this._lang].currentMatch}</strong></div>
                 <div>${this._player1Name} vs ${this._player2Name}</div>
-                <div>Round ${this._currentMatch.round}</div>
+                <div>${STRINGS[this._lang].round} ${this._currentMatch.round}</div>
             `;
         } else if (
             this._player1Name !== "Player 1" &&
             this._player2Name !== "Player 2"
         ) {
             element.innerHTML = `
-                <div><strong>Current Match</strong></div>
+                <div><strong>${STRINGS[this._lang].currentMatch}</strong></div>
                 <div>${this._player1Name} vs ${this._player2Name}</div>
-                <div>Practice mode</div>
+                <div>${STRINGS[this._lang].practiceMode}</div>
             `;
         } else {
             element.innerHTML = `
-                <div style="color: #ffa500;">No tournament match loaded</div>
-                <div>Playing in practice mode</div>
+                <div style="color: #ffa500;">${STRINGS[this._lang].noTournament}</div>
+                <div>${STRINGS[this._lang].practiceMode}</div>
             `;
         }
     }
@@ -288,16 +285,18 @@ export class GameManager {
         this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
         
         const gameOverText = document.createElement("h2");
-        gameOverText.textContent = "GAME OVER";
-        gameOverText.style.color = "white";
-        gameOverText.style.fontSize = "36px";
-        gameOverText.style.marginBottom = "20px";
+        gameOverText.id = "gameOverText";
+        // Estilo para ficar grande e visível
+        gameOverText.style.color = "#fff";
+        gameOverText.style.fontSize = "48px";
+        gameOverText.style.margin = "0 0 10px";
         
         const winnerText = document.createElement("h3");
-        winnerText.style.color = "white";
-        winnerText.style.fontSize = "24px";
-        winnerText.style.marginBottom = "30px";
         winnerText.id = "winnerText";
+        // Estilo para ficar legível
+        winnerText.style.color = "#fff";
+        winnerText.style.fontSize = "24px";
+        winnerText.style.margin = "0 0 20px";
         
         const playAgainButton = document.createElement("button");
         playAgainButton.id = "playAgainButton";
@@ -318,7 +317,7 @@ export class GameManager {
         });
         
         const menuButton = document.createElement("button");
-        menuButton.textContent = "MAIN MENU";
+        menuButton.id = "menuButton";
         menuButton.style.padding = "10px 20px";
         menuButton.style.fontSize = "20px";
         menuButton.style.cursor = "pointer";
@@ -384,116 +383,69 @@ export class GameManager {
     
     private async _showGameOver(winner: string): Promise<void> {
         this._gameState = GameState.GAME_OVER;
-        const winnerText = document.getElementById("winnerText");
-        const playAgainButton = document.getElementById("playAgainButton");
-        const menuButton = Array.from(this._gameOverUI.querySelectorAll("button"))
-            .find(btn => btn.textContent === "MAIN MENU") as HTMLButtonElement;
 
-        // Remove any previous banner
-        const oldBanner = document.getElementById("tournamentBanner");
-        if (oldBanner) oldBanner.remove();
+        const gameOverText = document.getElementById("gameOverText") as HTMLHeadingElement;
+        const winnerText    = document.getElementById("winnerText")    as HTMLHeadingElement;
+        const playAgainBtn  = document.getElementById("playAgainButton") as HTMLButtonElement;
+        const menuBtn       = document.getElementById("menuButton")    as HTMLButtonElement;
 
-        if (this._currentMatch) {
-            await this._submitMatchResult(winner);
+        // 1) Set all texts from i18n
+        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
+        if (winnerText)    winnerText.textContent    = `${winner} ${STRINGS[this._lang].wins}`;
 
-            const response = await fetch('http://localhost:3002/match/next', {
-                method: 'GET',
-                credentials: 'include'
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.tournamentComplete) {
-                    // Tournament is over, show champion and hide play again
-                    if (winnerText) winnerText.style.display = "none";
-                    if (playAgainButton) playAgainButton.style.display = "none";
-                    if (menuButton) menuButton.style.display = "inline-block"; // Ensure menu button is visible
+         // … existing tournament-complete logic …
+         if (this._currentMatch) {
+             await this._submitMatchResult(winner);
+             const response = await fetch('http://localhost:3002/match/next',{ method:'GET', credentials:'include' });
+             if (response.ok) {
+                 const data = await response.json();
+                 if (data.tournamentComplete) {
+                     // 1) Tournament Complete layout
+                     if (gameOverText) {
+                         gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
+                         gameOverText.style.fontSize = "3rem";
+                         gameOverText.style.color = "#ffd700";
+                         gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700";
+                         gameOverText.style.marginBottom = "20px";
+                     }
+                     if (winnerText) {
+                         winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span style="color:#ffd700;">${data.champion}</span> 🏆`;
+                         winnerText.style.fontSize = "2.5rem";
+                         winnerText.style.color = "#fff";
+                         winnerText.style.marginBottom = "30px";
+                     }
+                     if (playAgainBtn) playAgainBtn.style.display = "none";
+                     if (menuBtn) {
+                         menuBtn.style.display = "block";
+                         menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                     }
+                     this._gameOverUI.style.display = "flex";
+                     return;
+                 } else {
+                    // Next match in tournament
+                     if (playAgainBtn) {
+                         playAgainBtn.style.display = "block";
+                         playAgainBtn.textContent = STRINGS[this._lang].nextMatch;
+                     }
+                     if (menuBtn) {
+                         menuBtn.style.display = "inline-block";
+                         menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                     }
+                 }
+             }
+         } else {
+            // Practice mode
+             if (playAgainBtn) {
+                 playAgainBtn.style.display = "block";
+                 playAgainBtn.textContent = STRINGS[this._lang].playAgain;
+             }
+             if (menuBtn) {
+                 menuBtn.style.display = "inline-block";
+                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
+             }
+         }
 
-                    // Add a banner animation with champion name
-                    const banner = document.createElement("div");
-                    banner.id = "tournamentBanner";
-                    banner.innerHTML = `
-                        <div style="font-size:3rem;font-weight:bold;color:#ffd700;text-shadow:0 0 20px #fff,0 0 10px #ffd700;">
-                            🎉 TOURNAMENT COMPLETE! 🎉
-                        </div>
-                        <div style="font-size:2.2rem;margin-top:20px;color:#fff;">
-                            🏆 Champion: <span style="color:#ffd700;">${data.champion}</span> 🏆
-                        </div>
-                    `;
-                    banner.style.position = "fixed";
-                    banner.style.top = "15%";
-                    banner.style.left = "50%";
-                    banner.style.transform = "translateX(-50%)";
-                    banner.style.background = "rgba(0,0,0,0.85)";
-                    banner.style.padding = "30px 60px";
-                    banner.style.borderRadius = "20px";
-                    banner.style.boxShadow = "0 0 40px #ffd70088";
-                    banner.style.zIndex = "9999";
-                    banner.style.textAlign = "center";
-                    banner.style.animation = "banner-pop 1s cubic-bezier(.68,-0.55,.27,1.55)";
-
-                    // Add keyframes for a pop-in animation
-                    const styleSheet = document.createElement("style");
-                    styleSheet.innerHTML = `
-                    @keyframes banner-pop {
-                        0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
-                        70% { transform: translateX(-50%) scale(1.1); opacity: 1; }
-                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
-                    }`;
-                    document.head.appendChild(styleSheet);
-
-                    // Create Main Menu button for the banner
-                    const bannerMenuButton = document.createElement("button");
-                    bannerMenuButton.textContent = "MAIN MENU";
-                    bannerMenuButton.style.padding = "12px 32px";
-                    bannerMenuButton.style.fontSize = "1.5rem";
-                    bannerMenuButton.style.cursor = "pointer";
-                    bannerMenuButton.style.backgroundColor = "#f44336";
-                    bannerMenuButton.style.border = "none";
-                    bannerMenuButton.style.borderRadius = "10px";
-                    bannerMenuButton.style.color = "white";
-                    bannerMenuButton.style.marginTop = "32px";
-                    bannerMenuButton.style.fontWeight = "bold";
-                    bannerMenuButton.style.boxShadow = "0 0 10px #ffd70088";
-                    bannerMenuButton.addEventListener("click", () => {
-                        this._showMenu();
-                        banner.remove();
-                    });
-
-                    banner.appendChild(bannerMenuButton);
-
-                    document.body.appendChild(banner);
-
-                    // Optionally hide the original menu button in the game over UI
-                    if (menuButton) menuButton.style.display = "none";
-
-                    return;
-                } else {
-                    // Tournament continues - show "NEXT MATCH" button
-                    if (playAgainButton) {
-                        playAgainButton.textContent = "NEXT MATCH";
-                        playAgainButton.style.display = "block";
-                    }
-                }
-            }
-        } else {
-            // Practice mode - show "PLAY AGAIN" button
-            if (playAgainButton) {
-                playAgainButton.textContent = "PLAY AGAIN";
-                playAgainButton.style.display = "block";
-            }
-        }
-
-        // Default display settings for winner text and buttons
-        if (winnerText) {
-            winnerText.textContent = `${winner} Wins!`;
-            winnerText.style.fontSize = "24px";
-            winnerText.style.color = "white";
-            winnerText.style.fontWeight = "normal";
-            winnerText.style.textShadow = "none";
-            winnerText.style.display = "block";
-        }
-        if (menuButton) menuButton.style.display = "inline-block";
-        this._gameOverUI.style.display = "flex";
+         this._gameOverUI.style.display = "flex";
     }
     
     private async _submitMatchResult(winner: string): Promise<void> {
@@ -749,5 +701,84 @@ export class GameManager {
                 }
             }
         }
+    }
+    
+    private _createLanguageSelector(): void {
+        // Remove existing selector if present
+        const oldSelector = document.getElementById("languageSelector");
+        if (oldSelector) oldSelector.remove();
+
+        const selector = document.createElement("select");
+        selector.id = "languageSelector";
+        selector.style.position = "fixed";
+        selector.style.top = "24px";
+        selector.style.right = "24px";
+        selector.style.zIndex = "10000";
+        selector.style.padding = "8px 16px";
+        selector.style.fontSize = "1rem";
+        selector.style.borderRadius = "8px";
+        selector.style.background = "#222";
+        selector.style.color = "#fff";
+        selector.style.border = "1px solid #444";
+        selector.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+
+        const languageLabels: Record<Language, string> = {
+            ptBR: "Português (Brasil)",
+            en: "English",
+            es: "Español",
+            fr: "Français",
+            de: "Deutsch",
+            ru: "Русский"
+        };
+
+        for (const lang of Object.keys(languageLabels) as Language[]) {
+            const option = document.createElement("option");
+            option.value = lang;
+            option.textContent = languageLabels[lang];
+            if (lang === this._lang) option.selected = true;
+            selector.appendChild(option);
+        }
+
+        selector.addEventListener("change", () => {
+            this._lang = selector.value as Language;
+            // Update all UI elements with the new language
+            this._updateAllUIText();
+        });
+
+        document.body.appendChild(selector);
+    }
+
+    // Add a method to update all UI text when language changes:
+    private _updateAllUIText(): void {
+        // Menu UI
+        const subtitle = this._menuUI.querySelector("h2");
+        if (subtitle) subtitle.textContent = STRINGS[this._lang].selectGameMode;
+
+        const classicLabel = this._menuUI.querySelector(".classic-label");
+        if (classicLabel) classicLabel.textContent = STRINGS[this._lang].classicMode;
+        const classicBtn = this._menuUI.querySelector(".classic-btn");
+        if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
+
+        const puLabel = this._menuUI.querySelector(".powerups-label");
+        if (puLabel) puLabel.textContent = STRINGS[this._lang].powerUpsMode;
+        const puBtn = this._menuUI.querySelector(".powerups-btn");
+        if (puBtn) puBtn.textContent = STRINGS[this._lang].start;
+
+        const matchInfo = document.getElementById("matchInfo");
+        if (matchInfo) this._updateMatchInfoDisplay(matchInfo);
+
+        // Game-Over UI
+        const gameOverText = document.getElementById("gameOverText");
+        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
+
+        const playAgainBtn = document.getElementById("playAgainButton");
+        if (playAgainBtn) {
+            playAgainBtn.textContent = this._currentMatch
+                ? STRINGS[this._lang].nextMatch
+                : STRINGS[this._lang].playAgain;
+        }
+
+        const menuBtn = document.getElementById("menuButton");
+        if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
     }
 }
