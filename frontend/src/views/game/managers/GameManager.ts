@@ -300,7 +300,7 @@ export class GameManager {
         winnerText.id = "winnerText";
         
         const playAgainButton = document.createElement("button");
-        playAgainButton.textContent = "PLAY AGAIN";
+        playAgainButton.id = "playAgainButton";
         playAgainButton.style.padding = "10px 20px";
         playAgainButton.style.fontSize = "20px";
         playAgainButton.style.cursor = "pointer";
@@ -309,7 +309,8 @@ export class GameManager {
         playAgainButton.style.borderRadius = "5px";
         playAgainButton.style.color = "white";
         playAgainButton.style.marginBottom = "10px";
-        playAgainButton.id = "playAgainButton";
+        playAgainButton.style.width = "180px"; // Set fixed width
+        playAgainButton.style.textAlign = "center"; // Center the text
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
@@ -325,6 +326,8 @@ export class GameManager {
         menuButton.style.border = "none";
         menuButton.style.borderRadius = "5px";
         menuButton.style.color = "white";
+        menuButton.style.width = "180px"; // Match the width of the play again button
+        menuButton.style.textAlign = "center"; // Center the text
         
         menuButton.addEventListener("click", () => {
              (async () => {
@@ -464,11 +467,23 @@ export class GameManager {
                     if (menuButton) menuButton.style.display = "none";
 
                     return;
+                } else {
+                    // Tournament continues - show "NEXT MATCH" button
+                    if (playAgainButton) {
+                        playAgainButton.textContent = "NEXT MATCH";
+                        playAgainButton.style.display = "block";
+                    }
                 }
+            }
+        } else {
+            // Practice mode - show "PLAY AGAIN" button
+            if (playAgainButton) {
+                playAgainButton.textContent = "PLAY AGAIN";
+                playAgainButton.style.display = "block";
             }
         }
 
-        // Default: show normal winner and play again button
+        // Default display settings for winner text and buttons
         if (winnerText) {
             winnerText.textContent = `${winner} Wins!`;
             winnerText.style.fontSize = "24px";
@@ -477,7 +492,6 @@ export class GameManager {
             winnerText.style.textShadow = "none";
             winnerText.style.display = "block";
         }
-        if (playAgainButton) playAgainButton.style.display = "block";
         if (menuButton) menuButton.style.display = "inline-block";
         this._gameOverUI.style.display = "flex";
     }
