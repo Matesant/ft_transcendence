@@ -13,7 +13,7 @@ export interface PongButtonProps {
   extraClass?: string;
 }
 
-export function PongButton({ text, variant = 'primary', onClick, type = 'button', disabled = false, extraClass = '' }: PongButtonProps): HTMLButtonElement {
+export function PongButton({ text, variant = 'primary', onClick, type = 'submit', disabled = false, extraClass = '' }: PongButtonProps): HTMLButtonElement {
   const button = document.createElement('button');
   let base = 'px-4 py-2 rounded font-semibold transition w-full ';
   let variantClass = '';
