@@ -1,6 +1,9 @@
 // services/user-service/src/routes/users/avatar.js
 import fs from 'fs';
 import path from 'path';
+import { readdir } from 'fs/promises';
+
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 export default async function (fastify, opts) {
 	// --- Avatar Management ---
@@ -42,10 +45,10 @@ export default async function (fastify, opts) {
 			const timestamp = Date.now();
 			const ext = path.extname(data.filename);
 			const filename = `${alias}-${timestamp}${ext}`;
-			const filepath = path.join('uploads', filename);
+			const filepath = path.join(UPLOAD_DIR, filename);
 
 			// Create uploads folder if it doesn't exist
-			if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
+			if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
 
 			// Save the file
 			const stream = fs.createWriteStream(filepath);
@@ -67,4 +70,17 @@ export default async function (fastify, opts) {
 			return reply.status(500).send({ error: 'Failed to upload avatar' });
 		}
 	});
+
+	fastify.get('/avatars', async (request, reply) => {
+    let files;
+    try {
+            files = await readdir(UPLOAD_DIR);
+    } catch (err) {
+            return reply.code(500).send({ error: 'Cannot read uploads directory' });
+    }
+    const images = files.filter(f => /\.(jpe?g|png)$/i.test(f));
+    const urls = images.map(f => `/uploads/${f}`);
+    return { avatars: urls };
+	});
 }
+

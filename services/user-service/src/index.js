@@ -11,6 +11,8 @@ import friendsRoutes from './routes/users/friends.js';
 import publicRoutes from './routes/users/public.js';
 import historyRoutes from './routes/users/history.js';
 import crypto from 'node:crypto'
+import path from 'node:path'
+import fastifyStatic from '@fastify/static'
 
 dotenv.config()
 
@@ -46,6 +48,11 @@ await fastify.register(multipart, {
   limits: {
 	fileSize: 10 * 1024 * 1024 // 10 MB
   }
+})
+await fastify.register(fastifyStatic, {
+  root: path.join(process.cwd(), 'uploads'),
+  prefix: '/uploads/',          
+  decorateReply: false          
 })
 await fastify.register(profileRoutes, { prefix: '/users' });
 await fastify.register(avatarRoutes, { prefix: '/users' });
