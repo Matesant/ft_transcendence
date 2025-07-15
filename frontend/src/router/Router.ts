@@ -6,6 +6,7 @@ const routes: {[key: string]: () => AView } = {
     "/tournament": Builders.TournamentBuilder,
     "/login": Builders.LoginBuilder,
     "/register": Builders.RegisterBuilder,
+    "/dashboard": Builders.DashboardBuilder,
     "/": Builders.HomeBuilder
 };
 
@@ -22,9 +23,14 @@ export function router (){
     view = routes[path] ? routes[path]() : undefined;
     
     if (view) {
-        view.render();
+        view.render(document.body);
     }
     else {
         document.body.innerHTML = "<h1>404 Not Found</h1>";
     }
+}
+
+export function navigateTo(path: string) {
+    window.history.pushState({}, '', path);
+    router();
 }

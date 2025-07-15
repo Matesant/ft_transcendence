@@ -3,6 +3,7 @@ import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
+import { Dashboard } from "./dashboard/Dashboard";
 import { AView } from "./AView";
 
 export class Builders {
@@ -24,5 +25,9 @@ export class Builders {
 
     public static TournamentBuilder(): AView {
         return new Tournament(); // Assuming Tournament is similar to Game for now
+    }
+
+    public static DashboardBuilder(): AView {
+        return new Dashboard();
     }
 }
