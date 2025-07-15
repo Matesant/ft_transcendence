@@ -148,5 +148,17 @@ export const CONFIG = {
             DEFAULT: 1.0,
             STEP: 0.1
         }
+    },
+
+    // Table themes
+    TABLE_THEMES: {
+        GREEN: {
+            FIELD_COLOR: new Color3(0.15, 0.35, 0.15),
+            BACKGROUND_COLOR: new Color4(0.1, 0.1, 0.15, 1)
+        },
+        BLUE: {
+            FIELD_COLOR: new Color3(0.1, 0.3, 0.6),  // Tennis table blue
+            BACKGROUND_COLOR: new Color4(0.05, 0.05, 0.05, 1)  // Black background
+        }
     }
 };

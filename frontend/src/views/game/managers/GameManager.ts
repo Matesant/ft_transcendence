@@ -1,4 +1,4 @@
-import { Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial, Mesh } from "@babylonjs/core";
 import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
@@ -50,6 +50,10 @@ export class GameManager {
     // Add this field to your GameManager class around line 42:
     private _speedMultiplier: number = CONFIG.SPEED.MULTIPLIER.DEFAULT;
 
+    // Add this field around line 44:
+    private _tableTheme: 'GREEN' | 'BLUE' = 'GREEN'; // Default to green
+    private _ground: Mesh; // Store reference to ground mesh
+    
     constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
@@ -315,12 +319,53 @@ export class GameManager {
         speedContainer.appendChild(speedSliderContainer);
         speedContainer.appendChild(speedValue);
         
-        // Update the menu assembly to include speed control
+        // Add table color control container after buttonsContainer
+        const tableColorContainer = document.createElement("div");
+        tableColorContainer.style.display = "flex";
+        tableColorContainer.style.flexDirection = "column";
+        tableColorContainer.style.alignItems = "center";
+        tableColorContainer.style.marginTop = "30px";
+        tableColorContainer.style.width = "300px";
+        
+        const tableColorLabel = document.createElement("div");
+        tableColorLabel.textContent = STRINGS[this._lang].tableColor || "Table Color";
+        tableColorLabel.style.color = "white";
+        tableColorLabel.style.fontSize = "18px";
+        tableColorLabel.style.marginBottom = "15px";
+        
+        const tableColorButton = document.createElement("button");
+        tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
+            (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
+            (STRINGS[this._lang].switchToGreen || "Switch to Green");
+        tableColorButton.style.padding = "10px 20px";
+        tableColorButton.style.fontSize = "16px";
+        tableColorButton.style.cursor = "pointer";
+        tableColorButton.style.backgroundColor = this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
+        tableColorButton.style.border = "none";
+        tableColorButton.style.borderRadius = "5px";
+        tableColorButton.style.color = "white";
+        tableColorButton.style.width = "160px";
+        
+        // Add event listener for table color toggle
+        tableColorButton.addEventListener("click", () => {
+            this._toggleTableTheme();
+            // Update button text and color
+            tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
+                (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
+                (STRINGS[this._lang].switchToGreen || "Switch to Green");
+            tableColorButton.style.backgroundColor = this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
+        });
+        
+        tableColorContainer.appendChild(tableColorLabel);
+        tableColorContainer.appendChild(tableColorButton);
+        
+        // Update the menu assembly to include table color control
         this._menuUI.appendChild(title);
         this._menuUI.appendChild(matchInfo);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
-        this._menuUI.appendChild(speedContainer); // Add this line
+        this._menuUI.appendChild(speedContainer); // existing speed control
+        this._menuUI.appendChild(tableColorContainer); // Add this line
         
         document.body.appendChild(this._menuUI);
     }
@@ -584,14 +629,14 @@ export class GameManager {
     
     private _createPlayingField(): void {
         // Create ground
-        const ground = MeshBuilder.CreateGround(
+        this._ground = MeshBuilder.CreateGround(
             "ground", 
             { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
             this._scene
         );
         const groundMaterial = new StandardMaterial("groundMaterial", this._scene);
-        groundMaterial.diffuseColor = CONFIG.FIELD.COLOR;
-        ground.material = groundMaterial;
+        groundMaterial.diffuseColor = CONFIG.TABLE_THEMES[this._tableTheme].FIELD_COLOR;
+        this._ground.material = groundMaterial;
         
         // Create center lines
         const lineMaterial = new StandardMaterial("lineMaterial", this._scene);
@@ -863,11 +908,36 @@ export class GameManager {
 
         const menuBtn = document.getElementById("menuButton");
         if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
+
+        // Table color control
+        const tableColorLabel = this._menuUI.querySelector("div:has(button) > div");
+        if (tableColorLabel && tableColorLabel.textContent?.includes("Table") || tableColorLabel?.textContent?.includes("Mesa")) {
+            tableColorLabel.textContent = STRINGS[this._lang].tableColor;
+        }
+        
+        const tableColorButton = this._menuUI.querySelector("button[style*='width: 160px']");
+        if (tableColorButton) {
+            tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
+                STRINGS[this._lang].switchToBlue : 
+                STRINGS[this._lang].switchToGreen;
+        }
     }
 
     // Add this method to your GameManager class (you can place it after the _startGame method):
     private _applySpeedMultiplierToBall(ball: Ball): void {
         const currentVel = ball.velocity;
         ball.velocity = currentVel.scale(this._speedMultiplier);
+    }
+
+    private _toggleTableTheme(): void {
+        // Toggle theme
+        this._tableTheme = this._tableTheme === 'GREEN' ? 'BLUE' : 'GREEN';
+        
+        // Update ground color
+        const groundMaterial = this._ground.material as StandardMaterial;
+        groundMaterial.diffuseColor = CONFIG.TABLE_THEMES[this._tableTheme].FIELD_COLOR;
+        
+        // Update scene background color
+        this._scene.clearColor = CONFIG.TABLE_THEMES[this._tableTheme].BACKGROUND_COLOR;
     }
 }
