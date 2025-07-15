@@ -59,7 +59,7 @@ export const CONFIG = {
             LEFT: new Vector3(0, 0.15, -8.25),
             RIGHT: new Vector3(0, 0.15, 8.25)
         },
-        MOVE_SPEED: 0.250,
+        MOVE_SPEED: 0.200,
         POSITION_LIMIT: {
             MIN: -5.4,
             MAX: 5.4
@@ -138,5 +138,15 @@ export const CONFIG = {
             MULTI_BALL: new Color3(0.8, 0.2, 0.8)         // Purple
         },
         ROTATION_SPEED: 0.01
+    },
+
+    // Speed configuration
+    SPEED: {
+        MULTIPLIER: {
+            MIN: 0.8,
+            MAX: 1.5,
+            DEFAULT: 1.0,
+            STEP: 0.1
+        }
     }
 };

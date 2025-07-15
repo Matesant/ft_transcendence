@@ -47,6 +47,9 @@ export class GameManager {
     
     private _lang: Language = "ptBR"; // Set Brazilian Portuguese as default
 
+    // Add this field to your GameManager class around line 42:
+    private _speedMultiplier: number = CONFIG.SPEED.MULTIPLIER.DEFAULT;
+
     constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
@@ -188,6 +191,7 @@ export class GameManager {
         classicLabel.style.color = "white";
         classicLabel.style.fontSize = "18px";
         classicLabel.style.marginBottom = "10px";
+        classicLabel.classList.add("classic-label"); // Add class for later reference
         
         // Power-ups mode label
         const powerUpsLabel = document.createElement("div");
@@ -195,6 +199,7 @@ export class GameManager {
         powerUpsLabel.style.color = "white"; 
         powerUpsLabel.style.fontSize = "18px";
         powerUpsLabel.style.marginBottom = "10px";
+        powerUpsLabel.classList.add("powerups-label"); // Add class for later reference
         
         // Classic mode button
         const classicButton = document.createElement("button");
@@ -207,6 +212,7 @@ export class GameManager {
         classicButton.style.border = "none";
         classicButton.style.borderRadius = "5px";
         classicButton.style.color = "white";
+        classicButton.classList.add("classic-btn"); // Add class for later reference
         
         // Power-ups mode button
         const powerUpsButton = document.createElement("button");
@@ -219,6 +225,7 @@ export class GameManager {
         powerUpsButton.style.border = "none";
         powerUpsButton.style.borderRadius = "5px";
         powerUpsButton.style.color = "white";
+        powerUpsButton.classList.add("powerups-btn"); // Add class for later reference
         
         // Add event listeners
         classicButton.addEventListener("click", () => {
@@ -243,6 +250,77 @@ export class GameManager {
         this._menuUI.appendChild(matchInfo);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
+        
+        // Add speed control container after buttonsContainer
+        const speedContainer = document.createElement("div");
+        speedContainer.style.display = "flex";
+        speedContainer.style.flexDirection = "column";
+        speedContainer.style.alignItems = "center";
+        speedContainer.style.marginTop = "30px";
+        speedContainer.style.width = "300px";
+        
+        const speedLabel = document.createElement("div");
+        speedLabel.textContent = STRINGS[this._lang].gameSpeed || "Game Speed";
+        speedLabel.style.color = "white";
+        speedLabel.style.fontSize = "18px";
+        speedLabel.style.marginBottom = "10px";
+        
+        const speedSliderContainer = document.createElement("div");
+        speedSliderContainer.style.display = "flex";
+        speedSliderContainer.style.alignItems = "center";
+        speedSliderContainer.style.gap = "15px";
+        speedSliderContainer.style.width = "100%";
+        
+        const minLabel = document.createElement("span");
+        minLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MIN}x`; // Use config value instead of hardcoded "0.5x"
+        minLabel.style.color = "white";
+        minLabel.style.fontSize = "14px";
+        
+        const speedSlider = document.createElement("input");
+        speedSlider.type = "range";
+        speedSlider.min = CONFIG.SPEED.MULTIPLIER.MIN.toString();
+        speedSlider.max = CONFIG.SPEED.MULTIPLIER.MAX.toString();
+        speedSlider.step = CONFIG.SPEED.MULTIPLIER.STEP.toString();
+        speedSlider.value = this._speedMultiplier.toString();
+        speedSlider.style.flex = "1";
+        speedSlider.style.height = "6px";
+        speedSlider.style.background = "#ddd";
+        speedSlider.style.outline = "none";
+        speedSlider.style.borderRadius = "3px";
+        
+        const maxLabel = document.createElement("span");
+        maxLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MAX}x`; // Use config value instead of hardcoded "2.0x"
+        maxLabel.style.color = "white";
+        maxLabel.style.fontSize = "14px";
+        
+        const speedValue = document.createElement("div");
+        speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
+        speedValue.style.color = "#4CAF50";
+        speedValue.style.fontSize = "16px";
+        speedValue.style.fontWeight = "bold";
+        speedValue.style.marginTop = "5px";
+        
+        // Add event listener for slider
+        speedSlider.addEventListener("input", (e) => {
+            const target = e.target as HTMLInputElement;
+            this._speedMultiplier = parseFloat(target.value);
+            speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
+        });
+        
+        speedSliderContainer.appendChild(minLabel);
+        speedSliderContainer.appendChild(speedSlider);
+        speedSliderContainer.appendChild(maxLabel);
+        
+        speedContainer.appendChild(speedLabel);
+        speedContainer.appendChild(speedSliderContainer);
+        speedContainer.appendChild(speedValue);
+        
+        // Update the menu assembly to include speed control
+        this._menuUI.appendChild(title);
+        this._menuUI.appendChild(matchInfo);
+        this._menuUI.appendChild(subtitle);
+        this._menuUI.appendChild(buttonsContainer);
+        this._menuUI.appendChild(speedContainer); // Add this line
         
         document.body.appendChild(this._menuUI);
     }
@@ -366,11 +444,16 @@ export class GameManager {
         // Store the current game mode
         this._powerUpsEnabled = enablePowerUps;
 
+        // Apply speed multiplier to paddles
+        this._leftPaddle.setSpeedMultiplier(this._speedMultiplier);
+        this._rightPaddle.setSpeedMultiplier(this._speedMultiplier);
+
         // Try to load a new match (if available)
         await this._loadCurrentMatch();
 
-        // Start the ball automatically with random direction for first serve
-        this._ball.start(); // No direction specified = random
+        // Start the ball with speed multiplier applied
+        this._ball.start();
+        this._applySpeedMultiplierToBall(this._ball);
         this._firstCollision = true;
 
         // Activate power-up spawning only if power-ups mode is enabled
@@ -623,7 +706,7 @@ export class GameManager {
                     this._firstCollision = false;
                     const currentVelocity = ball.velocity;
                     const normalizedVelocity = currentVelocity.normalize();
-                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED * this._speedMultiplier);
                 }
                 
                 // Add spin based on hit position
@@ -643,7 +726,7 @@ export class GameManager {
                     this._firstCollision = false;
                     const currentVelocity = ball.velocity;
                     const normalizedVelocity = currentVelocity.normalize();
-                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED * this._speedMultiplier);
                 }
                 
                 // Add spin based on hit position
@@ -780,5 +863,11 @@ export class GameManager {
 
         const menuBtn = document.getElementById("menuButton");
         if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
+    }
+
+    // Add this method to your GameManager class (you can place it after the _startGame method):
+    private _applySpeedMultiplierToBall(ball: Ball): void {
+        const currentVel = ball.velocity;
+        ball.velocity = currentVel.scale(this._speedMultiplier);
     }
 }
