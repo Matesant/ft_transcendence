@@ -9,6 +9,7 @@ export enum PaddleType {
 
 export class Paddle extends GameObject {
     private _type: PaddleType;
+    private _speedMultiplier: number = 1.0;
 
     constructor(scene: Scene, type: PaddleType) {
         super(scene);
@@ -52,15 +53,25 @@ export class Paddle extends GameObject {
     }
 
     public moveLeft(): void {
-        if (this._mesh.position.x > CONFIG.PADDLE.POSITION_LIMIT.MIN) {
-            this._mesh.position.x -= CONFIG.PADDLE.MOVE_SPEED;
+        const actualPaddleHalfWidth = (CONFIG.PADDLE.DIMENSIONS.x / 2) * this._mesh.scaling.x;
+        const leftBoundary = CONFIG.WALL.POSITION.TOP.x + (CONFIG.WALL.DIMENSIONS.x / 2) + actualPaddleHalfWidth + 0.05; // Add small margin
+        
+        if (this._mesh.position.x > leftBoundary) {
+            this._mesh.position.x -= CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier;
         }
     }
 
     public moveRight(): void {
-        if (this._mesh.position.x < CONFIG.PADDLE.POSITION_LIMIT.MAX) {
-            this._mesh.position.x += CONFIG.PADDLE.MOVE_SPEED;
+        const actualPaddleHalfWidth = (CONFIG.PADDLE.DIMENSIONS.x / 2) * this._mesh.scaling.x;
+        const rightBoundary = CONFIG.WALL.POSITION.BOTTOM.x - (CONFIG.WALL.DIMENSIONS.x / 2) - actualPaddleHalfWidth - 0.05; // Add small margin
+        
+        if (this._mesh.position.x < rightBoundary) {
+            this._mesh.position.x += CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier;
         }
+    }
+
+    public setSpeedMultiplier(multiplier: number): void {
+        this._speedMultiplier = multiplier;
     }
 
     public get width(): number {
