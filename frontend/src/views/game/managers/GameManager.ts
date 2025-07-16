@@ -60,6 +60,9 @@ export class GameManager {
     
     private _lang: Language = "ptBR"; // Set Brazilian Portuguese as default
 
+    // Adicionar campo para modo selecionado no multiplayer
+    private _multiplayerSelectedMode: 'classic' | 'powerup' | null = null;
+
     constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
@@ -201,6 +204,7 @@ export class GameManager {
         classicLabel.style.color = "white";
         classicLabel.style.fontSize = "18px";
         classicLabel.style.marginBottom = "10px";
+        classicLabel.classList.add("classic-label"); // ← add class for selector
         
         // Power-ups mode label
         const powerUpsLabel = document.createElement("div");
@@ -208,6 +212,7 @@ export class GameManager {
         powerUpsLabel.style.color = "white"; 
         powerUpsLabel.style.fontSize = "18px";
         powerUpsLabel.style.marginBottom = "10px";
+        powerUpsLabel.classList.add("powerups-label"); // ← add class for selector
         
         // Classic mode button
         const classicButton = document.createElement("button");
@@ -220,6 +225,7 @@ export class GameManager {
         classicButton.style.border = "none";
         classicButton.style.borderRadius = "5px";
         classicButton.style.color = "white";
+        classicButton.classList.add("classic-btn"); // ← add class for selector
         
         // Power-ups mode button
         const powerUpsButton = document.createElement("button");
@@ -232,6 +238,272 @@ export class GameManager {
         powerUpsButton.style.border = "none";
         powerUpsButton.style.borderRadius = "5px";
         powerUpsButton.style.color = "white";
+        powerUpsButton.classList.add("powerups-btn"); // ← add class for selector
+        
+        // Add event listeners
+        classicButton.addEventListener("click", () => {
+            this._startGame(false); // Start game without power-ups
+        });
+        
+        powerUpsButton.addEventListener("click", () => {
+            this._startGame(true); // Start game with power-ups
+        });
+        
+        // Add multiplayer section title
+        const multiplayerTitle = document.createElement("h2");
+        multiplayerTitle.textContent = "Multiplayer";
+        multiplayerTitle.style.color = "white";
+        multiplayerTitle.style.fontSize = "24px";
+        multiplayerTitle.style.marginTop = "30px";
+        multiplayerTitle.style.marginBottom = "20px";
+        
+        // Container for multiplayer buttons
+        const multiplayerContainer = document.createElement("div");
+        multiplayerContainer.style.display = "flex";
+        multiplayerContainer.style.flexDirection = "row";
+        multiplayerContainer.style.gap = "20px";
+        
+        // Create button for hosting a game
+        const hostButton = document.createElement("button");
+        hostButton.textContent = "HOST GAME";
+        hostButton.style.padding = "10px 20px";
+        hostButton.style.fontSize = "18px";
+        hostButton.style.cursor = "pointer";
+        hostButton.style.backgroundColor = "#42b4f4";
+        hostButton.style.border = "none";
+        hostButton.style.borderRadius = "5px";
+        hostButton.style.color = "white";
+        
+        // Create button for joining a game
+        const joinButton = document.createElement("button");
+        joinButton.textContent = "JOIN GAME";
+        joinButton.style.padding = "10px 20px";
+        joinButton.style.fontSize = "18px";
+        joinButton.style.cursor = "pointer";
+        joinButton.style.backgroundColor = "#f4c542";
+        joinButton.style.border = "none";
+        joinButton.style.borderRadius = "5px";
+        joinButton.style.color = "white";
+        
+        // Add event listeners
+        hostButton.addEventListener("click", () => {
+            this._gameMode = GameMode.MULTIPLAYER_HOST;
+            this._setupMultiplayer(true);
+        });
+        
+        joinButton.addEventListener("click", () => {
+            this._gameMode = GameMode.MULTIPLAYER_JOIN;
+            this._setupMultiplayer(false);
+        });
+        
+        // Add to container
+        multiplayerContainer.appendChild(hostButton);
+        multiplayerContainer.appendChild(joinButton);
+        
+        // Add to menu
+        this._menuUI.appendChild(title);
+        this._menuUI.appendChild(matchInfo);
+        this._menuUI.appendChild(subtitle);
+        this._menuUI.appendChild(buttonsContainer);
+        this._menuUI.appendChild(multiplayerTitle);
+        this._menuUI.appendChild(multiplayerContainer);
+        
+        document.body.appendChild(this._menuUI);
+    }
+    
+    private async _showMultiplayerModeSelector(): Promise<void> {
+        // Cria overlay simples
+        const overlay = document.createElement('div');
+        overlay.id = 'multiplayerModeOverlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.background = 'rgba(0,0,0,0.8)';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '10001';
+
+        const title = document.createElement('h2');
+        title.textContent = 'Escolha o modo de jogo';
+        title.style.color = 'white';
+        title.style.marginBottom = '30px';
+        overlay.appendChild(title);
+
+        const classicBtn = document.createElement('button');
+        classicBtn.textContent = 'Clássico';
+        classicBtn.style.margin = '10px';
+        classicBtn.style.padding = '16px 32px';
+        classicBtn.style.fontSize = '1.2rem';
+        classicBtn.onclick = () => this._selectMultiplayerMode('classic');
+
+        const powerupBtn = document.createElement('button');
+        powerupBtn.textContent = 'Power Up';
+        powerupBtn.style.margin = '10px';
+        powerupBtn.style.padding = '16px 32px';
+        powerupBtn.style.fontSize = '1.2rem';
+        powerupBtn.onclick = () => this._selectMultiplayerMode('powerup');
+
+        overlay.appendChild(classicBtn);
+        overlay.appendChild(powerupBtn);
+        document.body.appendChild(overlay);
+    }
+
+    // Host seleciona modo e conecta ao servidor
+    private _selectMultiplayerMode(mode: 'classic' | 'powerup') {
+        this._multiplayerSelectedMode = mode;
+        // Remove overlay
+        const overlay = document.getElementById('multiplayerModeOverlay');
+        if (overlay) overlay.remove();
+        // Conecta ao servidor e envia modo após conexão
+        this.connectToGameServer();
+    }
+
+    private async _loadCurrentMatch(): Promise<void> {
+        try {
+            const response = await fetch('http://localhost:3002/match/next', {
+                method: 'GET',
+                credentials: 'include' // Include authentication cookies
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Check if tournament is complete - if yes, reset to practice mode
+                if (data.tournamentComplete) {
+                    console.log('Tournament is complete, using practice mode');
+                    this._currentMatch = null;
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    return;
+                }
+                
+                // Normal match loading logic
+                if (data.match) {
+                    this._currentMatch = data.match;
+                    this._player1Name = data.match.player1;
+                    this._player2Name = data.match.player2;
+                    
+                    // Update score manager with player names
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    
+                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
+                } else {
+                    console.log('No matches available');
+                    // Set default names if no match
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load match:', error);
+            // Use default names on error
+            this._player1Name = "Player 1";
+            this._player2Name = "Player 2";
+            this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+        }
+    }
+    
+    private _createMenuUI(): void {
+        this._menuUI = document.createElement("div");
+        this._menuUI.style.position = "absolute";
+        this._menuUI.style.top = "0";
+        this._menuUI.style.left = "0";
+        this._menuUI.style.width = "100%";
+        this._menuUI.style.height = "100%";
+        this._menuUI.style.display = "flex";
+        this._menuUI.style.flexDirection = "column";
+        this._menuUI.style.justifyContent = "center";
+        this._menuUI.style.alignItems = "center";
+        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        
+        const title = document.createElement("h1");
+        title.textContent = "PONG"; // game title stays constant (or add i18n if desired)
+        title.style.color = "white";
+        title.style.fontSize = "48px";
+        title.style.marginBottom = "30px";
+        
+        const matchInfo = document.createElement("div");
+        matchInfo.id = "matchInfo";
+        matchInfo.style.color = "white";
+        matchInfo.style.fontSize = "20px";
+        matchInfo.style.marginBottom = "20px";
+        matchInfo.style.textAlign = "center";
+        this._updateMatchInfoDisplay(matchInfo);
+        
+        const subtitle = document.createElement("h2");
+        subtitle.textContent = STRINGS[this._lang].selectGameMode;
+        subtitle.style.color = "white";
+        subtitle.style.fontSize = "24px";
+        subtitle.style.marginBottom = "20px";
+        
+        // Container for both buttons
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.style.display = "flex";
+        buttonsContainer.style.flexDirection = "row";
+        buttonsContainer.style.gap = "20px";
+        buttonsContainer.style.justifyContent = "center";
+        buttonsContainer.style.alignItems = "center";
+        
+        // Create button containers (to include label and button)
+        const classicContainer = document.createElement("div");
+        classicContainer.style.display = "flex";
+        classicContainer.style.flexDirection = "column";
+        classicContainer.style.alignItems = "center";
+        classicContainer.style.width = "200px";
+        
+        const powerUpsContainer = document.createElement("div");
+        powerUpsContainer.style.display = "flex";
+        powerUpsContainer.style.flexDirection = "column";
+        powerUpsContainer.style.alignItems = "center"; 
+        powerUpsContainer.style.width = "200px";
+        
+        // Classic mode label
+        const classicLabel = document.createElement("div");
+        classicLabel.textContent = STRINGS[this._lang].classicMode;
+        classicLabel.style.color = "white";
+        classicLabel.style.fontSize = "18px";
+        classicLabel.style.marginBottom = "10px";
+        classicLabel.classList.add("classic-label"); // ← add class for selector
+        
+        // Power-ups mode label
+        const powerUpsLabel = document.createElement("div");
+        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
+        powerUpsLabel.style.color = "white"; 
+        powerUpsLabel.style.fontSize = "18px";
+        powerUpsLabel.style.marginBottom = "10px";
+        powerUpsLabel.classList.add("powerups-label"); // ← add class for selector
+        
+        // Classic mode button
+        const classicButton = document.createElement("button");
+        classicButton.textContent = STRINGS[this._lang].start;
+        classicButton.style.padding = "10px 20px";
+        classicButton.style.width = "120px";
+        classicButton.style.fontSize = "18px";
+        classicButton.style.cursor = "pointer";
+        classicButton.style.backgroundColor = "#4286f4";
+        classicButton.style.border = "none";
+        classicButton.style.borderRadius = "5px";
+        classicButton.style.color = "white";
+        classicButton.classList.add("classic-btn"); // ← add class for selector
+        
+        // Power-ups mode button
+        const powerUpsButton = document.createElement("button");
+        powerUpsButton.textContent = STRINGS[this._lang].start;
+        powerUpsButton.style.padding = "10px 20px";
+        powerUpsButton.style.width = "120px";
+        powerUpsButton.style.fontSize = "18px";
+        powerUpsButton.style.cursor = "pointer";
+        powerUpsButton.style.backgroundColor = "#f44283";
+        powerUpsButton.style.border = "none";
+        powerUpsButton.style.borderRadius = "5px";
+        powerUpsButton.style.color = "white";
+        powerUpsButton.classList.add("powerups-btn"); // ← add class for selector
         
         // Add event listeners
         classicButton.addEventListener("click", () => {
@@ -600,24 +872,20 @@ export class GameManager {
     // Add a new method to handle multiplayer setup
     private _setupMultiplayer(isHost: boolean): void {
         if (isHost) {
-            console.log("Creating a new game room...");
             fetch('http://localhost:3004/create-room')
-                .then(response => {
-                    console.log("Room creation response:", response);
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log("Room created successfully:", data);
                     this._roomId = data.roomId;
-                    alert(`Room created! ID: ${this._roomId}`);
-                    this.connectToGameServer();
+                    // Remove overlay antigo se existir
+                    const oldOverlay = document.getElementById('multiplayerModeOverlay');
+                    if (oldOverlay) oldOverlay.remove();
+                    // Exibir UI para o host escolher o modo
+                    this._showMultiplayerModeSelector();
                 })
                 .catch(error => {
-                    console.error('Error creating room:', error);
                     alert("Failed to create room. Check console for details.");
                 });
         } else {
-            // Show a prompt to enter room ID
             const roomId = prompt('Enter Room ID:');
             if (roomId) {
                 this._roomId = roomId;
@@ -628,17 +896,20 @@ export class GameManager {
 
     private connectToGameServer(): void {
         if (!this._roomId) return;
-
         this._socket = new WebSocket(`ws://localhost:3004/game/${this._roomId}`);
-
         this._socket.addEventListener("open", () => {
-            console.log("Connected to game server");
-
-            // Join the room (send player info)
+            // Se for host e já escolheu modo, envie para o backend
+            if (this._gameMode === GameMode.MULTIPLAYER_HOST && this._multiplayerSelectedMode) {
+                this._socket.send(JSON.stringify({
+                    type: 'MODE_SELECTED',
+                    mode: this._multiplayerSelectedMode
+                }));
+            }
+            // Join padrão
             this._socket.send(JSON.stringify({
                 type: "JOIN",
                 player: {
-                    name: this._player1Name, // Use player 1 name for now
+                    name: this._player1Name,
                     side: this._playerSide
                 }
             }));
@@ -662,12 +933,18 @@ export class GameManager {
     // Trata mensagens recebidas do WebSocket
     private _handleSocketMessage(data: any): void {
         switch (data.type) {
+            case 'MODE_SELECTED':
+                // Sincroniza modo para ambos os jogadores
+                this._multiplayerSelectedMode = data.mode;
+                this._powerUpsEnabled = (data.mode === 'powerup');
+                break;
+            case 'GAME_START':
+                // Usa o modo sincronizado
+                this._startGame(this._multiplayerSelectedMode === 'powerup');
+                break;
             case 'JOINED':
                 this._playerSide = data.side;
                 console.log(`Joined as ${this._playerSide} paddle`);
-                break;
-            case 'GAME_START':
-                this._startGame(this._powerUpsEnabled);
                 break;
             case 'PADDLE_UPDATE':
                 if (data.side === 'left' && this._playerSide !== 'left') {
