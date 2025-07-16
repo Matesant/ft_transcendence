@@ -4,6 +4,7 @@ import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
 import { Dashboard } from "./dashboard/Dashboard";
+import { Players } from "./players/Players";
 import { AView } from "./AView";
 
 export class Builders {
@@ -29,5 +30,9 @@ export class Builders {
 
     public static DashboardBuilder(): AView {
         return new Dashboard();
+    }
+
+    public static PlayersBuilder(): AView {
+        return new Players();
     }
 }

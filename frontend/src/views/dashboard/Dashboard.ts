@@ -3,13 +3,12 @@ import { Sidebar } from "../../components/sidebar/Sidebar";
 
 export class Dashboard extends AView {
 
-    public render(parent: HTMLElement = document.body): void {
-        parent.innerHTML = `
+  public render(parent: HTMLElement = document.body): void {
+
+      parent.innerHTML = `
         ${Sidebar.getHtml()}
       `;
-    }
+  }
 
-    public dispose(): void {
-
-    }
+  public dispose(): void {}
 }
