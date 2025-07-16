@@ -13,21 +13,21 @@ export class MultiplayerManager {
 
     constructor() {}
 
-    public setupMultiplayer(isHost: boolean, player1Name: string, onModeSelected: (mode: 'classic' | 'powerup') => void, onPlayerSide: (side: 'left' | 'right' | null) => void, onRoomId?: (roomId: string) => void): void {
+    public async setupMultiplayer(isHost: boolean, player1Name: string, onModeSelected: (mode: 'classic' | 'powerup') => void, onPlayerSide: (side: 'left' | 'right' | null) => void, onRoomId?: (roomId: string) => void): Promise<void> {
         this._player1Name = player1Name;
         this._modeSelectedCallback = onModeSelected;
         this._playerSideCallback = onPlayerSide;
         if (isHost) {
-            fetch('http://localhost:3004/create-room')
-                .then(response => response.json())
-                .then(data => {
-                    this._roomId = data.roomId;
-                    if (onRoomId) onRoomId(this._roomId);
-                    // UI para host escolher modo
-                })
-                .catch(error => {
-                    alert("Failed to create room. Check console for details.");
-                });
+            try {
+                const response = await fetch('http://localhost:3004/create-room');
+                const data = await response.json();
+                this._roomId = data.roomId;
+                if (onRoomId) onRoomId(this._roomId);
+                this.connectToGameServer();
+                // UI para host escolher modo
+            } catch (error) {
+                alert("Failed to create room. Check console for details.");
+            }
         } else {
             const roomId = prompt('Enter Room ID:');
             if (roomId) {

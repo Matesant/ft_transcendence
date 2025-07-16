@@ -95,15 +95,15 @@ export class GameManager {
                 console.log('[Multiplayer] Iniciar jogo com power-ups');
                 this._startGame(true);
             },
-            () => {
+            async () => {
                 console.log('[Multiplayer] Host: criar sala');
                 this._multiplayerManager.gameMode = GameMode.MULTIPLAYER_HOST;
-                this._setupMultiplayer(true);
+                await this._setupMultiplayer(true);
             },
-            () => {
+            async () => {
                 console.log('[Multiplayer] Join: entrar em sala');
                 this._multiplayerManager.gameMode = GameMode.MULTIPLAYER_JOIN;
-                this._setupMultiplayer(false);
+                await this._setupMultiplayer(false);
             }
         );
         this._gameOverUI = this._uiManager.createGameOverUI(
@@ -389,9 +389,9 @@ export class GameManager {
     }
     
     // Add a new method to handle multiplayer setup
-    private _setupMultiplayer(isHost: boolean): void {
+    private async _setupMultiplayer(isHost: boolean): Promise<void> {
         console.log(`[Multiplayer] Setup: isHost=${isHost}, player1Name=${this._player1Name}`);
-        this._multiplayerManager.setupMultiplayer(
+        await this._multiplayerManager.setupMultiplayer(
             isHost,
             this._player1Name,
             (mode) => {
