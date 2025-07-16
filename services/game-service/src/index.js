@@ -7,9 +7,16 @@ const fastify = Fastify({ logger: true });
 
 // Add CORS support - this is the critical fix
 await fastify.register(cors, {
-  origin: true,  // Allow all origins (temporary for testing)
-  credentials: true
-});
+  origin: [
+    'http://localhost:8080',     // Webpack dev server (seu frontend)
+    'http://127.0.0.1:8080',    // Alternativa com IP
+    'http://0.0.0.0:8080'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
+  exposedHeaders: ['Set-Cookie']
+})
 
 await fastify.register(websocket);
 
