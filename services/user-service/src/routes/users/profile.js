@@ -29,6 +29,12 @@ export default async function (fastify, opts) {
 				return reply.status(404).send({ error: 'User profile not found' });
 			}
 
+			if (profile.avatar) {
+				const protocol = request.protocol;
+				const host = request.headers.host;
+				profile.avatar = `${protocol}://${host}/${profile.avatar}`;
+			}
+
 			return profile;
 		} catch (err) {
 			return reply.status(500).send({ error: 'Failed to retrieve profile' });
