@@ -40,6 +40,18 @@ export class GameRoom {
       roomId: this.id
     }));
 
+    // Notify host (player 1) when player 2 joins
+    if (playerNumber === 2) {
+      for (const [conn, playerData] of this.players.entries()) {
+        if (playerData.side === "left") {
+          conn.socket.send(JSON.stringify({
+            type: "PLAYER_JOINED",
+            alias: alias
+          }));
+        }
+      }
+    }
+
     // Start game when two players join
     if (this.playerCount === 2) {
       this.startGame();

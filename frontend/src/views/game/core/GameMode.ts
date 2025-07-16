@@ -1,0 +1,5 @@
+export enum GameMode {
+    SINGLE_PLAYER,
+    MULTIPLAYER_HOST,
+    MULTIPLAYER_JOIN
+}

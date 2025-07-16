@@ -1,4 +1,4 @@
-import { Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial, Mesh } from "@babylonjs/core";
 import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
@@ -7,6 +7,10 @@ import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 import { PowerUpManager } from "./PowerUpManager";
 import { STRINGS, Language } from "../../i18n";
+import { MultiplayerManager } from "../core/MultiplayerManager";
+import { UIManager } from "../core/UIManager";
+import { ThemeManager } from "../core/ThemeManager";
+import { SpeedManager } from "../core/SpeedManager";
 
 // Simple enum for game states (removed PAUSED)
 enum GameState {
@@ -48,20 +52,21 @@ export class GameManager {
     private _powerUpsEnabled: boolean = false;
 
     // Add these as new properties to the GameManager class
-    private _socket: WebSocket | null = null;
-    private _roomId: string | null = null;
-    private _playerSide: 'left' | 'right' | null = null;
-    private _gameMode: GameMode = GameMode.SINGLE_PLAYER;
-    
-    // Add match-related fields
     private _currentMatch: MatchInfo | null = null;
     private _player1Name: string = "Player 1";
     private _player2Name: string = "Player 2";
     
     private _lang: Language = "ptBR"; // Set Brazilian Portuguese as default
 
-    // Adicionar campo para modo selecionado no multiplayer
-    private _multiplayerSelectedMode: 'classic' | 'powerup' | null = null;
+    // Unificar campos extras
+    private _speedMultiplier: number = CONFIG.SPEED.MULTIPLIER.DEFAULT;
+    private _tableTheme: 'GREEN' | 'BLUE' = 'GREEN';
+    private _ground: Mesh;
+    // Multiplayer manager
+    private _multiplayerManager: MultiplayerManager;
+    private _uiManager: UIManager;
+    private _themeManager: ThemeManager;
+    private _speedManager: SpeedManager;
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -77,11 +82,35 @@ export class GameManager {
 
         // Create playing field and UI
         this._createPlayingField();
-        this._createMenuUI();
-        this._createGameOverUI();
-        this._createLanguageSelector();  // ← add language selector here
-
-        // Initialize power-up manager
+        this._uiManager = new UIManager();
+        this._menuUI = this._uiManager.createMenuUI(
+            this._player1Name,
+            this._player2Name,
+            this._currentMatch,
+            () => {
+                console.log('[Multiplayer] Iniciar jogo single player');
+                this._startGame(false);
+            },
+            () => {
+                console.log('[Multiplayer] Iniciar jogo com power-ups');
+                this._startGame(true);
+            },
+            () => {
+                console.log('[Multiplayer] Host: criar sala');
+                this._multiplayerManager.gameMode = GameMode.MULTIPLAYER_HOST;
+                this._setupMultiplayer(true);
+            },
+            () => {
+                console.log('[Multiplayer] Join: entrar em sala');
+                this._multiplayerManager.gameMode = GameMode.MULTIPLAYER_JOIN;
+                this._setupMultiplayer(false);
+            }
+        );
+        this._gameOverUI = this._uiManager.createGameOverUI(
+            () => { this._resetGame(); this._startGame(this._powerUpsEnabled); },
+            async () => { await this._showMenu(); }
+        );
+        this._createLanguageSelector();
         this._powerUpManager = new PowerUpManager(
             scene,
             this._leftPaddle,
@@ -89,12 +118,13 @@ export class GameManager {
             this._ball,
             this._scoreManager
         );
-
-        // Load current match and show menu
+        this._multiplayerManager = new MultiplayerManager();
         this._loadCurrentMatch();
         (async () => {
             await this._showMenu();
         })();
+        this._themeManager = new ThemeManager(scene, this._ground);
+        this._speedManager = new SpeedManager(CONFIG.SPEED.MULTIPLIER.DEFAULT);
     }
     
     private async _loadCurrentMatch(): Promise<void> {
@@ -142,438 +172,6 @@ export class GameManager {
             this._player2Name = "Player 2";
             this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
         }
-    }
-    
-    private _createMenuUI(): void {
-        this._menuUI = document.createElement("div");
-        this._menuUI.style.position = "absolute";
-        this._menuUI.style.top = "0";
-        this._menuUI.style.left = "0";
-        this._menuUI.style.width = "100%";
-        this._menuUI.style.height = "100%";
-        this._menuUI.style.display = "flex";
-        this._menuUI.style.flexDirection = "column";
-        this._menuUI.style.justifyContent = "center";
-        this._menuUI.style.alignItems = "center";
-        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        
-        const title = document.createElement("h1");
-        title.textContent = "PONG"; // game title stays constant (or add i18n if desired)
-        title.style.color = "white";
-        title.style.fontSize = "48px";
-        title.style.marginBottom = "30px";
-        
-        const matchInfo = document.createElement("div");
-        matchInfo.id = "matchInfo";
-        matchInfo.style.color = "white";
-        matchInfo.style.fontSize = "20px";
-        matchInfo.style.marginBottom = "20px";
-        matchInfo.style.textAlign = "center";
-        this._updateMatchInfoDisplay(matchInfo);
-        
-        const subtitle = document.createElement("h2");
-        subtitle.textContent = STRINGS[this._lang].selectGameMode;
-        subtitle.style.color = "white";
-        subtitle.style.fontSize = "24px";
-        subtitle.style.marginBottom = "20px";
-        
-        // Container for both buttons
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "row";
-        buttonsContainer.style.gap = "20px";
-        buttonsContainer.style.justifyContent = "center";
-        buttonsContainer.style.alignItems = "center";
-        
-        // Create button containers (to include label and button)
-        const classicContainer = document.createElement("div");
-        classicContainer.style.display = "flex";
-        classicContainer.style.flexDirection = "column";
-        classicContainer.style.alignItems = "center";
-        classicContainer.style.width = "200px";
-        
-        const powerUpsContainer = document.createElement("div");
-        powerUpsContainer.style.display = "flex";
-        powerUpsContainer.style.flexDirection = "column";
-        powerUpsContainer.style.alignItems = "center"; 
-        powerUpsContainer.style.width = "200px";
-        
-        // Classic mode label
-        const classicLabel = document.createElement("div");
-        classicLabel.textContent = STRINGS[this._lang].classicMode;
-        classicLabel.style.color = "white";
-        classicLabel.style.fontSize = "18px";
-        classicLabel.style.marginBottom = "10px";
-        classicLabel.classList.add("classic-label"); // ← add class for selector
-        
-        // Power-ups mode label
-        const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        powerUpsLabel.style.color = "white"; 
-        powerUpsLabel.style.fontSize = "18px";
-        powerUpsLabel.style.marginBottom = "10px";
-        powerUpsLabel.classList.add("powerups-label"); // ← add class for selector
-        
-        // Classic mode button
-        const classicButton = document.createElement("button");
-        classicButton.textContent = STRINGS[this._lang].start;
-        classicButton.style.padding = "10px 20px";
-        classicButton.style.width = "120px";
-        classicButton.style.fontSize = "18px";
-        classicButton.style.cursor = "pointer";
-        classicButton.style.backgroundColor = "#4286f4";
-        classicButton.style.border = "none";
-        classicButton.style.borderRadius = "5px";
-        classicButton.style.color = "white";
-        classicButton.classList.add("classic-btn"); // ← add class for selector
-        
-        // Power-ups mode button
-        const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = STRINGS[this._lang].start;
-        powerUpsButton.style.padding = "10px 20px";
-        powerUpsButton.style.width = "120px";
-        powerUpsButton.style.fontSize = "18px";
-        powerUpsButton.style.cursor = "pointer";
-        powerUpsButton.style.backgroundColor = "#f44283";
-        powerUpsButton.style.border = "none";
-        powerUpsButton.style.borderRadius = "5px";
-        powerUpsButton.style.color = "white";
-        powerUpsButton.classList.add("powerups-btn"); // ← add class for selector
-        
-        // Add event listeners
-        classicButton.addEventListener("click", () => {
-            this._startGame(false); // Start game without power-ups
-        });
-        
-        powerUpsButton.addEventListener("click", () => {
-            this._startGame(true); // Start game with power-ups
-        });
-        
-        // Add multiplayer section title
-        const multiplayerTitle = document.createElement("h2");
-        multiplayerTitle.textContent = "Multiplayer";
-        multiplayerTitle.style.color = "white";
-        multiplayerTitle.style.fontSize = "24px";
-        multiplayerTitle.style.marginTop = "30px";
-        multiplayerTitle.style.marginBottom = "20px";
-        
-        // Container for multiplayer buttons
-        const multiplayerContainer = document.createElement("div");
-        multiplayerContainer.style.display = "flex";
-        multiplayerContainer.style.flexDirection = "row";
-        multiplayerContainer.style.gap = "20px";
-        
-        // Create button for hosting a game
-        const hostButton = document.createElement("button");
-        hostButton.textContent = "HOST GAME";
-        hostButton.style.padding = "10px 20px";
-        hostButton.style.fontSize = "18px";
-        hostButton.style.cursor = "pointer";
-        hostButton.style.backgroundColor = "#42b4f4";
-        hostButton.style.border = "none";
-        hostButton.style.borderRadius = "5px";
-        hostButton.style.color = "white";
-        
-        // Create button for joining a game
-        const joinButton = document.createElement("button");
-        joinButton.textContent = "JOIN GAME";
-        joinButton.style.padding = "10px 20px";
-        joinButton.style.fontSize = "18px";
-        joinButton.style.cursor = "pointer";
-        joinButton.style.backgroundColor = "#f4c542";
-        joinButton.style.border = "none";
-        joinButton.style.borderRadius = "5px";
-        joinButton.style.color = "white";
-        
-        // Add event listeners
-        hostButton.addEventListener("click", () => {
-            this._gameMode = GameMode.MULTIPLAYER_HOST;
-            this._setupMultiplayer(true);
-        });
-        
-        joinButton.addEventListener("click", () => {
-            this._gameMode = GameMode.MULTIPLAYER_JOIN;
-            this._setupMultiplayer(false);
-        });
-        
-        // Add to container
-        multiplayerContainer.appendChild(hostButton);
-        multiplayerContainer.appendChild(joinButton);
-        
-        // Add to menu
-        this._menuUI.appendChild(title);
-        this._menuUI.appendChild(matchInfo);
-        this._menuUI.appendChild(subtitle);
-        this._menuUI.appendChild(buttonsContainer);
-        this._menuUI.appendChild(multiplayerTitle);
-        this._menuUI.appendChild(multiplayerContainer);
-        
-        document.body.appendChild(this._menuUI);
-    }
-    
-    private async _showMultiplayerModeSelector(): Promise<void> {
-        // Cria overlay simples
-        const overlay = document.createElement('div');
-        overlay.id = 'multiplayerModeOverlay';
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100vw';
-        overlay.style.height = '100vh';
-        overlay.style.background = 'rgba(0,0,0,0.8)';
-        overlay.style.display = 'flex';
-        overlay.style.flexDirection = 'column';
-        overlay.style.justifyContent = 'center';
-        overlay.style.alignItems = 'center';
-        overlay.style.zIndex = '10001';
-
-        const title = document.createElement('h2');
-        title.textContent = 'Escolha o modo de jogo';
-        title.style.color = 'white';
-        title.style.marginBottom = '30px';
-        overlay.appendChild(title);
-
-        const classicBtn = document.createElement('button');
-        classicBtn.textContent = 'Clássico';
-        classicBtn.style.margin = '10px';
-        classicBtn.style.padding = '16px 32px';
-        classicBtn.style.fontSize = '1.2rem';
-        classicBtn.onclick = () => this._selectMultiplayerMode('classic');
-
-        const powerupBtn = document.createElement('button');
-        powerupBtn.textContent = 'Power Up';
-        powerupBtn.style.margin = '10px';
-        powerupBtn.style.padding = '16px 32px';
-        powerupBtn.style.fontSize = '1.2rem';
-        powerupBtn.onclick = () => this._selectMultiplayerMode('powerup');
-
-        overlay.appendChild(classicBtn);
-        overlay.appendChild(powerupBtn);
-        document.body.appendChild(overlay);
-    }
-
-    // Host seleciona modo e conecta ao servidor
-    private _selectMultiplayerMode(mode: 'classic' | 'powerup') {
-        this._multiplayerSelectedMode = mode;
-        // Remove overlay
-        const overlay = document.getElementById('multiplayerModeOverlay');
-        if (overlay) overlay.remove();
-        // Conecta ao servidor e envia modo após conexão
-        this.connectToGameServer();
-    }
-
-    private async _loadCurrentMatch(): Promise<void> {
-        try {
-            const response = await fetch('http://localhost:3002/match/next', {
-                method: 'GET',
-                credentials: 'include' // Include authentication cookies
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                
-                // Check if tournament is complete - if yes, reset to practice mode
-                if (data.tournamentComplete) {
-                    console.log('Tournament is complete, using practice mode');
-                    this._currentMatch = null;
-                    this._player1Name = "Player 1";
-                    this._player2Name = "Player 2";
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                    return;
-                }
-                
-                // Normal match loading logic
-                if (data.match) {
-                    this._currentMatch = data.match;
-                    this._player1Name = data.match.player1;
-                    this._player2Name = data.match.player2;
-                    
-                    // Update score manager with player names
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                    
-                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
-                } else {
-                    console.log('No matches available');
-                    // Set default names if no match
-                    this._player1Name = "Player 1";
-                    this._player2Name = "Player 2";
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load match:', error);
-            // Use default names on error
-            this._player1Name = "Player 1";
-            this._player2Name = "Player 2";
-            this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-        }
-    }
-    
-    private _createMenuUI(): void {
-        this._menuUI = document.createElement("div");
-        this._menuUI.style.position = "absolute";
-        this._menuUI.style.top = "0";
-        this._menuUI.style.left = "0";
-        this._menuUI.style.width = "100%";
-        this._menuUI.style.height = "100%";
-        this._menuUI.style.display = "flex";
-        this._menuUI.style.flexDirection = "column";
-        this._menuUI.style.justifyContent = "center";
-        this._menuUI.style.alignItems = "center";
-        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        
-        const title = document.createElement("h1");
-        title.textContent = "PONG"; // game title stays constant (or add i18n if desired)
-        title.style.color = "white";
-        title.style.fontSize = "48px";
-        title.style.marginBottom = "30px";
-        
-        const matchInfo = document.createElement("div");
-        matchInfo.id = "matchInfo";
-        matchInfo.style.color = "white";
-        matchInfo.style.fontSize = "20px";
-        matchInfo.style.marginBottom = "20px";
-        matchInfo.style.textAlign = "center";
-        this._updateMatchInfoDisplay(matchInfo);
-        
-        const subtitle = document.createElement("h2");
-        subtitle.textContent = STRINGS[this._lang].selectGameMode;
-        subtitle.style.color = "white";
-        subtitle.style.fontSize = "24px";
-        subtitle.style.marginBottom = "20px";
-        
-        // Container for both buttons
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "row";
-        buttonsContainer.style.gap = "20px";
-        buttonsContainer.style.justifyContent = "center";
-        buttonsContainer.style.alignItems = "center";
-        
-        // Create button containers (to include label and button)
-        const classicContainer = document.createElement("div");
-        classicContainer.style.display = "flex";
-        classicContainer.style.flexDirection = "column";
-        classicContainer.style.alignItems = "center";
-        classicContainer.style.width = "200px";
-        
-        const powerUpsContainer = document.createElement("div");
-        powerUpsContainer.style.display = "flex";
-        powerUpsContainer.style.flexDirection = "column";
-        powerUpsContainer.style.alignItems = "center"; 
-        powerUpsContainer.style.width = "200px";
-        
-        // Classic mode label
-        const classicLabel = document.createElement("div");
-        classicLabel.textContent = STRINGS[this._lang].classicMode;
-        classicLabel.style.color = "white";
-        classicLabel.style.fontSize = "18px";
-        classicLabel.style.marginBottom = "10px";
-        classicLabel.classList.add("classic-label"); // ← add class for selector
-        
-        // Power-ups mode label
-        const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        powerUpsLabel.style.color = "white"; 
-        powerUpsLabel.style.fontSize = "18px";
-        powerUpsLabel.style.marginBottom = "10px";
-        powerUpsLabel.classList.add("powerups-label"); // ← add class for selector
-        
-        // Classic mode button
-        const classicButton = document.createElement("button");
-        classicButton.textContent = STRINGS[this._lang].start;
-        classicButton.style.padding = "10px 20px";
-        classicButton.style.width = "120px";
-        classicButton.style.fontSize = "18px";
-        classicButton.style.cursor = "pointer";
-        classicButton.style.backgroundColor = "#4286f4";
-        classicButton.style.border = "none";
-        classicButton.style.borderRadius = "5px";
-        classicButton.style.color = "white";
-        classicButton.classList.add("classic-btn"); // ← add class for selector
-        
-        // Power-ups mode button
-        const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = STRINGS[this._lang].start;
-        powerUpsButton.style.padding = "10px 20px";
-        powerUpsButton.style.width = "120px";
-        powerUpsButton.style.fontSize = "18px";
-        powerUpsButton.style.cursor = "pointer";
-        powerUpsButton.style.backgroundColor = "#f44283";
-        powerUpsButton.style.border = "none";
-        powerUpsButton.style.borderRadius = "5px";
-        powerUpsButton.style.color = "white";
-        powerUpsButton.classList.add("powerups-btn"); // ← add class for selector
-        
-        // Add event listeners
-        classicButton.addEventListener("click", () => {
-            this._startGame(false); // Start game without power-ups
-        });
-        
-        powerUpsButton.addEventListener("click", () => {
-            this._startGame(true); // Start game with power-ups
-        });
-        
-        // Add multiplayer section title
-        const multiplayerTitle = document.createElement("h2");
-        multiplayerTitle.textContent = "Multiplayer";
-        multiplayerTitle.style.color = "white";
-        multiplayerTitle.style.fontSize = "24px";
-        multiplayerTitle.style.marginTop = "30px";
-        multiplayerTitle.style.marginBottom = "20px";
-        
-        // Container for multiplayer buttons
-        const multiplayerContainer = document.createElement("div");
-        multiplayerContainer.style.display = "flex";
-        multiplayerContainer.style.flexDirection = "row";
-        multiplayerContainer.style.gap = "20px";
-        
-        // Create button for hosting a game
-        const hostButton = document.createElement("button");
-        hostButton.textContent = "HOST GAME";
-        hostButton.style.padding = "10px 20px";
-        hostButton.style.fontSize = "18px";
-        hostButton.style.cursor = "pointer";
-        hostButton.style.backgroundColor = "#42b4f4";
-        hostButton.style.border = "none";
-        hostButton.style.borderRadius = "5px";
-        hostButton.style.color = "white";
-        
-        // Create button for joining a game
-        const joinButton = document.createElement("button");
-        joinButton.textContent = "JOIN GAME";
-        joinButton.style.padding = "10px 20px";
-        joinButton.style.fontSize = "18px";
-        joinButton.style.cursor = "pointer";
-        joinButton.style.backgroundColor = "#f4c542";
-        joinButton.style.border = "none";
-        joinButton.style.borderRadius = "5px";
-        joinButton.style.color = "white";
-        
-        // Add event listeners
-        hostButton.addEventListener("click", () => {
-            this._gameMode = GameMode.MULTIPLAYER_HOST;
-            this._setupMultiplayer(true);
-        });
-        
-        joinButton.addEventListener("click", () => {
-            this._gameMode = GameMode.MULTIPLAYER_JOIN;
-            this._setupMultiplayer(false);
-        });
-        
-        // Add to container
-        multiplayerContainer.appendChild(hostButton);
-        multiplayerContainer.appendChild(joinButton);
-        
-        // Add to menu
-        this._menuUI.appendChild(title);
-        this._menuUI.appendChild(matchInfo);
-        this._menuUI.appendChild(subtitle);
-        this._menuUI.appendChild(buttonsContainer);
-        this._menuUI.appendChild(multiplayerTitle);
-        this._menuUI.appendChild(multiplayerContainer);
-        
-        document.body.appendChild(this._menuUI);
     }
     
     private _updateMatchInfoDisplay(element: HTMLElement): void {
@@ -600,86 +198,13 @@ export class GameManager {
         }
     }
     
-    private _createGameOverUI(): void {
-        this._gameOverUI = document.createElement("div");
-        this._gameOverUI.style.position = "absolute";
-        this._gameOverUI.style.top = "0";
-        this._gameOverUI.style.left = "0";
-        this._gameOverUI.style.width = "100%";
-        this._gameOverUI.style.height = "100%";
-        this._gameOverUI.style.display = "none";
-        this._gameOverUI.style.flexDirection = "column";
-        this._gameOverUI.style.justifyContent = "center";
-        this._gameOverUI.style.alignItems = "center";
-        this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        
-        const gameOverText = document.createElement("h2");
-        gameOverText.id = "gameOverText";
-        // Estilo para ficar grande e visível
-        gameOverText.style.color = "#fff";
-        gameOverText.style.fontSize = "48px";
-        gameOverText.style.margin = "0 0 10px";
-        
-        const winnerText = document.createElement("h3");
-        winnerText.id = "winnerText";
-        // Estilo para ficar legível
-        winnerText.style.color = "#fff";
-        winnerText.style.fontSize = "24px";
-        winnerText.style.margin = "0 0 20px";
-        
-        const playAgainButton = document.createElement("button");
-        playAgainButton.id = "playAgainButton";
-        playAgainButton.style.padding = "10px 20px";
-        playAgainButton.style.fontSize = "20px";
-        playAgainButton.style.cursor = "pointer";
-        playAgainButton.style.backgroundColor = "#4CAF50";
-        playAgainButton.style.border = "none";
-        playAgainButton.style.borderRadius = "5px";
-        playAgainButton.style.color = "white";
-        playAgainButton.style.marginBottom = "10px";
-        playAgainButton.style.width = "180px"; // Set fixed width
-        playAgainButton.style.textAlign = "center"; // Center the text
-        
-        playAgainButton.addEventListener("click", () => {
-            this._resetGame();
-            this._startGame(this._powerUpsEnabled); // Use the same mode as before
-        });
-        
-        const menuButton = document.createElement("button");
-        menuButton.id = "menuButton";
-        menuButton.style.padding = "10px 20px";
-        menuButton.style.fontSize = "20px";
-        menuButton.style.cursor = "pointer";
-        menuButton.style.backgroundColor = "#f44336";
-        menuButton.style.border = "none";
-        menuButton.style.borderRadius = "5px";
-        menuButton.style.color = "white";
-        menuButton.style.width = "180px"; // Match the width of the play again button
-        menuButton.style.textAlign = "center"; // Center the text
-        
-        menuButton.addEventListener("click", () => {
-             (async () => {
-                 await this._showMenu();
-             })();
-        });
-        
-        this._gameOverUI.appendChild(gameOverText);
-        this._gameOverUI.appendChild(winnerText);
-        this._gameOverUI.appendChild(playAgainButton);
-        this._gameOverUI.appendChild(menuButton);
-        document.body.appendChild(this._gameOverUI);
-    }
-    
     private async _showMenu(): Promise<void> {
         this._gameState = GameState.MENU;
         this._menuUI.style.display = "flex";
         this._gameOverUI.style.display = "none";
         this._resetGame();
         this._powerUpManager.deactivate();
-
-        // ← await the load so _currentMatch is set before we update the UI
         await this._loadCurrentMatch();
-
         const matchInfoElement = document.getElementById("matchInfo");
         if (matchInfoElement) {
           this._updateMatchInfoDisplay(matchInfoElement);
@@ -691,18 +216,13 @@ export class GameManager {
         this._gameState = GameState.PLAYING;
         this._menuUI.style.display = "none";
         this._gameOverUI.style.display = "none";
-
-        // Store the current game mode
         this._powerUpsEnabled = enablePowerUps;
-
-        // Try to load a new match (if available)
+        this._leftPaddle.setSpeedMultiplier(this._speedMultiplier);
+        this._rightPaddle.setSpeedMultiplier(this._speedMultiplier);
         await this._loadCurrentMatch();
-
-        // Start the ball automatically with random direction for first serve
-        this._ball.start(); // No direction specified = random
+        this._ball.start();
+        this._applySpeedMultiplierToBall(this._ball);
         this._firstCollision = true;
-
-        // Activate power-up spawning only if power-ups mode is enabled
         if (enablePowerUps) {
             this._powerUpManager.activate();
         } else {
@@ -829,15 +349,14 @@ export class GameManager {
     }
     
     private _createPlayingField(): void {
-        // Create ground
-        const ground = MeshBuilder.CreateGround(
-            "ground", 
-            { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
+        this._ground = MeshBuilder.CreateGround(
+            "ground",
+            { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT },
             this._scene
         );
         const groundMaterial = new StandardMaterial("groundMaterial", this._scene);
-        groundMaterial.diffuseColor = CONFIG.FIELD.COLOR;
-        ground.material = groundMaterial;
+        groundMaterial.diffuseColor = CONFIG.TABLE_THEMES[this._tableTheme].FIELD_COLOR;
+        this._ground.material = groundMaterial;
         
         // Create center lines
         const lineMaterial = new StandardMaterial("lineMaterial", this._scene);
@@ -871,137 +390,49 @@ export class GameManager {
     
     // Add a new method to handle multiplayer setup
     private _setupMultiplayer(isHost: boolean): void {
-        if (isHost) {
-            fetch('http://localhost:3004/create-room')
-                .then(response => response.json())
-                .then(data => {
-                    this._roomId = data.roomId;
-                    // Remove overlay antigo se existir
-                    const oldOverlay = document.getElementById('multiplayerModeOverlay');
-                    if (oldOverlay) oldOverlay.remove();
-                    // Exibir UI para o host escolher o modo
-                    this._showMultiplayerModeSelector();
-                })
-                .catch(error => {
-                    alert("Failed to create room. Check console for details.");
-                });
-        } else {
-            const roomId = prompt('Enter Room ID:');
-            if (roomId) {
-                this._roomId = roomId;
-                this.connectToGameServer();
-            }
-        }
+        console.log(`[Multiplayer] Setup: isHost=${isHost}, player1Name=${this._player1Name}`);
+        this._multiplayerManager.setupMultiplayer(
+            isHost,
+            this._player1Name,
+            (mode) => {
+                console.log(`[Multiplayer] Callback: modo selecionado = ${mode}`);
+                this._powerUpsEnabled = (mode === 'powerup');
+                this._startGame(this._powerUpsEnabled);
+            },
+            (side) => {
+                console.log(`[Multiplayer] Callback: player side = ${side}`);
+                // Player side callback
+            },
+            isHost
+                ? (roomId) => { if (roomId) console.log(`[Multiplayer] Sala criada: ${roomId}`); alert(`ID da sala: ${roomId}`); }
+                : undefined
+        );
     }
 
-    private connectToGameServer(): void {
-        if (!this._roomId) return;
-        this._socket = new WebSocket(`ws://localhost:3004/game/${this._roomId}`);
-        this._socket.addEventListener("open", () => {
-            // Se for host e já escolheu modo, envie para o backend
-            if (this._gameMode === GameMode.MULTIPLAYER_HOST && this._multiplayerSelectedMode) {
-                this._socket.send(JSON.stringify({
-                    type: 'MODE_SELECTED',
-                    mode: this._multiplayerSelectedMode
-                }));
-            }
-            // Join padrão
-            this._socket.send(JSON.stringify({
-                type: "JOIN",
-                player: {
-                    name: this._player1Name,
-                    side: this._playerSide
-                }
-            }));
-        });
-
-        this._socket.addEventListener("message", (event) => {
-            const data = JSON.parse(event.data);
-            this._handleSocketMessage(data);
-        });
-
-        this._socket.addEventListener("close", () => {
-            console.log("Disconnected from game server");
-            this._socket = null;
-        });
-
-        this._socket.addEventListener("error", (error) => {
-            console.error("WebSocket error:", error);
-        });
-    }
-
-    // Trata mensagens recebidas do WebSocket
-    private _handleSocketMessage(data: any): void {
-        switch (data.type) {
-            case 'MODE_SELECTED':
-                // Sincroniza modo para ambos os jogadores
-                this._multiplayerSelectedMode = data.mode;
-                this._powerUpsEnabled = (data.mode === 'powerup');
-                break;
-            case 'GAME_START':
-                // Usa o modo sincronizado
-                this._startGame(this._multiplayerSelectedMode === 'powerup');
-                break;
-            case 'JOINED':
-                this._playerSide = data.side;
-                console.log(`Joined as ${this._playerSide} paddle`);
-                break;
-            case 'PADDLE_UPDATE':
-                if (data.side === 'left' && this._playerSide !== 'left') {
-                    this._leftPaddle.mesh.position.x = data.x;
-                } else if (data.side === 'right' && this._playerSide !== 'right') {
-                    this._rightPaddle.mesh.position.x = data.x;
-                }
-                break;
-            case 'BALL_UPDATE':
-                if (this._playerSide !== 'left') {
-                    this._ball.mesh.position.x = data.ball.x;
-                    this._ball.mesh.position.y = data.ball.y;
-                    this._ball.mesh.position.z = data.ball.z;
-                }
-                break;
-            case 'SCORE_UPDATE':
-                this._scoreManager.updateFromServer(data.score);
-                break;
-            case 'PLAYER_LEFT':
-                alert('Other player disconnected');
-                this._showMenu();
-                break;
-            case 'ERROR':
-                alert(`Error: ${data.message}`);
-                this._showMenu();
-                break;
-            default:
-                console.warn('Unknown message type:', data);
-        }
-    }
-    
     public update(): void {
         // Update input manager
         this._inputManager.update();
-        
+        // Log game state and multiplayer info
+        console.log(`[GameManager] update: gameState=${this._gameState}, gameMode=${this._multiplayerManager.gameMode}, playerSide=${this._multiplayerManager.playerSide}`);
         // Only update game logic if in PLAYING state
         if (this._gameState === GameState.PLAYING) {
-            // Always handle input for paddle movement
             this._handleInput();
-
-            // In single player mode, or if we're the host, update the game state
-            if (this._gameMode === GameMode.SINGLE_PLAYER || this._playerSide === 'left') {
+            // Multiplayer logic
+            const socket = this._multiplayerManager.socket;
+            const playerSide = this._multiplayerManager.playerSide;
+            if (this._multiplayerManager.gameMode === GameMode.SINGLE_PLAYER || playerSide === 'left') {
                 // Update game objects (ball movement)
                 this._updateGameObjects();
-                
                 // Check collisions
                 this._checkCollisions();
-                
                 // Power-ups (only host handles in multiplayer)
                 if (this._powerUpsEnabled) {
                     this._powerUpManager.update();
                 }
-                
                 // In multiplayer mode and host, send ball updates
-                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
-                    this._playerSide === 'left' && this._ball.active) {
-                    this._socket.send(JSON.stringify({
+                if (socket && socket.readyState === WebSocket.OPEN && playerSide === 'left' && this._ball.active) {
+                    console.log('[Multiplayer] Host enviando BALL_UPDATE');
+                    socket.send(JSON.stringify({
                         type: 'BALL_UPDATE',
                         ball: {
                             x: this._ball.mesh.position.x,
@@ -1016,11 +447,11 @@ export class GameManager {
                 this._leftPaddle.update();
                 this._rightPaddle.update();
             }
-            
             // Check for game over condition
             const score = this._scoreManager.score;
             if (score.player1 >= 5 || score.player2 >= 5) {
                 const winner = score.player1 >= 5 ? "Player 1" : "Player 2";
+                console.log(`[GameManager] Game over: winner=${winner}`);
                 this._showGameOver(winner);
             }
         }
@@ -1032,7 +463,7 @@ export class GameManager {
         let rightPaddleChanged = false;
         
         // Handle player 1 paddle (left)
-        if (this._playerSide !== 'right') { // Control left paddle if we're player 1 or single player
+        if (this._multiplayerManager.playerSide !== 'right') { // Control left paddle if we're player 1 or single player
             if (this._inputManager.isKeyPressed("arrowleft")) {
                 this._leftPaddle.moveLeft();
                 leftPaddleChanged = true;
@@ -1044,7 +475,7 @@ export class GameManager {
         }
         
         // Handle player 2 paddle (right)
-        if (this._playerSide !== 'left') { // Control right paddle if we're player 2 or single player
+        if (this._multiplayerManager.playerSide !== 'left') { // Control right paddle if we're player 2 or single player
             if (this._inputManager.isKeyPressed("a")) {
                 this._rightPaddle.moveLeft();
                 rightPaddleChanged = true;
@@ -1056,14 +487,15 @@ export class GameManager {
         }
         
         // Send paddle updates in multiplayer mode
-        if (this._socket && this._socket.readyState === WebSocket.OPEN) {
-            if (this._playerSide === 'left' && leftPaddleChanged) {
-                this._socket.send(JSON.stringify({
+        const socket = this._multiplayerManager.socket;
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            if (this._multiplayerManager.playerSide === 'left' && leftPaddleChanged) {
+                socket.send(JSON.stringify({
                     type: 'PADDLE_MOVE',
                     x: this._leftPaddle.mesh.position.x
                 }));
-            } else if (this._playerSide === 'right' && rightPaddleChanged) {
-                this._socket.send(JSON.stringify({
+            } else if (this._multiplayerManager.playerSide === 'right' && rightPaddleChanged) {
+                socket.send(JSON.stringify({
                     type: 'PADDLE_MOVE',
                     x: this._rightPaddle.mesh.position.x
                 }));
@@ -1118,7 +550,7 @@ export class GameManager {
                     this._firstCollision = false;
                     const currentVelocity = ball.velocity;
                     const normalizedVelocity = currentVelocity.normalize();
-                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED * this._speedMultiplier);
                 }
                 
                 // Add spin based on hit position
@@ -1138,7 +570,7 @@ export class GameManager {
                     this._firstCollision = false;
                     const currentVelocity = ball.velocity;
                     const normalizedVelocity = currentVelocity.normalize();
-                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED);
+                    ball.velocity = normalizedVelocity.scale(CONFIG.BALL.NORMAL_SPEED * this._speedMultiplier);
                 }
                 
                 // Add spin based on hit position
@@ -1151,9 +583,9 @@ export class GameManager {
                 this._scoreManager.player2Scores();
                 
                 // Send score update in multiplayer mode
-                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
-                    this._playerSide === 'left') {
-                    this._socket.send(JSON.stringify({
+                if (this._multiplayerManager.socket && this._multiplayerManager.socket.readyState === WebSocket.OPEN && 
+                    this._multiplayerManager.playerSide === 'left') {
+                    this._multiplayerManager.socket.send(JSON.stringify({
                         type: 'SCORE_UPDATE',
                         score: this._scoreManager.score
                     }));
@@ -1185,9 +617,9 @@ export class GameManager {
                 this._scoreManager.player1Scores();
                 
                 // Send score update in multiplayer mode
-                if (this._socket && this._socket.readyState === WebSocket.OPEN && 
-                    this._playerSide === 'left') {
-                    this._socket.send(JSON.stringify({
+                if (this._multiplayerManager.socket && this._multiplayerManager.socket.readyState === WebSocket.OPEN && 
+                    this._multiplayerManager.playerSide === 'left') {
+                    this._multiplayerManager.socket.send(JSON.stringify({
                         type: 'SCORE_UPDATE',
                         score: this._scoreManager.score
                     }));
@@ -1218,11 +650,10 @@ export class GameManager {
     
     // Add this getter method
     public get gameMode(): GameMode {
-        return this._gameMode;
+        return this._multiplayerManager.gameMode;
     }
-
     public setupMultiplayerRenderLoop(): void {
-        if (this._gameMode === GameMode.MULTIPLAYER_HOST) {
+        if (this._multiplayerManager.gameMode === GameMode.MULTIPLAYER_HOST) {
             // Stop the existing render loop and use setInterval instead
             this._scene.getEngine().stopRenderLoop();
             
@@ -1280,35 +711,14 @@ export class GameManager {
 
     // Add a method to update all UI text when language changes:
     private _updateAllUIText(): void {
-        // Menu UI
-        const subtitle = this._menuUI.querySelector("h2");
-        if (subtitle) subtitle.textContent = STRINGS[this._lang].selectGameMode;
+        this._uiManager.updateAllUIText();
+    }
 
-        const classicLabel = this._menuUI.querySelector(".classic-label");
-        if (classicLabel) classicLabel.textContent = STRINGS[this._lang].classicMode;
-        const classicBtn = this._menuUI.querySelector(".classic-btn");
-        if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
-
-        const puLabel = this._menuUI.querySelector(".powerups-label");
-        if (puLabel) puLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        const puBtn = this._menuUI.querySelector(".powerups-btn");
-        if (puBtn) puBtn.textContent = STRINGS[this._lang].start;
-
-        const matchInfo = document.getElementById("matchInfo");
-        if (matchInfo) this._updateMatchInfoDisplay(matchInfo);
-
-        // Game-Over UI
-        const gameOverText = document.getElementById("gameOverText");
-        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
-
-        const playAgainBtn = document.getElementById("playAgainButton");
-        if (playAgainBtn) {
-            playAgainBtn.textContent = this._currentMatch
-                ? STRINGS[this._lang].nextMatch
-                : STRINGS[this._lang].playAgain;
-        }
-
-        const menuBtn = document.getElementById("menuButton");
-        if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
+    // Replace table theme and speed logic with manager usage
+    private _toggleTableTheme(): void {
+        this._themeManager.toggleTableTheme();
+    }
+    private _applySpeedMultiplierToBall(ball: Ball): void {
+        this._speedManager.applyToBall(ball);
     }
 }
