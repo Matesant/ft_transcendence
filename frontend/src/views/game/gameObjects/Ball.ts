@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Vector3, Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { CONFIG } from "../config";
 
@@ -8,33 +8,33 @@ export const DIRECTION = {
 };
 
 export class Ball extends GameObject {
-    private _velocity: BABYLON.Vector3;
+    private _velocity: Vector3;
     private _active: boolean = false;
 
-    constructor(scene: BABYLON.Scene) {
+    constructor(scene: Scene) {
         super(scene);
         this._initMesh();
         this.reset();
     }
 
     private _initMesh(): void {
-        this._mesh = BABYLON.MeshBuilder.CreateSphere(
+        this._mesh = MeshBuilder.CreateSphere(
             "ball", 
             { diameter: CONFIG.BALL.DIAMETER }, 
             this._scene
         );
         this._mesh.position = CONFIG.BALL.POSITION.clone();
         
-        const ballMaterial = new BABYLON.StandardMaterial("ballMaterial", this._scene);
+        const ballMaterial = new StandardMaterial("ballMaterial", this._scene);
         ballMaterial.emissiveColor = CONFIG.BALL.COLOR;
         this._mesh.material = ballMaterial;
     }
 
-    public get velocity(): BABYLON.Vector3 {
+    public get velocity(): Vector3 {
         return this._velocity;
     }
 
-    public set velocity(value: BABYLON.Vector3) {
+    public set velocity(value: Vector3) {
         this._velocity = value;
     }
 
@@ -54,7 +54,7 @@ export class Ball extends GameObject {
 
     public reset(): void {
         this._mesh.position = CONFIG.BALL.POSITION.clone();
-        this._velocity = new BABYLON.Vector3(0, 0, 0);
+        this._velocity = new Vector3(0, 0, 0);
         this._active = false;
     }
 
@@ -73,7 +73,7 @@ export class Ball extends GameObject {
             }
         }
         
-        this._velocity = new BABYLON.Vector3(
+        this._velocity = new Vector3(
             (Math.random() - 0.5) * CONFIG.BALL.INITIAL_SPEED, 
             0, 
             CONFIG.BALL.INITIAL_SPEED * zDirection
@@ -89,6 +89,31 @@ export class Ball extends GameObject {
     }
 
     public reverseX(): void {
+        // Reverse the x direction
         this._velocity.x *= -1;
+        
+        // Calculate the current ball speed
+        const speed = this._velocity.length();
+        
+        // Check if the ball is moving too vertically (small x component)
+        const xRatio = Math.abs(this._velocity.x) / speed;
+        
+        // If the x-component is too small (less than 20% of total velocity)
+        if (xRatio < 0.2) {
+            // Add a minimum horizontal component to prevent vertical-only bouncing
+            // Maintain the same overall speed but ensure a minimum x-component
+            const minXComponent = speed * 0.3; // At least 30% of speed should be horizontal
+            
+            // Determine the direction
+            const xDirection = this._velocity.x >= 0 ? 1 : -1;
+            
+            // Set x velocity to the minimum value while preserving direction
+            this._velocity.x = minXComponent * xDirection;
+            
+            // Recalculate z velocity to maintain the same overall speed
+            const newZMagnitude = Math.sqrt(speed * speed - this._velocity.x * this._velocity.x);
+            const zDirection = this._velocity.z >= 0 ? 1 : -1;
+            this._velocity.z = newZMagnitude * zDirection;
+        }
     }
 }

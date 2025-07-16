@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
+import cookie from '@fastify/cookie'
 import dotenv from 'dotenv'
 import dbPlugin from './plugins/db.js'
 import setupRoutes from './routes/match/setup.js';
@@ -10,26 +11,31 @@ import crypto from 'node:crypto'
 
 dotenv.config()
 
-// Configure Fastify with structured logging
+// Configure Fastify
 const fastify = Fastify({
-	logger: {
-		level: process.env.LOG_LEVEL || 'info'
-	},
-	disableRequestLogging: true
+	logger: false
 })
 
-// Hook to generate request_id and make it available in request.log
 fastify.addHook('onRequest', async (request, reply) => {
   const reqId = request.headers['x-request-id'] || crypto.randomUUID()
   request.id = reqId
-  request.log = request.log.child({ request_id: reqId })
 })
 
 fastify.decorate("authenticate", async function (request, reply) {
   try {
-    await request.jwtVerify()
+    const token = request.cookies.authToken
+    if (!token) {
+      return reply.status(401).send({
+        status: 401,
+        error: 'Unauthorized',
+        message: 'No authentication token.'
+      })
+    }
+    
+    const decoded = this.jwt.verify(token)
+    request.user = decoded
   } catch (err) {
-    reply.status(401).send({
+    return reply.status(401).send({
       status: 401,
       error: 'Unauthorized',
       message: 'Invalid or missing token.'
@@ -38,7 +44,6 @@ fastify.decorate("authenticate", async function (request, reply) {
 })
 
 fastify.setErrorHandler((error, request, reply) => {
-  request.log.error(error)
 
   reply.status(error.statusCode || 500).send({
     status: error.statusCode || 500,
@@ -50,7 +55,7 @@ fastify.setErrorHandler((error, request, reply) => {
 
 // #TODO: Replace `origin: true` with specific URL before delivery
 await fastify.register(cors, {
-  origin: true,
+  origin: ['http://localhost:8080'],
   credentials: true
 })
 
@@ -59,5 +64,6 @@ await fastify.register(playRoutes, { prefix: '/match' });
 await fastify.register(tournamentRoutes, { prefix: '/match' });
 await fastify.register(dbPlugin)
 await fastify.register(jwt, { secret: process.env.JWT_SECRET })
+await fastify.register(cookie, { secret: process.env.COOKIE_SECRET })
 
-await fastify.listen({ port: 3000, host: '0.0.0.0' })
+await fastify.listen({ port: 3002, host: '0.0.0.0' })

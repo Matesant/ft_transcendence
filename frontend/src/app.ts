@@ -2,8 +2,8 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
-import { GameManager, GameMode } from "./managers/GameManager";
-import { CONFIG } from "./config";
+import { GameManager, GameMode } from "./views/game/managers/GameManager";
+import { CONFIG } from "./views/game/config";
 
 class App {
     private _canvas: HTMLCanvasElement;
@@ -68,15 +68,17 @@ class App {
     }
     
     public mainLoop(): void {
-        // Check if we're in multiplayer host mode
+        // Sempre pare qualquer render loop anterior
+        this._engine.stopRenderLoop();
+
         if (this._gameManager.gameMode === GameMode.MULTIPLAYER_HOST) {
-            // Use setInterval for multiplayer host to prevent pausing when tab loses focus
+            // Usa setInterval para multiplayer host
             setInterval(() => {
                 this._gameManager.update();
                 this._scene.render();
-            }, 16); // ~60 FPS (1000ms / 60fps ≈ 16.67ms)
+            }, 16); // ~60 FPS
         } else {
-            // Use the normal render loop for single player and multiplayer client
+            // Usa o render loop padrão para os outros modos
             this._engine.runRenderLoop(() => {
                 this._gameManager.update();
                 this._scene.render();
@@ -88,3 +90,11 @@ class App {
 // Create and start the game
 const game = new App();
 game.mainLoop();
+import { router } from "./router/Router";
+import "./components/itemSidebar/itemSidebar"
+import "./components/startTournament/startTournament";
+import "./components/tournamentRounds/tournamentRounds";
+
+
+window.addEventListener("DOMContentLoaded", router);
+window.addEventListener("popstate", router);

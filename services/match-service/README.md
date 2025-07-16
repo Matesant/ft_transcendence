@@ -7,11 +7,8 @@ Manages tournament creation, match rounds, scoring and advancement.
 http://localhost:3002/match
 ```
 
-## Authentication Header
-All routes require:
-```
-Authorization: Bearer <JWT>
-```
+## Authentication
+All routes use cookie-based authentication. The authentication cookie is automatically sent with requests.
 
 ---
 
@@ -23,7 +20,6 @@ Create the first round.
 **Request**
 ```http
 POST /match
-Authorization: Bearer <JWT>
 Content-Type: application/json
 
 { "players": ["alice","bob","carol"] }
@@ -47,7 +43,6 @@ Get the next pending match.
 **Request**
 ```http
 GET /match/next
-Authorization: Bearer <JWT>
 ```
 
 **Response 200**
@@ -71,7 +66,6 @@ Record match result; notifies user-service.
 **Request**
 ```http
 POST /match/score
-Authorization: Bearer <JWT>
 Content-Type: application/json
 
 { "matchId": 2, "winner": "alice" }
@@ -89,7 +83,6 @@ Generate the next round from winners.
 **Request**
 ```http
 POST /match/advance
-Authorization: Bearer <JWT>
 ```
 
 **Response 200**
@@ -110,7 +103,6 @@ Get all rounds and matches.
 **Request**
 ```http
 GET /match/tournament
-Authorization: Bearer <JWT>
 ```
 
 **Response 200**

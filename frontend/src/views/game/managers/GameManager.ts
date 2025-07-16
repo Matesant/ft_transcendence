@@ -1,4 +1,4 @@
-import * as BABYLON from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { Ball, DIRECTION } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
@@ -6,6 +6,7 @@ import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 import { PowerUpManager } from "./PowerUpManager";
+import { STRINGS, Language } from "../../i18n";
 
 // Simple enum for game states (removed PAUSED)
 enum GameState {
@@ -14,15 +15,23 @@ enum GameState {
     GAME_OVER
 }
 
-// Insert this near the top of frontend/src/managers/GameManager.ts - add a new enum for multiplayer mode
+// Enum para modo de jogo multiplayer
 export enum GameMode {
     SINGLE_PLAYER,
     MULTIPLAYER_HOST,
     MULTIPLAYER_JOIN
 }
 
+interface MatchInfo {
+    id: number;
+    player1: string;
+    player2: string;
+    round: number;
+    status: string;
+}
+
 export class GameManager {
-    private _scene: BABYLON.Scene;
+    private _scene: Scene;
     private _ball: Ball;
     private _leftPaddle: Paddle;
     private _rightPaddle: Paddle;
@@ -44,28 +53,32 @@ export class GameManager {
     private _playerSide: 'left' | 'right' | null = null;
     private _gameMode: GameMode = GameMode.SINGLE_PLAYER;
     
-    constructor(scene: BABYLON.Scene) {
+    // Add match-related fields
+    private _currentMatch: MatchInfo | null = null;
+    private _player1Name: string = "Player 1";
+    private _player2Name: string = "Player 2";
+    
+    private _lang: Language = "ptBR"; // Set Brazilian Portuguese as default
+
+    constructor(scene: Scene) {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
-        
+
         // Initialize game objects
         this._ball = new Ball(scene);
         this._leftPaddle = new Paddle(scene, PaddleType.LEFT);
         this._rightPaddle = new Paddle(scene, PaddleType.RIGHT);
-        
-        // Create walls
         new Wall(scene, WallType.TOP);
         new Wall(scene, WallType.BOTTOM);
-        
-        // Create playing field
+
+        // Create playing field and UI
         this._createPlayingField();
-        
-        // Create UI elements (removed pause UI)
         this._createMenuUI();
         this._createGameOverUI();
-        
-        // Initialize power-up manager after creating paddles and ball
+        this._createLanguageSelector();  // ← add language selector here
+
+        // Initialize power-up manager
         this._powerUpManager = new PowerUpManager(
             scene,
             this._leftPaddle,
@@ -73,9 +86,59 @@ export class GameManager {
             this._ball,
             this._scoreManager
         );
-        
-        // Show menu initially
-        this._showMenu();
+
+        // Load current match and show menu
+        this._loadCurrentMatch();
+        (async () => {
+            await this._showMenu();
+        })();
+    }
+    
+    private async _loadCurrentMatch(): Promise<void> {
+        try {
+            const response = await fetch('http://localhost:3002/match/next', {
+                method: 'GET',
+                credentials: 'include' // Include authentication cookies
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Check if tournament is complete - if yes, reset to practice mode
+                if (data.tournamentComplete) {
+                    console.log('Tournament is complete, using practice mode');
+                    this._currentMatch = null;
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    return;
+                }
+                
+                // Normal match loading logic
+                if (data.match) {
+                    this._currentMatch = data.match;
+                    this._player1Name = data.match.player1;
+                    this._player2Name = data.match.player2;
+                    
+                    // Update score manager with player names
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                    
+                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
+                } else {
+                    console.log('No matches available');
+                    // Set default names if no match
+                    this._player1Name = "Player 1";
+                    this._player2Name = "Player 2";
+                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load match:', error);
+            // Use default names on error
+            this._player1Name = "Player 1";
+            this._player2Name = "Player 2";
+            this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+        }
     }
     
     private _createMenuUI(): void {
@@ -92,13 +155,21 @@ export class GameManager {
         this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
         
         const title = document.createElement("h1");
-        title.textContent = "PONG";
+        title.textContent = "PONG"; // game title stays constant (or add i18n if desired)
         title.style.color = "white";
         title.style.fontSize = "48px";
         title.style.marginBottom = "30px";
         
+        const matchInfo = document.createElement("div");
+        matchInfo.id = "matchInfo";
+        matchInfo.style.color = "white";
+        matchInfo.style.fontSize = "20px";
+        matchInfo.style.marginBottom = "20px";
+        matchInfo.style.textAlign = "center";
+        this._updateMatchInfoDisplay(matchInfo);
+        
         const subtitle = document.createElement("h2");
-        subtitle.textContent = "Select Game Mode";
+        subtitle.textContent = STRINGS[this._lang].selectGameMode;
         subtitle.style.color = "white";
         subtitle.style.fontSize = "24px";
         subtitle.style.marginBottom = "20px";
@@ -126,21 +197,21 @@ export class GameManager {
         
         // Classic mode label
         const classicLabel = document.createElement("div");
-        classicLabel.textContent = "Classic Mode";
+        classicLabel.textContent = STRINGS[this._lang].classicMode;
         classicLabel.style.color = "white";
         classicLabel.style.fontSize = "18px";
         classicLabel.style.marginBottom = "10px";
         
         // Power-ups mode label
         const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = "Power-ups Mode";
+        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
         powerUpsLabel.style.color = "white"; 
         powerUpsLabel.style.fontSize = "18px";
         powerUpsLabel.style.marginBottom = "10px";
         
         // Classic mode button
         const classicButton = document.createElement("button");
-        classicButton.textContent = "START";
+        classicButton.textContent = STRINGS[this._lang].start;
         classicButton.style.padding = "10px 20px";
         classicButton.style.width = "120px";
         classicButton.style.fontSize = "18px";
@@ -152,7 +223,7 @@ export class GameManager {
         
         // Power-ups mode button
         const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = "START";
+        powerUpsButton.textContent = STRINGS[this._lang].start;
         powerUpsButton.style.padding = "10px 20px";
         powerUpsButton.style.width = "120px";
         powerUpsButton.style.fontSize = "18px";
@@ -224,12 +295,37 @@ export class GameManager {
         
         // Add to menu
         this._menuUI.appendChild(title);
+        this._menuUI.appendChild(matchInfo);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
         this._menuUI.appendChild(multiplayerTitle);
         this._menuUI.appendChild(multiplayerContainer);
         
         document.body.appendChild(this._menuUI);
+    }
+    
+    private _updateMatchInfoDisplay(element: HTMLElement): void {
+        if (this._currentMatch) {
+            element.innerHTML = `
+                <div><strong>${STRINGS[this._lang].currentMatch}</strong></div>
+                <div>${this._player1Name} vs ${this._player2Name}</div>
+                <div>${STRINGS[this._lang].round} ${this._currentMatch.round}</div>
+            `;
+        } else if (
+            this._player1Name !== "Player 1" &&
+            this._player2Name !== "Player 2"
+        ) {
+            element.innerHTML = `
+                <div><strong>${STRINGS[this._lang].currentMatch}</strong></div>
+                <div>${this._player1Name} vs ${this._player2Name}</div>
+                <div>${STRINGS[this._lang].practiceMode}</div>
+            `;
+        } else {
+            element.innerHTML = `
+                <div style="color: #ffa500;">${STRINGS[this._lang].noTournament}</div>
+                <div>${STRINGS[this._lang].practiceMode}</div>
+            `;
+        }
     }
     
     private _createGameOverUI(): void {
@@ -246,19 +342,21 @@ export class GameManager {
         this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
         
         const gameOverText = document.createElement("h2");
-        gameOverText.textContent = "GAME OVER";
-        gameOverText.style.color = "white";
-        gameOverText.style.fontSize = "36px";
-        gameOverText.style.marginBottom = "20px";
+        gameOverText.id = "gameOverText";
+        // Estilo para ficar grande e visível
+        gameOverText.style.color = "#fff";
+        gameOverText.style.fontSize = "48px";
+        gameOverText.style.margin = "0 0 10px";
         
         const winnerText = document.createElement("h3");
-        winnerText.style.color = "white";
-        winnerText.style.fontSize = "24px";
-        winnerText.style.marginBottom = "30px";
         winnerText.id = "winnerText";
+        // Estilo para ficar legível
+        winnerText.style.color = "#fff";
+        winnerText.style.fontSize = "24px";
+        winnerText.style.margin = "0 0 20px";
         
         const playAgainButton = document.createElement("button");
-        playAgainButton.textContent = "PLAY AGAIN";
+        playAgainButton.id = "playAgainButton";
         playAgainButton.style.padding = "10px 20px";
         playAgainButton.style.fontSize = "20px";
         playAgainButton.style.cursor = "pointer";
@@ -267,6 +365,8 @@ export class GameManager {
         playAgainButton.style.borderRadius = "5px";
         playAgainButton.style.color = "white";
         playAgainButton.style.marginBottom = "10px";
+        playAgainButton.style.width = "180px"; // Set fixed width
+        playAgainButton.style.textAlign = "center"; // Center the text
         
         playAgainButton.addEventListener("click", () => {
             this._resetGame();
@@ -274,7 +374,7 @@ export class GameManager {
         });
         
         const menuButton = document.createElement("button");
-        menuButton.textContent = "MAIN MENU";
+        menuButton.id = "menuButton";
         menuButton.style.padding = "10px 20px";
         menuButton.style.fontSize = "20px";
         menuButton.style.cursor = "pointer";
@@ -282,9 +382,13 @@ export class GameManager {
         menuButton.style.border = "none";
         menuButton.style.borderRadius = "5px";
         menuButton.style.color = "white";
+        menuButton.style.width = "180px"; // Match the width of the play again button
+        menuButton.style.textAlign = "center"; // Center the text
         
         menuButton.addEventListener("click", () => {
-            this._showMenu();
+             (async () => {
+                 await this._showMenu();
+             })();
         });
         
         this._gameOverUI.appendChild(gameOverText);
@@ -294,29 +398,38 @@ export class GameManager {
         document.body.appendChild(this._gameOverUI);
     }
     
-    private _showMenu(): void {
+    private async _showMenu(): Promise<void> {
         this._gameState = GameState.MENU;
         this._menuUI.style.display = "flex";
         this._gameOverUI.style.display = "none";
         this._resetGame();
-        
-        // Ensure power-ups are deactivated
         this._powerUpManager.deactivate();
+
+        // ← await the load so _currentMatch is set before we update the UI
+        await this._loadCurrentMatch();
+
+        const matchInfoElement = document.getElementById("matchInfo");
+        if (matchInfoElement) {
+          this._updateMatchInfoDisplay(matchInfoElement);
+        }
     }
     
     // Update _startGame to store the current mode
-    private _startGame(enablePowerUps: boolean = false): void {
+    private async _startGame(enablePowerUps: boolean = false): Promise<void> {
         this._gameState = GameState.PLAYING;
         this._menuUI.style.display = "none";
         this._gameOverUI.style.display = "none";
-        
+
         // Store the current game mode
         this._powerUpsEnabled = enablePowerUps;
-        
+
+        // Try to load a new match (if available)
+        await this._loadCurrentMatch();
+
         // Start the ball automatically with random direction for first serve
         this._ball.start(); // No direction specified = random
         this._firstCollision = true;
-        
+
         // Activate power-up spawning only if power-ups mode is enabled
         if (enablePowerUps) {
             this._powerUpManager.activate();
@@ -325,13 +438,108 @@ export class GameManager {
         }
     }
     
-    private _showGameOver(winner: string): void {
+    private async _showGameOver(winner: string): Promise<void> {
         this._gameState = GameState.GAME_OVER;
-        const winnerText = document.getElementById("winnerText");
-        if (winnerText) {
-            winnerText.textContent = `${winner} Wins!`;
+
+        const gameOverText = document.getElementById("gameOverText") as HTMLHeadingElement;
+        const winnerText    = document.getElementById("winnerText")    as HTMLHeadingElement;
+        const playAgainBtn  = document.getElementById("playAgainButton") as HTMLButtonElement;
+        const menuBtn       = document.getElementById("menuButton")    as HTMLButtonElement;
+
+        // 1) Set all texts from i18n
+        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
+        if (winnerText)    winnerText.textContent    = `${winner} ${STRINGS[this._lang].wins}`;
+
+         // … existing tournament-complete logic …
+         if (this._currentMatch) {
+             await this._submitMatchResult(winner);
+             const response = await fetch('http://localhost:3002/match/next',{ method:'GET', credentials:'include' });
+             if (response.ok) {
+                 const data = await response.json();
+                 if (data.tournamentComplete) {
+                     // 1) Tournament Complete layout
+                     if (gameOverText) {
+                         gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
+                         gameOverText.style.fontSize = "3rem";
+                         gameOverText.style.color = "#ffd700";
+                         gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700";
+                         gameOverText.style.marginBottom = "20px";
+                     }
+                     if (winnerText) {
+                         winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span style="color:#ffd700;">${data.champion}</span> 🏆`;
+                         winnerText.style.fontSize = "2.5rem";
+                         winnerText.style.color = "#fff";
+                         winnerText.style.marginBottom = "30px";
+                     }
+                     if (playAgainBtn) playAgainBtn.style.display = "none";
+                     if (menuBtn) {
+                         menuBtn.style.display = "block";
+                         menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                     }
+                     this._gameOverUI.style.display = "flex";
+                     return;
+                 } else {
+                    // Next match in tournament
+                     if (playAgainBtn) {
+                         playAgainBtn.style.display = "block";
+                         playAgainBtn.textContent = STRINGS[this._lang].nextMatch;
+                     }
+                     if (menuBtn) {
+                         menuBtn.style.display = "inline-block";
+                         menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                     }
+                 }
+             }
+         } else {
+            // Practice mode
+             if (playAgainBtn) {
+                 playAgainBtn.style.display = "block";
+                 playAgainBtn.textContent = STRINGS[this._lang].playAgain;
+             }
+             if (menuBtn) {
+                 menuBtn.style.display = "inline-block";
+                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
+             }
+         }
+
+         this._gameOverUI.style.display = "flex";
+    }
+    
+    private async _submitMatchResult(winner: string): Promise<void> {
+        if (!this._currentMatch) return;
+        
+        try {
+            const response = await fetch('http://localhost:3002/match/score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    matchId: this._currentMatch.id,
+                    winner: winner
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Match result submitted successfully:', result);
+                
+                // Clear current match and try to load next one
+                this._currentMatch = null;
+                await this._loadCurrentMatch();
+                
+                // Update the match info display
+                const matchInfoElement = document.getElementById("matchInfo");
+                if (matchInfoElement) {
+                    this._updateMatchInfoDisplay(matchInfoElement);
+                }
+            } else {
+                console.error('Failed to submit match result:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error submitting match result:', error);
         }
-        this._gameOverUI.style.display = "flex";
     }
     
     private _resetGame(): void {
@@ -350,21 +558,21 @@ export class GameManager {
     
     private _createPlayingField(): void {
         // Create ground
-        const ground = BABYLON.MeshBuilder.CreateGround(
+        const ground = MeshBuilder.CreateGround(
             "ground", 
             { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
             this._scene
         );
-        const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", this._scene);
+        const groundMaterial = new StandardMaterial("groundMaterial", this._scene);
         groundMaterial.diffuseColor = CONFIG.FIELD.COLOR;
         ground.material = groundMaterial;
         
         // Create center lines
-        const lineMaterial = new BABYLON.StandardMaterial("lineMaterial", this._scene);
+        const lineMaterial = new StandardMaterial("lineMaterial", this._scene);
         lineMaterial.emissiveColor = CONFIG.CENTER_LINE.COLOR;
         lineMaterial.alpha = CONFIG.CENTER_LINE.ALPHA;
         
-        const centerLineVertical = BABYLON.MeshBuilder.CreateBox(
+        const centerLineVertical = MeshBuilder.CreateBox(
             "centerLineVertical", 
             {
                 width: CONFIG.CENTER_LINE.VERTICAL.DIMENSIONS.x, 
@@ -376,7 +584,7 @@ export class GameManager {
         centerLineVertical.position = CONFIG.CENTER_LINE.VERTICAL.POSITION.clone();
         centerLineVertical.material = lineMaterial;
         
-        const centerLineHorizontal = BABYLON.MeshBuilder.CreateBox(
+        const centerLineHorizontal = MeshBuilder.CreateBox(
             "centerLineHorizontal", 
             {
                 width: CONFIG.CENTER_LINE.HORIZONTAL.DIMENSIONS.x, 
@@ -414,6 +622,24 @@ export class GameManager {
             if (roomId) {
                 this._roomId = roomId;
                 this._connectToGameServer();
+            }
+        }
+    }
+
+    public update(): void {
+        // Only update game logic if in PLAYING state
+        if (this._gameState === GameState.PLAYING) {
+            this._handleInput();
+            this._updateGameObjects();
+            this._powerUpManager.update(); // Update power-ups
+            this._checkCollisions();
+            
+            // Check for game over condition
+            const score = this._scoreManager.score;
+            if (score.player1 >= 5) {
+                this._showGameOver(this._player1Name);
+            } else if (score.player2 >= 5) {
+                this._showGameOver(this._player2Name);
             }
         }
     }
@@ -619,6 +845,14 @@ export class GameManager {
             // Ball collision with walls (using field width/height)
             const wallBoundary = CONFIG.FIELD.WIDTH / 2 - 0.2;
             if (ballPos.x <= -wallBoundary || ballPos.x >= wallBoundary) {
+                // Push the ball slightly away from the wall to prevent sticking
+                if (ballPos.x <= -wallBoundary) {
+                    ballPos.x = -wallBoundary + 0.05; // Push right slightly
+                } else {
+                    ballPos.x = wallBoundary - 0.05; // Push left slightly
+                }
+                
+                // Apply our improved reverseX which ensures minimum horizontal velocity
                 ball.reverseX();
             }
             
@@ -731,7 +965,7 @@ export class GameManager {
             }
         }
     }
-
+    
     // Add this getter method
     public get gameMode(): GameMode {
         return this._gameMode;
@@ -747,5 +981,84 @@ export class GameManager {
                 this._scene.render();
             }, 16);
         }
+    }
+    
+    private _createLanguageSelector(): void {
+        // Remove existing selector if present
+        const oldSelector = document.getElementById("languageSelector");
+        if (oldSelector) oldSelector.remove();
+
+        const selector = document.createElement("select");
+        selector.id = "languageSelector";
+        selector.style.position = "fixed";
+        selector.style.top = "24px";
+        selector.style.right = "24px";
+        selector.style.zIndex = "10000";
+        selector.style.padding = "8px 16px";
+        selector.style.fontSize = "1rem";
+        selector.style.borderRadius = "8px";
+        selector.style.background = "#222";
+        selector.style.color = "#fff";
+        selector.style.border = "1px solid #444";
+        selector.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+
+        const languageLabels: Record<Language, string> = {
+            ptBR: "Português (Brasil)",
+            en: "English",
+            es: "Español",
+            fr: "Français",
+            de: "Deutsch",
+            ru: "Русский"
+        };
+
+        for (const lang of Object.keys(languageLabels) as Language[]) {
+            const option = document.createElement("option");
+            option.value = lang;
+            option.textContent = languageLabels[lang];
+            if (lang === this._lang) option.selected = true;
+            selector.appendChild(option);
+        }
+
+        selector.addEventListener("change", () => {
+            this._lang = selector.value as Language;
+            // Update all UI elements with the new language
+            this._updateAllUIText();
+        });
+
+        document.body.appendChild(selector);
+    }
+
+    // Add a method to update all UI text when language changes:
+    private _updateAllUIText(): void {
+        // Menu UI
+        const subtitle = this._menuUI.querySelector("h2");
+        if (subtitle) subtitle.textContent = STRINGS[this._lang].selectGameMode;
+
+        const classicLabel = this._menuUI.querySelector(".classic-label");
+        if (classicLabel) classicLabel.textContent = STRINGS[this._lang].classicMode;
+        const classicBtn = this._menuUI.querySelector(".classic-btn");
+        if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
+
+        const puLabel = this._menuUI.querySelector(".powerups-label");
+        if (puLabel) puLabel.textContent = STRINGS[this._lang].powerUpsMode;
+        const puBtn = this._menuUI.querySelector(".powerups-btn");
+        if (puBtn) puBtn.textContent = STRINGS[this._lang].start;
+
+        const matchInfo = document.getElementById("matchInfo");
+        if (matchInfo) this._updateMatchInfoDisplay(matchInfo);
+
+        // Game-Over UI
+        const gameOverText = document.getElementById("gameOverText");
+        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
+
+        const playAgainBtn = document.getElementById("playAgainButton");
+        if (playAgainBtn) {
+            playAgainBtn.textContent = this._currentMatch
+                ? STRINGS[this._lang].nextMatch
+                : STRINGS[this._lang].playAgain;
+        }
+
+        const menuBtn = document.getElementById("menuButton");
+        if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
     }
 }

@@ -21,7 +21,7 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY,
       alias TEXT UNIQUE NOT NULL,
       display_name TEXT,
-      avatar TEXT DEFAULT 'default.png',
+      avatar TEXT DEFAULT 'uploads/default.jpeg',
       wins INTEGER DEFAULT 0,
       losses INTEGER DEFAULT 0,
 	  is_online INTEGER DEFAULT 0

@@ -1,6 +1,19 @@
 # 📦 Microservices Overview – ft_transcendence
 
-Each service in this project has its own local README.
+A microservices architecture for a Pong-based transcendence project, featuring authentication, match management, and user profile services.
+
+## 🚀 Quick Start
+
+```bash
+# Start everything
+make up
+
+# Stop everything  
+make down
+
+# Clean restart
+make restart
+```
 
 ## Available Services
 
@@ -11,6 +24,31 @@ Each service in this project has its own local README.
 | user-service   | Profiles, avatars, friends, history | [user-service/README.md](./user-service/README.md)   |
 
 ---
+
+## 🏗️ Architecture
+
+```
+                           Frontend (TypeScript)
+                           Port: 3000 (via Webpack)
+                                    ↓
+                              HTTP/HTTPS Requests
+                                    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Backend Services                         │
+│                                                             │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│   │Auth Service │    │Match Service│    │User Service │   │
+│   │ :3001       │    │ :3002       │    │ :3003       │   │
+│   │ + JWT       │    │ + Game Logic│    │ + Profiles  │   │
+│   │ + 2FA       │    │ + Tournament│    │ + Friends   │   │
+│   └─────────────┘    └─────────────┘    └─────────────┘   │
+│            ↓                   ↓                   ↓        │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│   │ SQLite      │    │ SQLite      │    │ SQLite      │   │
+│   │ auth.db     │    │ match.db    │    │ user.db     │   │
+│   └─────────────┘    └─────────────┘    └─────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Service Communication
 
@@ -52,7 +90,7 @@ flowchart LR
   { "alias":"loser", "opponent":"winner", "result":"loss", "date":"<ISO>" }
   ```
 
-JWT is required for all protected endpoints across services.
+Cookie-based authentication is used for all protected endpoints across services.
 
 ---
 
@@ -67,7 +105,7 @@ ft_transcendence/
 
 The environment variables include:
 - **Shared variables**: 
-  - `JWT_SECRET`: Shared secret key for JWT authentication
+  - `COOKIE_SECRET`: Shared secret key for cookie signing and session management
   - `LOG_LEVEL`: Logging level for all services (default: "info")
 
 - **Service-specific variables**:
@@ -75,30 +113,6 @@ The environment variables include:
   - `USER_DB_PATH`: User service database path
   - `MATCH_DB_PATH`: Match service database path
 
-## Logging System
 
-All services implement structured logging with the following features:
 
-- **ELK Stack Integration**: All logs are sent to an ELK (Elasticsearch, Logstash, Kibana) stack for centralized monitoring
-- **GELF Format**: Logs are transmitted using the GELF format via Docker's logging driver
-- **Request Tracking**: Every request receives a unique `request_id` for tracing across services
-- **Structured Data**: Log entries include standardized fields:
-  - `action`: The specific action being performed
-  - `service_name`: The service generating the log
-  - `level`: Log severity level (info, warn, error)
-  - `request_id`: Unique identifier for request tracing
-  - `alias`: User alias when applicable
-
-Example log entry in Kibana:
-```json
-{
-  "@timestamp": "2025-06-23T01:57:38.416Z",
-  "service_name": "auth-service",
-  "level": 30,
-  "log_message": "Server listening at http://0.0.0.0:3000",
-  "container_name": "auth-service",
-  "tag": "auth-service"
-}
-```
-
-Each service provides a `/test-log` endpoint to verify log delivery to the ELK stack.
+---
