@@ -42,10 +42,14 @@ export class NetworkManager {
             this._playerName = playerName;
 
             try {
+                // Detect the current host and use it for WebSocket connection
+                const host = window.location.hostname;
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const wsUrl = process.env.NODE_ENV === 'production' 
                     ? 'wss://your-domain.com/ws'
-                    : 'ws://localhost:3004/ws';
+                    : `${protocol}//${host}:3004/ws`;
                 
+                console.log(`Connecting to game service at: ${wsUrl}`);
                 this._socket = new WebSocket(wsUrl);
                 
                 this._socket.addEventListener('open', () => {
