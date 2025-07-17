@@ -59,7 +59,7 @@ export const CONFIG = {
             LEFT: new Vector3(0, 0.15, -8.25),
             RIGHT: new Vector3(0, 0.15, 8.25)
         },
-        MOVE_SPEED: 0.4,         // Significantly increased for better control
+        MOVE_SPEED: 0.200,
         POSITION_LIMIT: {
             MIN: -5.4,
             MAX: 5.4
@@ -85,9 +85,9 @@ export const CONFIG = {
         DIAMETER: 0.4,
         POSITION: new Vector3(0, 0.2, 0),
         COLOR: new Color3(1, 1, 0.7),
-        INITIAL_SPEED: 0.08,     // Reduced speed for better gameplay
-        NORMAL_SPEED: 0.12,      // Reduced speed for better gameplay  
-        SPIN_FACTOR: 0.15        // Keep improved spin
+        INITIAL_SPEED: 0.1,
+        NORMAL_SPEED: 0.15,
+        SPIN_FACTOR: 0.1
     },
     
     // Scoring

@@ -10,11 +10,9 @@ export const DIRECTION = {
 export class Ball extends GameObject {
     private _velocity: Vector3;
     private _active: boolean = false;
-    private _lastTime: number = 0;
 
     constructor(scene: Scene) {
         super(scene);
-        this._lastTime = Date.now();
         this._initMesh();
         this.reset();
     }
@@ -50,18 +48,7 @@ export class Ball extends GameObject {
 
     public update(): void {
         if (this._active) {
-            const currentTime = Date.now();
-            const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2); // Cap at 2x normal speed
-            this._lastTime = currentTime;
-            
-            // Move ball based on deltaTime for frame-rate independent movement
-            const movement = this._velocity.scale(deltaTime);
-            this._mesh.position.addInPlace(movement);
-            
-            // Debug: Log ball position and velocity occasionally
-            if (Math.random() < 0.001) { // Log rarely to avoid spam
-                console.log(`Ball position: (${this._mesh.position.x.toFixed(2)}, ${this._mesh.position.z.toFixed(2)}), velocity: (${this._velocity.x.toFixed(3)}, ${this._velocity.z.toFixed(3)}), speed: ${this._velocity.length().toFixed(3)}, deltaTime: ${deltaTime.toFixed(2)}`);
-            }
+            this._mesh.position.addInPlace(this._velocity);
         }
     }
 
@@ -69,7 +56,6 @@ export class Ball extends GameObject {
         this._mesh.position = CONFIG.BALL.POSITION.clone();
         this._velocity = new Vector3(0, 0, 0);
         this._active = false;
-        this._lastTime = Date.now(); // Reset timing
     }
 
     public start(directionZ?: number): void {
@@ -87,15 +73,11 @@ export class Ball extends GameObject {
             }
         }
         
-        // Create more dynamic initial velocity
-        const randomAngle = (Math.random() - 0.5) * 0.6; // Random angle component
         this._velocity = new Vector3(
-            randomAngle * CONFIG.BALL.INITIAL_SPEED, 
+            (Math.random() - 0.5) * CONFIG.BALL.INITIAL_SPEED, 
             0, 
             CONFIG.BALL.INITIAL_SPEED * zDirection
         );
-        
-        console.log(`Ball started with velocity: (${this._velocity.x.toFixed(3)}, ${this._velocity.z.toFixed(3)}), speed: ${this._velocity.length().toFixed(3)}`);
     }
 
     public addSpin(hitFactor: number): void {

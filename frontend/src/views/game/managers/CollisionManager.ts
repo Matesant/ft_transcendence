@@ -74,21 +74,11 @@ export class CollisionManager {
     }
 
     private _checkPaddleCollisions(ball: Ball, ballPos: any): void {
-        // Debug: Log paddle and ball positions occasionally
-        if (Math.random() < 0.001) {
-            console.log(`Ball: (${ballPos.x.toFixed(2)}, ${ballPos.z.toFixed(2)})`);
-            console.log(`Left Paddle: (${this._leftPaddle.mesh.position.x.toFixed(2)}, ${this._leftPaddle.mesh.position.z.toFixed(2)})`);
-            console.log(`Right Paddle: (${this._rightPaddle.mesh.position.x.toFixed(2)}, ${this._rightPaddle.mesh.position.z.toFixed(2)})`);
-            console.log(`Left collision zone: ${CONFIG.PADDLE.COLLISION.LEFT.MIN_Z} to ${CONFIG.PADDLE.COLLISION.LEFT.MAX_Z}`);
-            console.log(`Right collision zone: ${CONFIG.PADDLE.COLLISION.RIGHT.MIN_Z} to ${CONFIG.PADDLE.COLLISION.RIGHT.MAX_Z}`);
-        }
-        
         // Left paddle collision
         if (ballPos.z <= CONFIG.PADDLE.COLLISION.LEFT.MAX_Z && 
             ballPos.z >= CONFIG.PADDLE.COLLISION.LEFT.MIN_Z &&
             Math.abs(ballPos.x - this._leftPaddle.mesh.position.x) < this._leftPaddle.width / 2 * this._leftPaddle.mesh.scaling.x) {
             
-            console.log(`Left paddle hit! Ball at (${ballPos.x.toFixed(2)}, ${ballPos.z.toFixed(2)})`);
             ball.reverseZ();
             this._handlePaddleHit(ball, ballPos, this._leftPaddle);
         }
@@ -98,7 +88,6 @@ export class CollisionManager {
             ballPos.z <= CONFIG.PADDLE.COLLISION.RIGHT.MAX_Z &&
             Math.abs(ballPos.x - this._rightPaddle.mesh.position.x) < this._rightPaddle.width / 2 * this._rightPaddle.mesh.scaling.x) {
             
-            console.log(`Right paddle hit! Ball at (${ballPos.x.toFixed(2)}, ${ballPos.z.toFixed(2)})`);
             ball.reverseZ();
             this._handlePaddleHit(ball, ballPos, this._rightPaddle);
         }
