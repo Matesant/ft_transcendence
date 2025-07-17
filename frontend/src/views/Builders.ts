@@ -5,6 +5,7 @@ import { Login } from "./login/Login";
 import { Register } from "./register/Register";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Players } from "./players/Players";
+import { Player } from "./player/Player";
 import { AView } from "./AView";
 
 export class Builders {
@@ -34,5 +35,9 @@ export class Builders {
 
     public static PlayersBuilder(): AView {
         return new Players();
+    }
+
+    public static PlayerBuilder(): AView {
+        return new Player();
     }
 }

@@ -4,7 +4,7 @@ class playersTable extends HTMLElement {
 
     private async getPlayersHtml(): Promise<string> {
         try {
-            const response = await fetch("http://localhost:3001/players");
+            const response = await fetch("http://localhost:3001/players", {credentials: "include"});
             if (!response.ok) throw new Error("HTTP error");
             const players = await response.json();
   
@@ -58,6 +58,7 @@ class playersTable extends HTMLElement {
                     console.log(`Player selected: ${alias}`);
                     sessionStorage.setItem("selected_player", alias);
                     history.pushState("", "", "/player");
+                    router();
                     // window.dispatchEvent(new Event('popstate')); 
                 }
             });

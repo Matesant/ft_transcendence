@@ -13,7 +13,7 @@ class playerProfile extends HTMLElement {
   
     async init() {
       const player = sessionStorage.getItem("selected_player");
-      const url = `http://localhost:3001/users/${player}`;
+      const url = `http://localhost:3003/users/${player}`;
   
       // layout base
       this.shadowRoot.innerHTML = `
@@ -27,7 +27,7 @@ class playerProfile extends HTMLElement {
       const content = this.shadowRoot.querySelector("#content");
   
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, { credentials: "include" });
         if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
         const data = await res.json();
   
