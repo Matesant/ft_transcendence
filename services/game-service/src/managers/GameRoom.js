@@ -1,5 +1,22 @@
 import { EventEmitter } from 'events';
 
+// Constants aligned with frontend configuration so that
+// server-side physics matches local gameplay.
+const FIELD_HALF_WIDTH = 6;        // FIELD.WIDTH / 2 from frontend
+const SCORE_BOUNDARY = 8.5;        // CONFIG.SCORE.BOUNDARY
+const PADDLE_Z_LEFT = -8.25;       // CONFIG.PADDLE.POSITION.LEFT.z
+const PADDLE_Z_RIGHT = 8.25;       // CONFIG.PADDLE.POSITION.RIGHT.z
+const PADDLE_COLLISION = {
+    LEFT_MIN_Z: -8.45,
+    LEFT_MAX_Z: -8.05,
+    RIGHT_MIN_Z: 8.05,
+    RIGHT_MAX_Z: 8.45
+};
+const PADDLE_MOVE_LIMIT = 5.4;     // CONFIG.PADDLE.POSITION_LIMIT
+const BALL_INITIAL_SPEED = 0.1;    // CONFIG.BALL.INITIAL_SPEED
+const BALL_NORMAL_SPEED = 0.15;    // CONFIG.BALL.NORMAL_SPEED
+const PADDLE_HALF_WIDTH = 0.65;    // CONFIG.PADDLE.DIMENSIONS.x / 2
+
 export class GameRoom extends EventEmitter {
     constructor(id, player1, player2) {
         super();
@@ -18,8 +35,8 @@ export class GameRoom extends EventEmitter {
                 velocityZ: 0
             },
             paddles: {
-                left: { x: 0, z: -4 },
-                right: { x: 0, z: 4 }
+                left: { x: 0, z: PADDLE_Z_LEFT },
+                right: { x: 0, z: PADDLE_Z_RIGHT }
             },
             score: {
                 player1: 0,
@@ -38,6 +55,9 @@ export class GameRoom extends EventEmitter {
         // Network optimization
         this.lastStateSync = 0;
         this.stateSyncInterval = 16; // ~60 FPS (16ms)
+
+        // Track first paddle collision to accelerate the ball
+        this.firstCollision = true;
     }
 
     startGame() {
@@ -113,7 +133,7 @@ export class GameRoom extends EventEmitter {
         const paddle = isPlayer1 ? this.gameState.paddles.left : this.gameState.paddles.right;
         
         const moveSpeed = 0.2 * this.gameState.speedMultiplier;
-        const maxX = 4; // Field boundary
+        const maxX = PADDLE_MOVE_LIMIT; // Match frontend paddle boundary
         
         switch (input.action) {
             case 'move_left':
@@ -131,16 +151,16 @@ export class GameRoom extends EventEmitter {
         this.gameState.ball.z += this.gameState.ball.velocityZ;
         
         // Ball collision with walls
-        if (this.gameState.ball.x <= -4 || this.gameState.ball.x >= 4) {
+        if (this.gameState.ball.x <= -FIELD_HALF_WIDTH || this.gameState.ball.x >= FIELD_HALF_WIDTH) {
             this.gameState.ball.velocityX *= -1;
-            this.gameState.ball.x = Math.max(-3.9, Math.min(3.9, this.gameState.ball.x));
+            this.gameState.ball.x = Math.max(-(FIELD_HALF_WIDTH - 0.1), Math.min(FIELD_HALF_WIDTH - 0.1, this.gameState.ball.x));
         }
         
         // Ball collision with paddles
         this.checkPaddleCollisions();
         
         // Ball scoring
-        if (this.gameState.ball.z <= -5) {
+        if (this.gameState.ball.z <= -SCORE_BOUNDARY) {
             // Player 2 scores
             this.gameState.score.player2++;
             this.resetBall(1); // Ball goes toward player 1
@@ -149,7 +169,7 @@ export class GameRoom extends EventEmitter {
                 scorer: this.player2.id,
                 score: this.gameState.score
             });
-        } else if (this.gameState.ball.z >= 5) {
+        } else if (this.gameState.ball.z >= SCORE_BOUNDARY) {
             // Player 1 scores
             this.gameState.score.player1++;
             this.resetBall(-1); // Ball goes toward player 2
@@ -167,24 +187,39 @@ export class GameRoom extends EventEmitter {
         const rightPaddle = this.gameState.paddles.right;
         
         // Left paddle collision
-        if (ball.z <= -3.8 && ball.z >= -4.2 && 
-            Math.abs(ball.x - leftPaddle.x) < 0.8) {
-            ball.velocityZ = Math.abs(ball.velocityZ); // Ensure ball goes up
+        if (ball.z <= PADDLE_COLLISION.LEFT_MAX_Z && ball.z >= PADDLE_COLLISION.LEFT_MIN_Z &&
+            Math.abs(ball.x - leftPaddle.x) < PADDLE_HALF_WIDTH) {
+            // Ensure ball goes up
+            ball.velocityZ = Math.abs(ball.velocityZ);
+            this.handleFirstCollision(ball);
             this.addSpin(ball, leftPaddle);
         }
-        
+
         // Right paddle collision
-        if (ball.z >= 3.8 && ball.z <= 4.2 && 
-            Math.abs(ball.x - rightPaddle.x) < 0.8) {
-            ball.velocityZ = -Math.abs(ball.velocityZ); // Ensure ball goes down
+        if (ball.z >= PADDLE_COLLISION.RIGHT_MIN_Z && ball.z <= PADDLE_COLLISION.RIGHT_MAX_Z &&
+            Math.abs(ball.x - rightPaddle.x) < PADDLE_HALF_WIDTH) {
+            // Ensure ball goes down
+            ball.velocityZ = -Math.abs(ball.velocityZ);
+            this.handleFirstCollision(ball);
             this.addSpin(ball, rightPaddle);
+        }
+    }
+
+    handleFirstCollision(ball) {
+        if (this.firstCollision) {
+            this.firstCollision = false;
+            const speed = Math.sqrt(ball.velocityX * ball.velocityX + ball.velocityZ * ball.velocityZ);
+            const normX = ball.velocityX / speed;
+            const normZ = ball.velocityZ / speed;
+            ball.velocityX = normX * BALL_NORMAL_SPEED * this.gameState.speedMultiplier;
+            ball.velocityZ = normZ * BALL_NORMAL_SPEED * this.gameState.speedMultiplier;
         }
     }
 
     addSpin(ball, paddle) {
         const hitFactor = (ball.x - paddle.x) / 0.8;
-        ball.velocityX += hitFactor * 0.02;
-        
+        ball.velocityX += hitFactor * 0.1; // Match CONFIG.BALL.SPIN_FACTOR
+
         // Ensure minimum speed
         const speed = Math.sqrt(ball.velocityX * ball.velocityX + ball.velocityZ * ball.velocityZ);
         if (speed < 0.05) {
@@ -195,11 +230,12 @@ export class GameRoom extends EventEmitter {
     }
 
     resetBall(direction = 1) {
+        this.firstCollision = true;
         this.gameState.ball = {
             x: 0,
             z: 0,
-            velocityX: (Math.random() - 0.5) * 0.02,
-            velocityZ: direction * 0.03 * this.gameState.speedMultiplier
+            velocityX: (Math.random() - 0.5) * BALL_INITIAL_SPEED,
+            velocityZ: direction * BALL_INITIAL_SPEED * this.gameState.speedMultiplier
         };
     }
 
@@ -208,12 +244,12 @@ export class GameRoom extends EventEmitter {
             ball: {
                 x: 0,
                 z: 0,
-                velocityX: (Math.random() - 0.5) * 0.02,
-                velocityZ: (Math.random() > 0.5 ? 1 : -1) * 0.03
+                velocityX: (Math.random() - 0.5) * BALL_INITIAL_SPEED,
+                velocityZ: (Math.random() > 0.5 ? 1 : -1) * BALL_INITIAL_SPEED
             },
             paddles: {
-                left: { x: 0, z: -4 },
-                right: { x: 0, z: 4 }
+                left: { x: 0, z: PADDLE_Z_LEFT },
+                right: { x: 0, z: PADDLE_Z_RIGHT }
             },
             score: {
                 player1: 0,
@@ -222,6 +258,7 @@ export class GameRoom extends EventEmitter {
             powerUpsEnabled: false,
             speedMultiplier: 1.0
         };
+        this.firstCollision = true;
     }
 
     checkWinCondition() {
