@@ -116,4 +116,9 @@ export class Ball extends GameObject {
             this._velocity.z = newZMagnitude * zDirection;
         }
     }
+
+    public setSpeedMultiplier(multiplier: number): void {
+        // Scale the current velocity by the multiplier
+        this._velocity = this._velocity.scale(multiplier);
+    }
 }

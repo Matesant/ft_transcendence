@@ -18,7 +18,11 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Campeão",
         wins: "Venceu!",
         tournamentCompleteTitle: "🎉 TORNEIO CONCLUÍDO! 🎉",
-        championLabel: "Campeão"
+        championLabel: "Campeão",
+        gameSpeed: "Velocidade do Jogo",
+        tableColor: "Cor da Mesa",
+        switchToBlue: "Mudar para Azul",
+        switchToGreen: "Mudar para Verde"
     },
     en: {
         mainMenu: "MAIN MENU",
@@ -36,7 +40,11 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Champion",
         wins: "Wins!",
         tournamentCompleteTitle: "🎉 TOURNAMENT COMPLETE! 🎉",
-        championLabel: "Champion"
+        championLabel: "Champion",
+        gameSpeed: "Game Speed",
+        tableColor: "Table Color",
+        switchToBlue: "Switch to Blue",
+        switchToGreen: "Switch to Green"
     },
     es: {
         mainMenu: "MENÚ PRINCIPAL",
@@ -54,7 +62,11 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Campeón",
         wins: "¡Gana!",
         tournamentCompleteTitle: "🎉 ¡TORNEO COMPLETO! 🎉",
-        championLabel: "Campeón"
+        championLabel: "Campeón",
+        gameSpeed: "Velocidad del Juego",
+        tableColor: "Color de Mesa",
+        switchToBlue: "Cambiar a Azul",
+        switchToGreen: "Cambiar a Verde"
     },
     fr: {
         mainMenu: "MENU PRINCIPAL",
@@ -72,7 +84,11 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Champion",
         wins: "Gagne !",
         tournamentCompleteTitle: "🎉 TOURNOI TERMINÉ ! 🎉",
-        championLabel: "Champion"
+        championLabel: "Champion",
+        gameSpeed: "Vitesse du Jeu",
+        tableColor: "Couleur de Table",
+        switchToBlue: "Passer au Bleu",
+        switchToGreen: "Passer au Vert"
     },
     de: {
         mainMenu: "HAUPTMENÜ",
@@ -90,7 +106,11 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Champion",
         wins: "Gewinnt!",
         tournamentCompleteTitle: "🎉 TURNIER ABGESCHLOSSEN! 🎉",
-        championLabel: "Champion"
+        championLabel: "Champion",
+        gameSpeed: "Spielgeschwindigkeit",
+        tableColor: "Tischfarbe",
+        switchToBlue: "Zu Blau wechseln",
+        switchToGreen: "Zu Grün wechseln"
     },
     ru: {
         mainMenu: "ГЛАВНОЕ МЕНЮ",
@@ -108,6 +128,10 @@ export const STRINGS: Record<Language, Record<string, string>> = {
         champion: "Чемпион",
         wins: "Победил!",
         tournamentCompleteTitle: "🎉 ТУРНИР ЗАВЕРШЕН! 🎉",
-        championLabel: "Чемпион"
+        championLabel: "Чемпион",
+        gameSpeed: "Скорость Игры",
+        tableColor: "Цвет Стола",
+        switchToBlue: "Переключить на Синий",
+        switchToGreen: "Переключить на Зелёный"
     }
 };
