@@ -7,6 +7,7 @@ import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 import { PowerUpManager } from "./PowerUpManager";
 import { STRINGS, Language } from "../../i18n";
+import { MatchService, MatchInfo } from "../services/MatchService";
 
 // Simple enum for game states (removed PAUSED)
 enum GameState {
@@ -22,13 +23,6 @@ export enum GameMode {
     MULTIPLAYER_JOIN
 }
 
-interface MatchInfo {
-    id: number;
-    player1: string;
-    player2: string;
-    round: number;
-    status: string;
-}
 
 export class GameManager {
     private _scene: Scene;
@@ -37,6 +31,7 @@ export class GameManager {
     private _rightPaddle: Paddle;
     private _scoreManager: ScoreManager;
     private _inputManager: InputManager;
+    private _matchService: MatchService;
     private _firstCollision: boolean = true;
     private _gameState: GameState = GameState.MENU;
     
@@ -71,6 +66,7 @@ export class GameManager {
         this._scene = scene;
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
+        this._matchService = new MatchService();
 
         // Initialize game objects
         this._ball = new Ball(scene);
@@ -103,45 +99,31 @@ export class GameManager {
     
     private async _loadCurrentMatch(): Promise<void> {
         try {
-            const response = await fetch('http://localhost:3002/match/next', {
-                method: 'GET',
-                credentials: 'include' // Include authentication cookies
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                
-                // Check if tournament is complete - if yes, reset to practice mode
-                if (data.tournamentComplete) {
-                    console.log('Tournament is complete, using practice mode');
-                    this._currentMatch = null;
-                    this._player1Name = "Player 1";
-                    this._player2Name = "Player 2";
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                    return;
-                }
-                
-                // Normal match loading logic
-                if (data.match) {
-                    this._currentMatch = data.match;
-                    this._player1Name = data.match.player1;
-                    this._player2Name = data.match.player2;
-                    
-                    // Update score manager with player names
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                    
-                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
-                } else {
-                    console.log('No matches available');
-                    // Set default names if no match
-                    this._player1Name = "Player 1";
-                    this._player2Name = "Player 2";
-                    this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
-                }
+            const data = await this._matchService.fetchNextMatch();
+
+            if (data.tournamentComplete) {
+                console.log('Tournament is complete, using practice mode');
+                this._currentMatch = null;
+                this._player1Name = "Player 1";
+                this._player2Name = "Player 2";
+                this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                return;
+            }
+
+            if (data.match) {
+                this._currentMatch = data.match;
+                this._player1Name = data.match.player1;
+                this._player2Name = data.match.player2;
+                this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
+                console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
+            } else {
+                console.log('No matches available');
+                this._player1Name = "Player 1";
+                this._player2Name = "Player 2";
+                this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
             }
         } catch (error) {
             console.error('Failed to load match:', error);
-            // Use default names on error
             this._player1Name = "Player 1";
             this._player2Name = "Player 2";
             this._scoreManager.setPlayerNames(this._player1Name, this._player2Name);
@@ -580,11 +562,9 @@ export class GameManager {
 
          // … existing tournament-complete logic …
          if (this._currentMatch) {
-             await this._submitMatchResult(winner);
-             const response = await fetch('http://localhost:3002/match/next',{ method:'GET', credentials:'include' });
-             if (response.ok) {
-                 const data = await response.json();
-                 if (data.tournamentComplete) {
+            await this._submitMatchResult(winner);
+            const data = await this._matchService.fetchNextMatch();
+            if (data.tournamentComplete) {
                      // 1) Tournament Complete layout
                      if (gameOverText) {
                          gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
@@ -635,35 +615,17 @@ export class GameManager {
     
     private async _submitMatchResult(winner: string): Promise<void> {
         if (!this._currentMatch) return;
-        
+
         try {
-            const response = await fetch('http://localhost:3002/match/score', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    matchId: this._currentMatch.id,
-                    winner: winner
-                })
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Match result submitted successfully:', result);
-                
-                // Clear current match and try to load next one
-                this._currentMatch = null;
-                await this._loadCurrentMatch();
-                
-                // Update the match info display
-                const matchInfoElement = document.getElementById("matchInfo");
-                if (matchInfoElement) {
-                    this._updateMatchInfoDisplay(matchInfoElement);
-                }
-            } else {
-                console.error('Failed to submit match result:', response.statusText);
+            await this._matchService.submitScore(this._currentMatch.id, winner);
+
+            // Clear current match and try to load next one
+            this._currentMatch = null;
+            await this._loadCurrentMatch();
+
+            const matchInfoElement = document.getElementById("matchInfo");
+            if (matchInfoElement) {
+                this._updateMatchInfoDisplay(matchInfoElement);
             }
         } catch (error) {
             console.error('Error submitting match result:', error);
