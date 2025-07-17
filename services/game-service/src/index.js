@@ -19,7 +19,12 @@ const app = fastify({
 
 // Register plugins
 await app.register(cors, {
-    origin: ['http://localhost:8080', 'http://localhost:3000'],
+    origin: [
+        'http://localhost:8080', 
+        'http://localhost:3000',
+        'http://192.168.15.147:8080',
+        'http://192.168.15.147:3000'
+    ],
     credentials: true
 });
 
