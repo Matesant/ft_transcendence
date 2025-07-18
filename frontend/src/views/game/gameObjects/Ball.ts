@@ -10,13 +10,11 @@ export const DIRECTION = {
 export class Ball extends GameObject {
     private _velocity: Vector3;
     private _active: boolean = false;
-    private _lastTime: number = 0;
 
     constructor(scene: Scene) {
         super(scene);
         this._initMesh();
         this.reset();
-        this._lastTime = Date.now();
     }
 
     private _initMesh(): void {
@@ -50,18 +48,7 @@ export class Ball extends GameObject {
 
     public update(): void {
         if (this._active) {
-            const currentTime = Date.now();
-            const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
-            this._lastTime = currentTime;
-            
-            // Move ball based on deltaTime for frame-rate independent movement
-            const movement = this._velocity.scale(deltaTime);
-            this._mesh.position.addInPlace(movement);
-            
-            // Debug: Log ball position and velocity occasionally
-            if (Math.random() < 0.001) { // Log rarely to avoid spam
-                console.log(`Ball position: (${this._mesh.position.x.toFixed(2)}, ${this._mesh.position.z.toFixed(2)}), velocity: (${this._velocity.x.toFixed(3)}, ${this._velocity.z.toFixed(3)}), speed: ${this._velocity.length().toFixed(3)}, deltaTime: ${deltaTime.toFixed(2)}`);
-            }
+            this._mesh.position.addInPlace(this._velocity);
         }
     }
 
@@ -69,12 +56,10 @@ export class Ball extends GameObject {
         this._mesh.position = CONFIG.BALL.POSITION.clone();
         this._velocity = new Vector3(0, 0, 0);
         this._active = false;
-        this._lastTime = Date.now();
     }
 
     public start(directionZ?: number): void {
         this._active = true;
-        this._lastTime = Date.now();
         
         // Use provided direction or random if not specified
         let zDirection;

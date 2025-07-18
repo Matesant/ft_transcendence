@@ -10,12 +10,10 @@ export enum PaddleType {
 export class Paddle extends GameObject {
     private _type: PaddleType;
     private _speedMultiplier: number = 1.0;
-    private _lastTime: number = 0;
 
     constructor(scene: Scene, type: PaddleType) {
         super(scene);
         this._type = type;
-        this._lastTime = Date.now();
         this._initMesh();
     }
 
@@ -55,28 +53,20 @@ export class Paddle extends GameObject {
     }
 
     public moveLeft(): void {
-        const currentTime = Date.now();
-        const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
-        this._lastTime = currentTime;
-        
         const actualPaddleHalfWidth = (CONFIG.PADDLE.DIMENSIONS.x / 2) * this._mesh.scaling.x;
         const leftBoundary = CONFIG.WALL.POSITION.TOP.x + (CONFIG.WALL.DIMENSIONS.x / 2) + actualPaddleHalfWidth + 0.05; // Add small margin
         
         if (this._mesh.position.x > leftBoundary) {
-            this._mesh.position.x -= CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier * deltaTime;
+            this._mesh.position.x -= CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier;
         }
     }
 
     public moveRight(): void {
-        const currentTime = Date.now();
-        const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
-        this._lastTime = currentTime;
-        
         const actualPaddleHalfWidth = (CONFIG.PADDLE.DIMENSIONS.x / 2) * this._mesh.scaling.x;
         const rightBoundary = CONFIG.WALL.POSITION.BOTTOM.x - (CONFIG.WALL.DIMENSIONS.x / 2) - actualPaddleHalfWidth - 0.05; // Add small margin
         
         if (this._mesh.position.x < rightBoundary) {
-            this._mesh.position.x += CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier * deltaTime;
+            this._mesh.position.x += CONFIG.PADDLE.MOVE_SPEED * this._speedMultiplier;
         }
     }
 
@@ -93,7 +83,6 @@ export class Paddle extends GameObject {
             ? CONFIG.PADDLE.POSITION.LEFT.clone() 
             : CONFIG.PADDLE.POSITION.RIGHT.clone();
         this._mesh.position = paddlePosition;
-        this._lastTime = Date.now();
     }
 
     public resize(scaleFactor: number): void {

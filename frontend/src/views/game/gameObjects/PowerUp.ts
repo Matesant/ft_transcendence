@@ -5,12 +5,10 @@ import { CONFIG } from "../config";
 export class PowerUp extends GameObject {
     private _type: string;
     private _active: boolean = true;
-    private _lastTime: number = 0;
     
     constructor(scene: Scene, type: string, position: Vector3) {
         super(scene);
         this._type = type;
-        this._lastTime = Date.now();
         this._initMesh(position);
     }
     
@@ -55,12 +53,8 @@ export class PowerUp extends GameObject {
     
     public update(): void {
         if (this._active) {
-            const currentTime = Date.now();
-            const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
-            this._lastTime = currentTime;
-            
             // Rotate the power-up for visual effect
-            this._mesh.rotation.y += CONFIG.POWER_UPS.ROTATION_SPEED * deltaTime;
+            this._mesh.rotation.y += CONFIG.POWER_UPS.ROTATION_SPEED;
         }
     }
     
