@@ -1,6 +1,7 @@
 import { Game } from "./game/Game";
 import { GameModeSelector } from "./game/GameModeSelector";
 import { Tournament } from "./tournament/Tournament";
+import { Lobby } from "./lobby/Lobby";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
@@ -26,6 +27,10 @@ export class Builders {
 
     public static TournamentBuilder(): AView {
         return new Tournament(); // Assuming Tournament is similar to Game for now
+    }
+
+    public static LobbyBuilder(): AView {
+        return new Lobby();
     }
 }
 

@@ -13,6 +13,7 @@ export class NetworkManager {
     private _onGameEnd: ((data: any) => void) | null = null;
     private _onScore: ((data: any) => void) | null = null;
     private _onOpponentDisconnected: ((data: any) => void) | null = null;
+    private _onLobbyUpdate: ((data: any) => void) | null = null;
     private _onError: ((error: string) => void) | null = null;
     
     // Network optimization
@@ -98,6 +99,34 @@ export class NetworkManager {
         });
     }
 
+    public createLobby(): void {
+        if (!this._connected || !this._playerId || !this._playerName) return;
+        this._send({
+            type: 'create_lobby',
+            playerId: this._playerId,
+            playerName: this._playerName
+        });
+    }
+
+    public joinLobby(lobbyId: string): void {
+        if (!this._connected || !this._playerId || !this._playerName) return;
+        this._send({
+            type: 'join_lobby',
+            lobbyId: lobbyId,
+            playerId: this._playerId,
+            playerName: this._playerName
+        });
+    }
+
+    public startGame(lobbyId: string): void {
+        if (!this._connected || !this._playerId) return;
+        this._send({
+            type: 'start_game',
+            lobbyId: lobbyId,
+            playerId: this._playerId
+        });
+    }
+
     public sendInput(action: string): void {
         if (!this._connected || !this._playerId || !this._gameId) return;
 
@@ -140,6 +169,10 @@ export class NetworkManager {
 
     public onOpponentDisconnected(callback: (data: any) => void): void {
         this._onOpponentDisconnected = callback;
+    }
+
+    public onLobbyUpdate(callback: (data: any) => void): void {
+        this._onLobbyUpdate = callback;
     }
 
     public onError(callback: (error: string) => void): void {
@@ -231,6 +264,12 @@ export class NetworkManager {
 
                 case 'queue_left':
                     console.log('Left queue:', data.message);
+                    break;
+
+                case 'lobby_update':
+                    if (this._onLobbyUpdate) {
+                        this._onLobbyUpdate(data);
+                    }
                     break;
 
                 case 'pong':
