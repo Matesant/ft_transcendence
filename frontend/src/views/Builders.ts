@@ -44,8 +44,9 @@ class GameModeWrapper extends AView {
     }
     
     public render(): void {
-        // The GameModeSelector handles its own rendering
-        // When a mode is selected, it will create and render the appropriate Game instance
+        // GameModeSelector handles its own DOM manipulation
+        // Just show the selector
+        this._gameModeSelector.showModeSelector();
     }
     
     public dispose(): void {
