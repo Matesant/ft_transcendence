@@ -40,12 +40,14 @@ export class RemoteGameManager {
     private _playerId: string;
     private _playerName: string;
     private _onGameStarted?: () => void;
+    private _fromLobby: boolean;
 
-    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void) {
+    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void, fromLobby: boolean = false) {
         this._scene = scene;
         this._playerId = playerId;
         this._playerName = playerName;
         this._onGameStarted = onGameStarted;
+        this._fromLobby = fromLobby;
         
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
@@ -68,8 +70,15 @@ export class RemoteGameManager {
         // Setup network event handlers
         this._setupNetworkHandlers();
         
-        // Show menu initially
-        this._showMenu();
+        // If coming from lobby, skip menu and connect directly
+        if (this._fromLobby) {
+            this._hideMenu();
+            this._showGame();
+            this._connectAndFindMatch();
+        } else {
+            // Show menu for manual connection
+            this._showMenu();
+        }
     }
 
     private _createUI(): void {

@@ -14,7 +14,7 @@ export class Game extends AView {
     private _gameMode: GameMode;
     private _onGameStarted?: () => void;
 
-    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void) {
+    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void, fromLobby: boolean = false) {
         // Canvas setup
         super();
         this._gameMode = gameMode;
@@ -59,7 +59,7 @@ export class Game extends AView {
             if (!playerId || !playerName) {
                 throw new Error('Player ID and name are required for remote game mode');
             }
-            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted);
+            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted, fromLobby);
         } else {
             this._gameManager = new GameManager(this._scene);
             // For local games, call the callback immediately since the game starts right away
