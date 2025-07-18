@@ -28,3 +28,8 @@ dist/
 coverage/
 
 package-lock.json
+.frontend.log
+.tailwind.log
+.frontend.pid
+.tailwind.pid
+frontend/public/style.css
