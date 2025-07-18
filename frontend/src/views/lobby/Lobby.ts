@@ -44,25 +44,8 @@ export class Lobby extends AView {
         });
 
         this._network.onGameStart((data) => {
-            console.log('[Lobby] Game starting, received data:', data);
-            
-            // Clean up lobby UI
             this.dispose();
-            
-            // Clear the entire body to ensure clean slate
-            document.body.innerHTML = '';
-            
-            // Create and start the remote game
-            console.log('[Lobby] Creating remote game with:', {
-                playerId: this._playerId,
-                playerName: this._playerName
-            });
-            
-            const game = new Game('remote', this._playerId, this._playerName, () => {
-                console.log('[Lobby] Remote game started successfully');
-            }, true); // fromLobby = true
-            
-            // Start the game rendering
+            const game = new Game('remote', this._playerId, this._playerName, () => {});
             game.render();
         });
     }
