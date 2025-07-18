@@ -12,7 +12,7 @@ const routes: {[key: string]: () => AView } = {
 
 let view: AView | undefined = undefined;
 
-export async function router (){
+export function router (){
 
     if (view) {
         view.dispose();
@@ -23,7 +23,7 @@ export async function router (){
     view = routes[path] ? routes[path]() : undefined;
     
     if (view) {
-        await view.render();
+        view.render();
     }
     else {
         document.body.innerHTML = "<h1>404 Not Found</h1>";

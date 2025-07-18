@@ -1,4 +1,4 @@
 export abstract class AView {
-    public abstract render(): void | Promise<void>;
+    public abstract render(): void;
     public abstract dispose(): void;
 }
