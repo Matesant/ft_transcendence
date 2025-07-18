@@ -8,6 +8,7 @@ export class Sidebar {
             <item-sidebar href="/">Home</item-sidebar>
             <item-sidebar href="/tournament">Tournament</item-sidebar>
             <item-sidebar href="/game">Game</item-sidebar>
+            <item-sidebar href="/lobby">lobby</item-sidebar>
             <item-sidebar href="/login">Login</item-sidebar>
             <item-sidebar href="/register">Register</item-sidebar>
             </ul>
