@@ -50,6 +50,22 @@ services:
     networks:
       - backend
 
+  game-service:
+    container_name: game-service
+    build: ./services/game-service
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./services/game-service:/app
+    env_file:
+      - ./.env
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+    command: ./start.sh
+    networks:
+      - backend
+
 networks:
   backend:
     name: backend

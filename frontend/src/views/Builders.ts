@@ -1,4 +1,5 @@
 import { Game } from "./game/Game";
+import { GameModeSelector } from "./game/GameModeSelector";
 import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
@@ -10,6 +11,7 @@ import { AView } from "./AView";
 
 export class Builders {
     public static GameBuilder(): AView {
+        // Return a wrapper that shows the game mode selector
         return new Game();
     }
 

@@ -62,4 +62,10 @@ export class ScoreManager {
         this._player2Name = player2;
         this.updateDisplay();
     }
+
+    public setScore(player1Score: number, player2Score: number): void {
+        this._score.player1 = player1Score;
+        this._score.player2 = player2Score;
+        this.updateDisplay();
+    }
 }

@@ -1,17 +1,24 @@
 import { Scene, Engine, ArcRotateCamera, Tools, Vector3, HemisphericLight, GlowLayer } from "@babylonjs/core";
 import { GameManager } from "./managers/GameManager";
+import { RemoteGameManager } from "./managers/RemoteGameManager";
 import { CONFIG } from "./config";
 import { AView } from "../AView";
+
+export type GameMode = 'local' | 'remote';
 
 export class Game extends AView {
     private _canvas: HTMLCanvasElement;
     private _engine: Engine;
     private _scene: Scene;
-    private _gameManager: GameManager;
+    private _gameManager: GameManager | RemoteGameManager;
+    private _gameMode: GameMode;
+    private _onGameStarted?: () => void;
 
-    constructor() {
+    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void) {
         // Canvas setup
         super();
+        this._gameMode = gameMode;
+        this._onGameStarted = onGameStarted;
         this._canvas = document.createElement("canvas");
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
@@ -47,8 +54,19 @@ export class Game extends AView {
         const glowLayer = new GlowLayer("glowLayer", this._scene);
         glowLayer.intensity = CONFIG.GLOW.INTENSITY;
         
-        // Initialize game manager
-        this._gameManager = new GameManager(this._scene);
+        // Initialize appropriate game manager based on mode
+        if (this._gameMode === 'remote') {
+            if (!playerId || !playerName) {
+                throw new Error('Player ID and name are required for remote game mode');
+            }
+            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted);
+        } else {
+            this._gameManager = new GameManager(this._scene);
+            // For local games, call the callback immediately since the game starts right away
+            if (this._onGameStarted) {
+                this._onGameStarted();
+            }
+        }
 
         window.addEventListener("keydown", (event) => {
             if (event.shiftKey && event.ctrlKey && event.altKey && event.key === "i") {
@@ -79,6 +97,11 @@ export class Game extends AView {
         // Stop the render loop
         this._engine.stopRenderLoop();
 
+        // Disconnect network manager if in remote mode
+        if (this._gameMode === 'remote' && 'disconnect' in this._gameManager) {
+            (this._gameManager as RemoteGameManager).disconnect();
+        }
+
         // Dispose of the Babylon.js engine and scene
         this._scene.dispose();
         this._engine.dispose();
@@ -92,6 +115,10 @@ export class Game extends AView {
         this._gameManager = null!;
 
         // Remove the event listener when needed
+    }
+
+    public getGameMode(): GameMode {
+        return this._gameMode;
     }
 }
 
