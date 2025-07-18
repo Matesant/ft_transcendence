@@ -8,6 +8,7 @@ import jwt from '@fastify/jwt';
 import { GameRoom } from './managers/GameRoom.js';
 import { GameManager } from './managers/GameManager.js';
 import { PlayerManager } from './managers/PlayerManager.js';
+import { LobbyManager } from './managers/LobbyManager.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ await app.register(websocket);
 // Initialize managers
 const gameManager = new GameManager();
 const playerManager = new PlayerManager();
+const lobbyManager = new LobbyManager();
 
 // Health check
 app.get('/health', async (request, reply) => {
@@ -65,6 +67,15 @@ app.register(async function (fastify) {
                 console.log('Received message:', data);
                 
                 switch (data.type) {
+                    case 'create_lobby':
+                        await handleCreateLobby(connection, data);
+                        break;
+                    case 'join_lobby':
+                        await handleJoinLobby(connection, data);
+                        break;
+                    case 'start_game':
+                        await handleStartGame(connection, data);
+                        break;
                     case 'join_queue':
                         await handleJoinQueue(connection, data);
                         break;
@@ -94,7 +105,12 @@ app.register(async function (fastify) {
         
         connection.socket.on('close', () => {
             console.log('WebSocket connection closed');
+            const playerId = playerManager.connections.get(connection);
+            const player = playerId ? playerManager.getPlayer(playerId) : null;
             playerManager.removePlayer(connection);
+            if (player && player.lobbyId) {
+                lobbyManager.removePlayer(player.lobbyId, player.id);
+            }
         });
         
         connection.socket.on('error', (error) => {
@@ -169,6 +185,77 @@ async function handleGameInput(connection, data) {
     if (gameRoom) {
         gameRoom.handlePlayerInput(data.playerId, data.input);
     }
+}
+
+async function handleCreateLobby(connection, data) {
+    const player = {
+        id: data.playerId,
+        name: data.playerName,
+        connection: connection,
+        joinedAt: Date.now()
+    };
+    playerManager.addPlayer(player);
+    playerManager.removePlayerFromQueue(player.id);
+    const lobby = lobbyManager.createLobby(player);
+    const payload = {
+        type: 'lobby_update',
+        lobbyId: lobby.id,
+        hostId: lobby.hostId,
+        players: Array.from(lobby.players.values()).map(p => ({ id: p.id, name: p.name }))
+    };
+    lobby.players.forEach(p => {
+        p.connection.socket.send(JSON.stringify(payload));
+    });
+}
+
+async function handleJoinLobby(connection, data) {
+    const player = {
+        id: data.playerId,
+        name: data.playerName,
+        connection: connection,
+        joinedAt: Date.now()
+    };
+    playerManager.addPlayer(player);
+    playerManager.removePlayerFromQueue(player.id);
+    const lobby = lobbyManager.joinLobby(data.lobbyId, player);
+    if (!lobby) {
+        connection.socket.send(JSON.stringify({ type: 'error', message: 'Lobby not found' }));
+        return;
+    }
+    const payload = {
+        type: 'lobby_update',
+        lobbyId: lobby.id,
+        hostId: lobby.hostId,
+        players: Array.from(lobby.players.values()).map(p => ({ id: p.id, name: p.name }))
+    };
+    lobby.players.forEach(p => {
+        p.connection.socket.send(JSON.stringify(payload));
+    });
+}
+
+async function handleStartGame(connection, data) {
+    const lobby = lobbyManager.getLobby(data.lobbyId);
+    if (!lobby) {
+        connection.socket.send(JSON.stringify({ type: 'error', message: 'Lobby not found' }));
+        return;
+    }
+    const playersArr = Array.from(lobby.players.values());
+    if (playersArr.length < 2) {
+        connection.socket.send(JSON.stringify({ type: 'error', message: 'Need more players' }));
+        return;
+    }
+    const [p1, p2] = playersArr;
+    const gameRoom = gameManager.createGame(p1, p2);
+    lobbyManager.removeLobby(lobby.id);
+    playersArr.forEach((p, idx) => {
+        p.connection.socket.send(JSON.stringify({
+            type: 'game_start',
+            gameId: gameRoom.id,
+            playerSide: idx === 0 ? 'left' : 'right',
+            opponent: { id: idx === 0 ? p2.id : p1.id, name: idx === 0 ? p2.name : p1.name }
+        }));
+    });
+    gameRoom.startGame();
 }
 
 const start = async () => {
