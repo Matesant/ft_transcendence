@@ -20,8 +20,19 @@ export function router (){
         view.dispose();
     }
 
-    document.body.innerHTML = "";
     let path: string = location.pathname;
+
+    if (path === "/" || path === "/register" || path === "/login" || path === "/game") {
+        document.body.innerHTML = "";
+    } else {
+        
+        if (!document.body.querySelector('left-sidebar')) {
+            const leftSidebar = document.createElement('left-sidebar');
+            document.body.appendChild(leftSidebar);
+        }
+
+    }
+
     view = routes[path] ? routes[path]() : undefined;
     
     if (view) {

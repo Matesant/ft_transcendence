@@ -7,19 +7,24 @@ export class Tournament extends AView {
 
     public async render()
     {
+
+      Array.from(document.body.children).forEach(child => {
+        if (child.tagName.toLowerCase() !== 'left-sidebar') {
+          document.body.removeChild(child);
+        }
+      });
+      
+      
       let round_in_progress = sessionStorage.getItem("round_in_progress");
       
       if (round_in_progress === "true") {
-        document.body.innerHTML = `
-          <left-sidebar></left-sidebar>
-          <tournament-rounds></tournament-rounds>
-      `;
+
+        let element = document.createElement('tournament-rounds');
+        document.body.appendChild(element);
       }
       else {
-        document.body.innerHTML = `
-         <left-sidebar></left-sidebar>
-          <start-tournament></start-tournament>
-      `;
+        let element = document.createElement('start-tournament');
+        document.body.appendChild(element);
       }
 
     }
