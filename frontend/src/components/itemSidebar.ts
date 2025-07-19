@@ -1,4 +1,4 @@
-import { router } from "../../router/Router";
+import { router } from "../router/Router";
 
 class itemSidebar extends HTMLElement {
 

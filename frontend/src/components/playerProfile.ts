@@ -1,5 +1,3 @@
-import { router } from "../../router/Router";
-
 class playerProfile extends HTMLElement {
   private container!: HTMLDivElement;
 

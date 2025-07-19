@@ -1,4 +1,4 @@
-import { router } from "../../router/Router";
+import { router } from "../router/Router";
 
 class startTournament extends HTMLElement {
 
