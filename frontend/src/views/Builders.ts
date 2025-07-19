@@ -1,5 +1,4 @@
 import { Game } from "./game/Game";
-import { GameModeSelector } from "./game/GameModeSelector";
 import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
@@ -8,6 +7,7 @@ import { Dashboard } from "./dashboard/Dashboard";
 import { Players } from "./players/Players";
 import { Player } from "./player/Player";
 import { AView } from "./AView";
+import { Lobby } from "./lobby/lobby";
 
 export class Builders {
     public static GameBuilder(): AView {
@@ -41,5 +41,9 @@ export class Builders {
 
     public static PlayerBuilder(): AView {
         return new Player();
+    }
+
+    public static LobbyBuilder(): AView {
+        return new Lobby();
     }
 }
