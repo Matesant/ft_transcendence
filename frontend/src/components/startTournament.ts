@@ -4,7 +4,9 @@ class startTournament extends HTMLElement {
 
     constructor() {
       super ();
-      
+    }
+
+    connectedCallback() {
         this.innerHTML = `
         <div class="flex">
             <!-- Sidebar ocupa uma largura fixa -->
