@@ -11,6 +11,7 @@ const routes: {[key: string]: () => AView } = {
     "/players": Builders.PlayersBuilder,
     "/player": Builders.PlayerBuilder,
     "/settings": Builders.SettingsBuilder,
+    "/friends": Builders.FriendsBuilder,
     "/": Builders.HomeBuilder
 };
 

@@ -7,6 +7,7 @@ import { Register } from "./register/Register";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Players } from "./players/Players";
 import { Player } from "./player/Player";
+import { Friends } from "./friends/Friends";
 import { AView } from "./AView";
 import { Settings } from "./settings/Settings";
 
@@ -14,6 +15,10 @@ export class Builders {
     public static GameBuilder(): AView {
         // Return a wrapper that shows the game mode selector
         return new Game();
+    }
+
+    public static FriendsBuilder(): AView {
+        return new Friends();
     }
 
     public static SettingsBuilder(): AView {
