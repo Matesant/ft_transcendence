@@ -20,6 +20,7 @@ class Sidebar extends HTMLElement {
             <item-sidebar href="/game">Game</item-sidebar>
             <item-sidebar href="/players">Players</item-sidebar>
             <item-sidebar href="/friends">Friends</item-sidebar>
+            <item-sidebar href="/settings">Settings</item-sidebar>
           </ul>
         </div>
       </aside>

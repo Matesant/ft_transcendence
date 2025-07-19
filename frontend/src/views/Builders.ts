@@ -8,11 +8,16 @@ import { Dashboard } from "./dashboard/Dashboard";
 import { Players } from "./players/Players";
 import { Player } from "./player/Player";
 import { AView } from "./AView";
+import { Settings } from "./settings/Settings";
 
 export class Builders {
     public static GameBuilder(): AView {
         // Return a wrapper that shows the game mode selector
         return new Game();
+    }
+
+    public static SettingsBuilder(): AView {
+        return new Settings ();
     }
 
     public static HomeBuilder(): AView {
