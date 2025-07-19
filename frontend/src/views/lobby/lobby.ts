@@ -620,12 +620,6 @@ export class Lobby extends AView {
     main.appendChild(card);
     this.container.appendChild(main);
     this.container.appendChild(PongFooter());
-
-    // Simulate search and then go to room (for demo purposes)
-    setTimeout(() => {
-      // TODO: Replace with actual network response
-      this.showCreateRoom(); // Simulate successful join
-    }, 3000);
   }
 
   /** limpa somente o corpo, mantendo header/footer */
