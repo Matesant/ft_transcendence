@@ -8,11 +8,7 @@ export class Tournament extends AView {
     public async render()
     {
 
-      Array.from(document.body.children).forEach(child => {
-        if (child.tagName.toLowerCase() !== 'left-sidebar') {
-          document.body.removeChild(child);
-        }
-      });
+
       
       
       let round_in_progress = sessionStorage.getItem("round_in_progress");
@@ -30,5 +26,10 @@ export class Tournament extends AView {
     }
 
     public dispose(): void {
+      Array.from(document.body.children).forEach(child => {
+        if (child.tagName.toLowerCase() !== 'left-sidebar') {
+          document.body.removeChild(child);
+        }
+      });
     }
 }

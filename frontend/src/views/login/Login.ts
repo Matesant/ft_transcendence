@@ -121,7 +121,8 @@ export class Login extends AView {
     }
 
     public dispose(): void {
-        this.elements.forEach(el => el.parentNode && el.parentNode.removeChild(el));
-        this.elements = [];
+        Array.from(document.body.children).forEach(child => {
+              document.body.removeChild(child);
+          });
     }
 }
