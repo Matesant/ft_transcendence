@@ -1,6 +1,7 @@
 import { Scene, Engine, ArcRotateCamera, Tools, Vector3, HemisphericLight, GlowLayer } from "@babylonjs/core";
 import { GameManager } from "./managers/GameManager";
 import { RemoteGameManager } from "./managers/RemoteGameManager";
+import { NetworkManager } from "./managers/NetworkManager";
 import { CONFIG } from "./config";
 import { AView } from "../AView";
 
@@ -14,7 +15,7 @@ export class Game extends AView {
     private _gameMode: GameMode;
     private _onGameStarted?: () => void;
 
-    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void) {
+    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void, networkManager?: NetworkManager) {
         // Canvas setup
         super();
         this._gameMode = gameMode;
@@ -59,7 +60,7 @@ export class Game extends AView {
             if (!playerId || !playerName) {
                 throw new Error('Player ID and name are required for remote game mode');
             }
-            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted);
+            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted, networkManager);
         } else {
             this._gameManager = new GameManager(this._scene);
             // For local games, call the callback immediately since the game starts right away

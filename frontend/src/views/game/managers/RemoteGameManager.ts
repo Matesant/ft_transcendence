@@ -41,7 +41,7 @@ export class RemoteGameManager {
     private _playerName: string;
     private _onGameStarted?: () => void;
 
-    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void) {
+    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void, networkManager?: NetworkManager) {
         this._scene = scene;
         this._playerId = playerId;
         this._playerName = playerName;
@@ -50,7 +50,7 @@ export class RemoteGameManager {
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
         this._gameStateManager = new GameStateManager();
-        this._networkManager = new NetworkManager();
+        this._networkManager = networkManager ? networkManager : new NetworkManager();
 
         // Initialize game objects
         this._ball = new Ball(scene);
@@ -68,8 +68,10 @@ export class RemoteGameManager {
         // Setup network event handlers
         this._setupNetworkHandlers();
         
-        // Show menu initially
-        this._showMenu();
+        // Show menu only if we created our own network manager
+        if (!networkManager) {
+            this._showMenu();
+        }
     }
 
     private _createUI(): void {

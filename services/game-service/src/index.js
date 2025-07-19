@@ -8,6 +8,7 @@ import jwt from '@fastify/jwt';
 import { GameRoom } from './managers/GameRoom.js';
 import { GameManager } from './managers/GameManager.js';
 import { PlayerManager } from './managers/PlayerManager.js';
+import { LobbyManager } from './managers/LobbyManager.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ await app.register(websocket);
 // Initialize managers
 const gameManager = new GameManager();
 const playerManager = new PlayerManager();
+const lobbyManager = new LobbyManager();
 
 // Health check
 app.get('/health', async (request, reply) => {
@@ -71,6 +73,15 @@ app.register(async function (fastify) {
                     case 'leave_queue':
                         await handleLeaveQueue(connection, data);
                         break;
+                    case 'create_lobby':
+                        await handleCreateLobby(connection, data);
+                        break;
+                    case 'join_lobby':
+                        await handleJoinLobby(connection, data);
+                        break;
+                    case 'start_lobby':
+                        await handleStartLobby(connection, data);
+                        break;
                     case 'game_input':
                         await handleGameInput(connection, data);
                         break;
@@ -94,6 +105,10 @@ app.register(async function (fastify) {
         
         connection.socket.on('close', () => {
             console.log('WebSocket connection closed');
+            const playerId = playerManager.connections.get(connection);
+            if (playerId) {
+                lobbyManager.removePlayer(playerId);
+            }
             playerManager.removePlayer(connection);
         });
         
@@ -169,6 +184,87 @@ async function handleGameInput(connection, data) {
     if (gameRoom) {
         gameRoom.handlePlayerInput(data.playerId, data.input);
     }
+}
+
+async function handleCreateLobby(connection, data) {
+    const player = {
+        id: data.playerId,
+        name: data.playerName,
+        connection: connection,
+        joinedAt: Date.now()
+    };
+
+    playerManager.addPlayer(player);
+    playerManager.removePlayerFromQueue(player.id);
+
+    const lobby = lobbyManager.createLobby(player);
+    connection.socket.send(JSON.stringify({
+        type: 'lobby_created',
+        lobbyId: lobby.id,
+        players: lobby.players.map(p => ({ id: p.id, name: p.name }))
+    }));
+}
+
+async function handleJoinLobby(connection, data) {
+    const player = {
+        id: data.playerId,
+        name: data.playerName,
+        connection: connection,
+        joinedAt: Date.now()
+    };
+
+    playerManager.addPlayer(player);
+    playerManager.removePlayerFromQueue(player.id);
+
+    const lobby = lobbyManager.joinLobby(data.lobbyId, player);
+    if (!lobby) {
+        connection.socket.send(JSON.stringify({
+            type: 'lobby_error',
+            message: 'Lobby not found or full'
+        }));
+        return;
+    }
+
+    lobby.players.forEach(p => {
+        p.connection.socket.send(JSON.stringify({
+            type: 'lobby_update',
+            lobbyId: lobby.id,
+            players: lobby.players.map(pl => ({ id: pl.id, name: pl.name }))
+        }));
+    });
+}
+
+async function handleStartLobby(connection, data) {
+    const lobby = lobbyManager.getLobby(data.lobbyId);
+    if (!lobby || lobby.host.id !== data.playerId || lobby.players.length < 2) {
+        connection.socket.send(JSON.stringify({
+            type: 'lobby_error',
+            message: 'Cannot start lobby'
+        }));
+        return;
+    }
+
+    const host = lobby.host;
+    const opponent = lobby.players.find(p => p.id !== host.id);
+
+    const gameRoom = gameManager.createGame(host, opponent);
+
+    host.connection.socket.send(JSON.stringify({
+        type: 'match_found',
+        gameId: gameRoom.id,
+        opponent: { id: opponent.id, name: opponent.name },
+        playerSide: 'left'
+    }));
+
+    opponent.connection.socket.send(JSON.stringify({
+        type: 'match_found',
+        gameId: gameRoom.id,
+        opponent: { id: host.id, name: host.name },
+        playerSide: 'right'
+    }));
+
+    lobbyManager.deleteLobby(lobby.id);
+    gameRoom.startGame();
 }
 
 const start = async () => {

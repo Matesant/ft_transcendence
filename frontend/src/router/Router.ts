@@ -3,6 +3,7 @@ import { Builders } from "../views/Builders";
 
 const routes: {[key: string]: () => AView } = {
     "/game": Builders.GameBuilder,
+    "/lobby": Builders.LobbyBuilder,
     "/tournament": Builders.TournamentBuilder,
     "/login": Builders.LoginBuilder,
     "/register": Builders.RegisterBuilder,
