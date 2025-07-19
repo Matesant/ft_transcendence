@@ -35,3 +35,5 @@ package-lock.json
 .frontend.pid
 .tailwind.pid
 frontend/public/style.css
+/services/*-service/uploads/
+notes
