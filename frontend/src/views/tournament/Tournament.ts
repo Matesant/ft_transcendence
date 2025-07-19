@@ -1,5 +1,4 @@
 import { AView } from "../AView";
-import { Sidebar } from "../../components/sidebar/Sidebar";
 
 
 export class Tournament extends AView {
@@ -12,13 +11,13 @@ export class Tournament extends AView {
       
       if (round_in_progress === "true") {
         document.body.innerHTML = `
-          ${Sidebar.getHtml()}
+          <left-sidebar></left-sidebar>
           <tournament-rounds></tournament-rounds>
       `;
       }
       else {
         document.body.innerHTML = `
-          ${Sidebar.getHtml()}
+         <left-sidebar></left-sidebar>
           <start-tournament></start-tournament>
       `;
       }

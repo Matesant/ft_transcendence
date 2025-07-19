@@ -4,7 +4,7 @@ import "./components/startTournament/startTournament";
 import "./components/tournamentRounds/tournamentRounds";
 import "./components/playersTable/playersTable";
 import "./components/playerProfile/playerProfile";
-
+import "./components/sidebar/Sidebar";
 
 window.addEventListener("DOMContentLoaded", router);
 window.addEventListener("popstate", router);
