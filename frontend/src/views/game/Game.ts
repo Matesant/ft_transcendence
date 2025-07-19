@@ -115,7 +115,10 @@ export class Game extends AView {
         this._gameManager = null!;
 
         Array.from(document.body.children).forEach(child => {
-            document.body.removeChild(child);
+
+            if (child.tagName.toLowerCase() !== 'left-sidebar') {
+                document.body.removeChild(child);
+            }
           });
           
     }
