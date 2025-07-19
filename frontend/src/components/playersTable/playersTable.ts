@@ -55,11 +55,9 @@ class playersTable extends HTMLElement {
             div.addEventListener('click', () => {
                 const alias = div.querySelector('p')?.textContent;
                 if (alias) {
-                    console.log(`Player selected: ${alias}`);
                     sessionStorage.setItem("selected_player", alias);
                     history.pushState("", "", "/player");
                     router();
-                    // window.dispatchEvent(new Event('popstate')); 
                 }
             });
         })

@@ -15,7 +15,7 @@ class tournamentRounds extends HTMLElement {
 
         this.innerHTML = `
     
-              <div class="flex-grow bg-gray-100 min-h-screen p-8 justify-center">
+              <div class="sm:ml-64 mt-8 px-4 p-8 justify-center">
                 <div class="max-w-4xl mx-auto">
                   <h1 class="text-3xl font-bold text-center mb-8">Torneio de Partidas</h1>
 
