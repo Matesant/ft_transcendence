@@ -37,3 +37,4 @@ package-lock.json
 frontend/public/style.css
 /services/*-service/uploads/
 notes
+tmp
