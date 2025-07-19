@@ -55,8 +55,7 @@ class playersTable extends HTMLElement {
             div.addEventListener('click', () => {
                 const alias = div.querySelector('p')?.textContent;
                 if (alias) {
-                    sessionStorage.setItem("selected_player", alias);
-                    history.pushState("", "", "/player");
+                    history.pushState(alias, "", "/player");
                     router();
                 }
             });
