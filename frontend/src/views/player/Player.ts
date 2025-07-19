@@ -2,7 +2,7 @@ import { AView } from "../AView";
 
 export class Player extends AView
 {
-    public async render(parent: HTMLElement = document.body): Promise<void> {
+    public render(parent: HTMLElement = document.body): void{
 
         Array.from(parent.children).forEach(child => {
             if (child.tagName.toLowerCase() !== 'left-sidebar') {
