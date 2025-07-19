@@ -388,7 +388,7 @@ export class Lobby extends AView {
         const code = (document.getElementById("joinCode") as HTMLInputElement).value.trim();
         if (!code) { alert("Enter a code"); return; }
         this.roomCode = code;
-        this.showCreateRoom();
+        this.showSearchingLobby();
         // TODO: chamar networkManager.joinRoom(code)
       }
     });
@@ -418,6 +418,124 @@ export class Lobby extends AView {
     main.appendChild(card);
     this.container.appendChild(main);
     this.container.appendChild(PongFooter());
+  }
+
+  /** passo 2c: tela de procurando lobby */
+  private showSearchingLobby() {
+    this.clearBody();
+
+    const main = document.createElement("main");
+    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+
+    const title = document.createElement("h1");
+    title.style.cssText = `
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    `;
+    title.textContent = "🔍 Searching Lobby";
+    main.appendChild(title);
+
+    const card = document.createElement("div");
+    card.style.cssText = `
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 3rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    `;
+
+    // Loading animation
+    const loadingContainer = document.createElement("div");
+    loadingContainer.style.cssText = `
+      margin-bottom: 2rem;
+    `;
+
+    const spinner = document.createElement("div");
+    spinner.style.cssText = `
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem auto;
+    `;
+
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    loadingContainer.appendChild(spinner);
+    card.appendChild(loadingContainer);
+
+    const searchingText = document.createElement("p");
+    searchingText.style.cssText = `
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    `;
+    searchingText.textContent = "Looking for lobby...";
+    card.appendChild(searchingText);
+
+    const codeText = document.createElement("p");
+    codeText.style.cssText = `
+      font-size: 1rem;
+      opacity: 0.7;
+      margin-bottom: 2rem;
+      background: rgba(0,0,0,0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      letter-spacing: 0.1rem;
+    `;
+    codeText.textContent = `Code: ${this.roomCode}`;
+    card.appendChild(codeText);
+
+    // Cancel button
+    const cancelBtn = PongButton({
+      text: "Cancel",
+      variant: "secondary",
+      onClick: () => this.showJoinRoom()
+    });
+    cancelBtn.style.cssText = `
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    `;
+    cancelBtn.onmouseover = () => {
+      cancelBtn.style.background = 'rgba(244, 67, 54, 0.3)';
+      cancelBtn.style.transform = 'translateY(-2px)';
+    };
+    cancelBtn.onmouseout = () => {
+      cancelBtn.style.background = 'rgba(244, 67, 54, 0.2)';
+      cancelBtn.style.transform = 'translateY(0)';
+    };
+    card.appendChild(cancelBtn);
+
+    main.appendChild(card);
+    this.container.appendChild(main);
+    this.container.appendChild(PongFooter());
+
+    // Simulate search and then go to room (for demo purposes)
+    setTimeout(() => {
+      // TODO: Replace with actual network response
+      this.showCreateRoom(); // Simulate successful join
+    }, 3000);
   }
 
   /** limpa somente o corpo, mantendo header/footer */
