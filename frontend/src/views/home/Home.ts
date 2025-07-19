@@ -64,7 +64,7 @@ export class Home extends AView {
     // Footer
     const footer = document.createElement('footer');
     footer.className = 'w-full max-w-5xl mx-auto text-center text-gray-500 py-6 px-4';
-    footer.innerHTML = '&copy; 2025 ft_transcendence. Built with <span style="color:#e25555">&lt;3</span> at 42 School.';
+    footer.innerHTML = '&copy; 2025 ft_transcendence.  <span style="color:#e25555">&lt;3</span> at 42 School.';
 
     // Montar página
     bg.appendChild(header);
