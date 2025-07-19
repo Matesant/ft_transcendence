@@ -5,6 +5,8 @@
 **/data/
 *.db
 
+frontend/public/style.css
+
 # Env files (nunca versionar senhas ou tokens)
 **/.env
 
@@ -33,3 +35,5 @@ package-lock.json
 .frontend.pid
 .tailwind.pid
 frontend/public/style.css
+/services/*-service/uploads/
+notes

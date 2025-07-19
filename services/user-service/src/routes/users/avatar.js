@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { readdir } from 'fs/promises';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+const UPLOAD_DIR = 'uploads';
 
 export default async function (fastify, opts) {
 	// --- Avatar Management ---

@@ -5,6 +5,9 @@ import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
+import { Dashboard } from "./dashboard/Dashboard";
+import { Players } from "./players/Players";
+import { Player } from "./player/Player";
 import { AView } from "./AView";
 
 export class Builders {
@@ -31,26 +34,17 @@ export class Builders {
     public static TournamentBuilder(): AView {
         return new Tournament(); // Assuming Tournament is similar to Game for now
     }
-}
 
-// Wrapper class to integrate GameModeSelector with the existing AView pattern
-class GameModeWrapper extends AView {
-    private _gameModeSelector: GameModeSelector;
-    
-    constructor() {
-        super();
-        this._gameModeSelector = new GameModeSelector();
+    public static DashboardBuilder(): AView {
+        return new Dashboard();
     }
-    
-    public render(): void {
-        // The GameModeSelector handles its own rendering
-        // When a mode is selected, it will create and render the appropriate Game instance
+
+    public static PlayersBuilder(): AView {
+        return new Players();
     }
-    
-    public dispose(): void {
-        if (this._gameModeSelector) {
-            this._gameModeSelector.dispose();
-        }
+
+    public static PlayerBuilder(): AView {
+        return new Player();
     }
 }
 

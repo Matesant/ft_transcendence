@@ -15,7 +15,7 @@ class tournamentRounds extends HTMLElement {
 
         this.innerHTML = `
     
-              <div class="flex-grow bg-gray-100 min-h-screen p-8 justify-center">
+              <div class="sm:ml-64 mt-8 px-4 p-8 justify-center">
                 <div class="max-w-4xl mx-auto">
                   <h1 class="text-3xl font-bold text-center mb-8">Torneio de Partidas</h1>
 
@@ -27,14 +27,14 @@ class tournamentRounds extends HTMLElement {
                     <button id="iniciar-partida" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition">
                     Iniciar partida
                     </button>
-                    <button id="showMessageButton" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition">
+                    <button id="novo-torneio" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition">
                     Novo torneio
                     </button>
                 </div>
             </div>
     `;
 
-    document.getElementById('showMessageButton')?.addEventListener('click', () => {
+    document.getElementById('novo-torneio')?.addEventListener('click', () => {
 
         sessionStorage.removeItem("round_in_progress");
         history.pushState("", "", "/tournament");
@@ -65,7 +65,7 @@ class tournamentRounds extends HTMLElement {
             
             round.matches.forEach(match => {
                 const matchElement = document.createElement('div');
-                matchElement.className = 'border rounded p-4 hover:bg-gray-50 transition border border-gray-500';
+                matchElement.className = 'p-4 hover:bg-gray-50 transition rounded border border-gray-500';
                 
                 // Status da partida
                 const statusElement = document.createElement('div');

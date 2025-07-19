@@ -31,6 +31,10 @@ export default async function (fastify, opts) {
 			LIMIT 10
 			`, [userId])
 
+            const protocol = request.protocol;
+            const host = request.headers.host;
+            profile.avatar = `${protocol}://${host}/${profile.avatar}`;
+
 			return {
 				profile,
 				history
