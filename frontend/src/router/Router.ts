@@ -48,13 +48,14 @@ export async function router (){
     }
 
     let path: string = location.pathname;
-    const isAuth = await isAuthenticated();
     view = routes[path] ? routes[path]() : undefined;
 
     if (path === "/" || path === "/register" || path === "/login") {
         view.render(document.body);
         return ;
     } else {
+        const isAuth = await isAuthenticated();
+
         if (!isAuth) {
             history.pushState({}, '', '/login');
             router();
