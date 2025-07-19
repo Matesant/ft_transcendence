@@ -2,6 +2,7 @@ import { AView } from "../AView";
 import { PongHeader, PongFooter, PongButton, PongInput } from "../../components/ui";
 import { generateRoomCode } from "../../utils/codeGenerator";
 import { WebSocketManager, RoomPlayer, RoomState } from "../../utils/WebSocketManager";
+import { UserManager } from "../../utils/UserManager";
 
 export class Lobby extends AView {
   private elements: HTMLElement[] = [];
@@ -15,10 +16,16 @@ export class Lobby extends AView {
   
   // WebSocket manager
   private wsManager!: WebSocketManager;
+  private userManager: UserManager;
   private isHost: boolean = false;
   private isConnecting: boolean = false;
   private isSearching: boolean = false;
   private currentPlayers: RoomPlayer[] = [];
+
+  constructor() {
+    super();
+    this.userManager = UserManager.getInstance();
+  }
 
   public render(parent: HTMLElement = document.body): void {
     parent.innerHTML = "";
@@ -36,10 +43,21 @@ export class Lobby extends AView {
     // header
     this.container.appendChild(PongHeader({ homeOnly: false }));
 
-    // Initialize WebSocket manager
-    this.initializeWebSocket();
+    // Initialize user data and WebSocket
+    this.initializeUser();
+  }
 
-    // mostra o menu de seleção inicial
+  private async initializeUser(): Promise<void> {
+    // First, try to fetch user information
+    try {
+      await this.userManager.fetchCurrentUser();
+      console.log('User loaded:', this.userManager.getCurrentUser());
+    } catch (error) {
+      console.warn('Could not fetch user data, continuing as guest:', error);
+    }
+
+    // Then initialize WebSocket and show UI
+    this.initializeWebSocket();
     this.showSelection();
   }
 
@@ -107,12 +125,30 @@ export class Lobby extends AView {
     title.style.cssText = `
       font-size: 3rem;
       font-weight: bold;
-      margin-bottom: 3rem;
+      margin-bottom: 1rem;
       text-align: center;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     `;
     title.textContent = "🎮 Multiplayer Lobby";
     main.appendChild(title);
+
+    // Welcome message with user name
+    const welcomeMsg = document.createElement("p");
+    welcomeMsg.style.cssText = `
+      font-size: 1.3rem;
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    `;
+    const displayName = this.userManager.getDisplayName();
+    const isAuth = this.userManager.isAuthenticated();
+    
+    if (isAuth) {
+      welcomeMsg.innerHTML = `Welcome back, <strong>${displayName}</strong>! 👋`;
+    } else {
+      welcomeMsg.innerHTML = `Playing as <strong>${displayName}</strong> 🎲<br><small style="opacity: 0.7; font-size: 0.9rem;">Login to save your progress</small>`;
+    }
+    main.appendChild(welcomeMsg);
 
     const card = document.createElement("div");
     card.style.cssText = `
@@ -263,7 +299,7 @@ export class Lobby extends AView {
     this.isHost = true;
     
     // Create room on server
-    this.wsManager.createRoom(this.roomCode, "Host Player");
+    this.wsManager.createRoom(this.roomCode);
 
     const title = document.createElement("h2");
     title.textContent = "🎮 Room Created";
@@ -479,7 +515,7 @@ export class Lobby extends AView {
         this.isHost = false;
         this.isSearching = true;
         this.showSearchingLobby();
-        this.wsManager.joinRoom(code, "Player");
+        this.wsManager.joinRoom(code);
       }
     });
     joinBtn.style.cssText = `
@@ -707,7 +743,12 @@ export class Lobby extends AView {
       icon.style.fontSize = "1.2rem";
 
       const name = document.createElement("span");
-      name.textContent = player.id === this.wsManager?.playerId ? "You" : player.name;
+      const isCurrentUser = player.id === this.wsManager?.playerId;
+      if (isCurrentUser) {
+        name.textContent = `${this.userManager.getDisplayName()} (You)`;
+      } else {
+        name.textContent = player.name;
+      }
       name.style.fontWeight = "bold";
 
       const status = document.createElement("span");

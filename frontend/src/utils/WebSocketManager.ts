@@ -1,3 +1,5 @@
+import { UserManager } from './UserManager';
+
 export interface RoomPlayer {
     id: string;
     name: string;
@@ -26,9 +28,10 @@ export class WebSocketManager {
     private _onDisconnected: (() => void) | null = null;
 
     constructor() {
-        // Generate a simple player ID for demo purposes
-        this._playerId = 'player_' + Math.random().toString(36).substr(2, 9);
-        this._playerName = 'Player'; // Will be updated when user provides name
+        // Get user info from UserManager instead of generating random ID
+        const userManager = UserManager.getInstance();
+        this._playerId = userManager.getUserId();
+        this._playerName = userManager.getDisplayName();
     }
 
     public async connect(): Promise<void> {
@@ -93,8 +96,12 @@ export class WebSocketManager {
             return;
         }
 
+        // Use provided name or get from UserManager
         if (playerName) {
             this._playerName = playerName;
+        } else {
+            const userManager = UserManager.getInstance();
+            this._playerName = userManager.getDisplayName();
         }
 
         this._currentRoomCode = roomCode;
@@ -113,8 +120,12 @@ export class WebSocketManager {
             return;
         }
 
+        // Use provided name or get from UserManager
         if (playerName) {
             this._playerName = playerName;
+        } else {
+            const userManager = UserManager.getInstance();
+            this._playerName = userManager.getDisplayName();
         }
 
         this._currentRoomCode = roomCode;
