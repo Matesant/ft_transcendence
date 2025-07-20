@@ -180,6 +180,10 @@ export class NetworkManager {
         return this._playerId;
     }
 
+    public setGameId(gameId: string): void {
+        this._gameId = gameId;
+    }
+
     // Private methods
     private _send(data: any): void {
         if (this._socket && this._connected) {
@@ -211,6 +215,9 @@ export class NetworkManager {
                     break;
 
                 case 'game_start':
+                    if (data.gameId) {
+                        this._gameId = data.gameId;
+                    }
                     if (this._onGameStart) {
                         this._onGameStart(data);
                     }

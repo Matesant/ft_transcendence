@@ -48,7 +48,7 @@ export class RemoteGameManager {
         playerId: string,
         playerName: string,
         onGameStarted?: () => void,
-        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string } }
+        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string }; gameId?: string }
     ) {
         this._scene = scene;
         this._playerId = playerId;
@@ -93,7 +93,12 @@ export class RemoteGameManager {
 
         if (this._skipMenu) {
             this._networkManager.connect(this._playerId, this._playerName, this._existingSocket).then(() => {
-                this._showStatus('Waiting for game start...', 'info');
+                if (options?.gameId) {
+                    this._networkManager.setGameId(options.gameId);
+                    this._handleGameStart({});
+                } else {
+                    this._showStatus('Waiting for game start...', 'info');
+                }
             });
         } else {
             // Show menu initially
@@ -378,12 +383,16 @@ export class RemoteGameManager {
     }
 
     private _showMenu(): void {
-        this._menuUI.style.display = "flex";
+        if (this._menuUI) {
+            this._menuUI.style.display = "flex";
+        }
         this._gameUI.style.display = "none";
     }
 
     private _hideMenu(): void {
-        this._menuUI.style.display = "none";
+        if (this._menuUI) {
+            this._menuUI.style.display = "none";
+        }
     }
 
     private _showGame(): void {

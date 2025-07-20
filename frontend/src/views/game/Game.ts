@@ -19,7 +19,7 @@ export class Game extends AView {
         playerId?: string,
         playerName?: string,
         onGameStarted?: () => void,
-        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string } }
+        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string }; gameId?: string }
     ) {
         // Canvas setup
         super();

@@ -863,10 +863,11 @@ export class Lobby extends AView {
           sessionStorage.setItem('roomCode', this.roomCode);
           sessionStorage.setItem('playerId', this.wsManager.playerId);
           sessionStorage.setItem('playerSide', data.playerSide);
+          sessionStorage.setItem('gameId', data.gameId);
           sessionStorage.setItem('opponent', JSON.stringify(data.opponent));
           this.keepConnection = true;
           navigateTo('/online');
-        }, 1000);
+        }, 3000);
       }
     }, 1000);
   }
