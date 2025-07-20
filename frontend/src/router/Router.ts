@@ -1,5 +1,6 @@
 import { AView } from "../views/AView";
 import { Builders } from "../views/Builders";
+import { apiUrl } from "../utils/api";
 
 const routes: {[key: string]: () => AView } = {
     "/game": Builders.GameBuilder,
@@ -18,7 +19,7 @@ const routes: {[key: string]: () => AView } = {
 
 async function isAuthenticated(): Promise<boolean> {
     try {
-      const response = await fetch("http://localhost:3001/auth/verify", {
+      const response = await fetch(apiUrl(3001, "/auth/verify"), {
         credentials: "include",
       });
   

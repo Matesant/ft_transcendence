@@ -1,3 +1,5 @@
+import { apiUrl } from "../utils/api";
+
 class Sidebar extends HTMLElement {
 
   constructor() {
@@ -30,7 +32,7 @@ class Sidebar extends HTMLElement {
     const userInfoContainer = this.querySelector("#user-info");
 
     try {
-      const response = await fetch("http://localhost:3003/users/me", {credentials: "include"});
+      const response = await fetch(apiUrl(3003, "/users/me"), {credentials: "include"});
       if (!response.ok) throw new Error("Falha na request");
       const data = await response.json();
 
