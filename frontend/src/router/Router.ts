@@ -1,4 +1,3 @@
-import { RetryStrategy } from "@babylonjs/core";
 import { AView } from "../views/AView";
 import { Builders } from "../views/Builders";
 
@@ -13,6 +12,7 @@ const routes: {[key: string]: () => AView } = {
     "/online": Builders.OnlineBuilder,
     "/lobby": Builders.LobbyBuilder,
     "/settings": Builders.SettingsBuilder,
+    "/friends": Builders.FriendsBuilder,
     "/": Builders.HomeBuilder
 };
 
@@ -50,13 +50,14 @@ export async function router (){
     }
 
     let path: string = location.pathname;
-    const isAuth = await isAuthenticated();
     view = routes[path] ? routes[path]() : undefined;
 
     if (path === "/" || path === "/register" || path === "/login") {
         view.render(document.body);
         return ;
     } else {
+        const isAuth = await isAuthenticated();
+
         if (!isAuth) {
             history.pushState({}, '', '/login');
             router();
