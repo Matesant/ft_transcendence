@@ -31,7 +31,7 @@ export class NetworkManager {
         this._handleError = this._handleError.bind(this);
     }
 
-    public connect(playerId: string, playerName: string): Promise<void> {
+    public connect(playerId: string, playerName: string, existingSocket?: WebSocket): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this._connected) {
                 resolve();
@@ -42,27 +42,44 @@ export class NetworkManager {
             this._playerName = playerName;
 
             try {
-                // Detect the current host and use it for WebSocket connection
-                const host = window.location.hostname;
-                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = process.env.NODE_ENV === 'production' 
-                    ? 'wss://your-domain.com/ws'
-                    : `${protocol}//${host}:3004/ws`;
-                
-                console.log(`Connecting to game service at: ${wsUrl}`);
-                this._socket = new WebSocket(wsUrl);
-                
-                this._socket.addEventListener('open', () => {
-                    this._handleOpen();
-                    resolve();
-                });
-                
-                this._socket.addEventListener('message', this._handleMessage);
-                this._socket.addEventListener('close', this._handleClose);
-                this._socket.addEventListener('error', (event) => {
-                    this._handleError(event);
-                    reject(new Error('WebSocket connection failed'));
-                });
+                if (existingSocket) {
+                    this._socket = existingSocket;
+                    this._socket.addEventListener('message', this._handleMessage);
+                    this._socket.addEventListener('close', this._handleClose);
+                    this._socket.addEventListener('error', this._handleError);
+
+                    if (this._socket.readyState === WebSocket.OPEN) {
+                        this._handleOpen();
+                        resolve();
+                    } else {
+                        this._socket.addEventListener('open', () => {
+                            this._handleOpen();
+                            resolve();
+                        }, { once: true });
+                    }
+                } else {
+                    // Detect the current host and use it for WebSocket connection
+                    const host = window.location.hostname;
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const wsUrl = process.env.NODE_ENV === 'production'
+                        ? 'wss://your-domain.com/ws'
+                        : `${protocol}//${host}:3004/ws`;
+
+                    console.log(`Connecting to game service at: ${wsUrl}`);
+                    this._socket = new WebSocket(wsUrl);
+
+                    this._socket.addEventListener('open', () => {
+                        this._handleOpen();
+                        resolve();
+                    });
+
+                    this._socket.addEventListener('message', this._handleMessage);
+                    this._socket.addEventListener('close', this._handleClose);
+                    this._socket.addEventListener('error', (event) => {
+                        this._handleError(event);
+                        reject(new Error('WebSocket connection failed'));
+                    });
+                }
             } catch (error) {
                 reject(error);
             }

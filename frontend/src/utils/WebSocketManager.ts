@@ -218,4 +218,8 @@ export class WebSocketManager {
     public get currentRoomCode(): string {
         return this._currentRoomCode;
     }
+
+    public get socket(): WebSocket | null {
+        return this._socket;
+    }
 }

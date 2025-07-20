@@ -1,0 +1,771 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/frontend/src/router/Router.ts b/frontend/src/router/Router.ts
+index 5243b6085a5682aa094850b51e8108ced9109038..a1851307987ffd2574a87e6df95d5a8db74952fc 100644
+--- a/frontend/src/router/Router.ts
++++ b/frontend/src/router/Router.ts
+@@ -1,36 +1,37 @@
+ import { AView } from "../views/AView";
+ import { Builders } from "../views/Builders";
+ 
+ const routes: {[key: string]: () => AView } = {
+     "/game": Builders.GameBuilder,
+     "/tournament": Builders.TournamentBuilder,
+     "/login": Builders.LoginBuilder,
+     "/register": Builders.RegisterBuilder,
+     "/dashboard": Builders.DashboardBuilder,
+     "/players": Builders.PlayersBuilder,
+     "/player": Builders.PlayerBuilder,
++    "/online": Builders.OnlineBuilder,
+     "/lobby": Builders.LobbyBuilder,
+     "/": Builders.HomeBuilder
+ };
+ 
+ let view: AView | undefined = undefined;
+ 
+ export function router (){
+ 
+     if (view) {
+         view.dispose();
+     }
+ 
+     document.body.innerHTML = "";
+     let path: string = location.pathname;
+     view = routes[path] ? routes[path]() : undefined;
+     
+     if (view) {
+         view.render(document.body);
+     }
+     else {
+         document.body.innerHTML = "<h1>404 Not Found</h1>";
+     }
+ }
+ 
+ export function navigateTo(path: string) {
+diff --git a/frontend/src/utils/WebSocketManager.ts b/frontend/src/utils/WebSocketManager.ts
+index 8b030d6f279f033aca35452864949e894b5b4b14..ad0d8d498a80c19556c5572dd2c0b7622cb8a7e7 100644
+--- a/frontend/src/utils/WebSocketManager.ts
++++ b/frontend/src/utils/WebSocketManager.ts
+@@ -196,26 +196,30 @@ export class WebSocketManager {
+ 
+     public onConnected(callback: () => void): void {
+         this._onConnected = callback;
+     }
+ 
+     public onDisconnected(callback: () => void): void {
+         this._onDisconnected = callback;
+     }
+ 
+     // Getters
+     public get connected(): boolean {
+         return this._connected;
+     }
+ 
+     public get playerId(): string {
+         return this._playerId;
+     }
+ 
+     public get playerName(): string {
+         return this._playerName;
+     }
+ 
+     public get currentRoomCode(): string {
+         return this._currentRoomCode;
+     }
++
++    public get socket(): WebSocket | null {
++        return this._socket;
++    }
+ }
+diff --git a/frontend/src/utils/connectionStore.ts b/frontend/src/utils/connectionStore.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..b30187506291843a4edf97ad84cdbc37ed8cd307
+--- /dev/null
++++ b/frontend/src/utils/connectionStore.ts
+@@ -0,0 +1,12 @@
++export { setWsManager, getWsManager };
++import { WebSocketManager } from './WebSocketManager';
++
++let wsManager: WebSocketManager | null = null;
++
++function setWsManager(manager: WebSocketManager) {
++  wsManager = manager;
++}
++
++function getWsManager(): WebSocketManager | null {
++  return wsManager;
++}
+diff --git a/frontend/src/views/Builders.ts b/frontend/src/views/Builders.ts
+index 1267a559138a2222a2d9e14c79b1138319d3720c..75574f968af8f1198f825abb5073438616ec6324 100644
+--- a/frontend/src/views/Builders.ts
++++ b/frontend/src/views/Builders.ts
+@@ -1,49 +1,54 @@
+ import { Game } from "./game/Game";
+ import { Tournament } from "./tournament/Tournament";
+ import { Home } from "./home/Home";
+ import { Login } from "./login/Login";
+ import { Register } from "./register/Register";
+ import { Dashboard } from "./dashboard/Dashboard";
+ import { Players } from "./players/Players";
+ import { Player } from "./player/Player";
+ import { AView } from "./AView";
+ import { Lobby } from "./lobby/lobby";
++import { Online } from "./online/Online";
+ 
+ export class Builders {
+     public static GameBuilder(): AView {
+         // Return a wrapper that shows the game mode selector
+         return new Game();
+     }
+ 
+     public static HomeBuilder(): AView {
+         return new Home();
+     }
+ 
+     public static LoginBuilder(): AView {
+         return new Login();
+     }
+ 
+     public static RegisterBuilder(): AView {
+         return new Register();
+     }
+ 
+     public static TournamentBuilder(): AView {
+         return new Tournament(); // Assuming Tournament is similar to Game for now
+     }
+ 
+     public static DashboardBuilder(): AView {
+         return new Dashboard();
+     }
+ 
+     public static PlayersBuilder(): AView {
+         return new Players();
+     }
+ 
+     public static PlayerBuilder(): AView {
+         return new Player();
+     }
+ 
+     public static LobbyBuilder(): AView {
+         return new Lobby();
+     }
++
++    public static OnlineBuilder(): AView {
++        return new Online();
++    }
+ }
+\ No newline at end of file
+diff --git a/frontend/src/views/game/Game.ts b/frontend/src/views/game/Game.ts
+index b21ea1c171dfdef7802e7394fff935b07026ac9b..0517d0a77fb4cd40552628b3feab5402414cd13e 100644
+--- a/frontend/src/views/game/Game.ts
++++ b/frontend/src/views/game/Game.ts
+@@ -1,87 +1,93 @@
+ import { Scene, Engine, ArcRotateCamera, Tools, Vector3, HemisphericLight, GlowLayer } from "@babylonjs/core";
+ import { GameManager } from "./managers/GameManager";
+ import { RemoteGameManager } from "./managers/RemoteGameManager";
+ import { CONFIG } from "./config";
+ import { AView } from "../AView";
+ 
+ export type GameMode = 'local' | 'remote';
+ 
+ export class Game extends AView {
+     private _canvas: HTMLCanvasElement;
+     private _engine: Engine;
+     private _scene: Scene;
+     private _gameManager: GameManager | RemoteGameManager;
+     private _gameMode: GameMode;
+     private _onGameStarted?: () => void;
+ 
+-    constructor(gameMode: GameMode = 'local', playerId?: string, playerName?: string, onGameStarted?: () => void) {
++    constructor(
++        gameMode: GameMode = 'local',
++        playerId?: string,
++        playerName?: string,
++        onGameStarted?: () => void,
++        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string } }
++    ) {
+         // Canvas setup
+         super();
+         this._gameMode = gameMode;
+         this._onGameStarted = onGameStarted;
+         this._canvas = document.createElement("canvas");
+         this._canvas.width = window.innerWidth;
+         this._canvas.height = window.innerHeight;
+         this._canvas.id = CONFIG.CANVAS_ID;
+         document.body.appendChild(this._canvas);
+ 
+         // Engine and scene setup
+         this._engine = new Engine(this._canvas, true);
+         this._scene = new Scene(this._engine);
+         this._scene.clearColor = CONFIG.SCENE.CLEAR_COLOR;
+         
+         // Camera setup
+         const camera = new ArcRotateCamera(
+             "Camera", 
+             Math.PI + Tools.ToRadians(CONFIG.SCENE_ROTATION_DEGREES),
+             CONFIG.CAMERA.BETA,
+             CONFIG.CAMERA.RADIUS,
+             CONFIG.CAMERA.TARGET,
+             this._scene
+         );
+         camera.setTarget(Vector3.Zero());
+         
+         // Ambient light
+         const ambientLight = new HemisphericLight(
+             "ambientLight", 
+             CONFIG.AMBIENT_LIGHT.DIRECTION,
+             this._scene
+         );
+         ambientLight.intensity = CONFIG.AMBIENT_LIGHT.INTENSITY;
+         ambientLight.diffuse = CONFIG.AMBIENT_LIGHT.DIFFUSE;
+         
+         // Add glow effect
+         const glowLayer = new GlowLayer("glowLayer", this._scene);
+         glowLayer.intensity = CONFIG.GLOW.INTENSITY;
+         
+         // Initialize appropriate game manager based on mode
+         if (this._gameMode === 'remote') {
+             if (!playerId || !playerName) {
+                 throw new Error('Player ID and name are required for remote game mode');
+             }
+-            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted);
++            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted, options);
+         } else {
+             this._gameManager = new GameManager(this._scene);
+             // For local games, call the callback immediately since the game starts right away
+             if (this._onGameStarted) {
+                 this._onGameStarted();
+             }
+         }
+ 
+         window.addEventListener("keydown", (event) => {
+             if (event.shiftKey && event.ctrlKey && event.altKey && event.key === "i") {
+                 if (this._scene.debugLayer.isVisible()) {
+                     this._scene.debugLayer.hide();
+                 } else {
+                     this._scene.debugLayer.show();
+                 }
+             }
+         });
+         
+         // Handle window resize
+         window.addEventListener("resize", () => {
+             this._canvas.width = window.innerWidth;
+             this._canvas.height = window.innerHeight;
+             this._engine.resize();
+         });
+     }
+diff --git a/frontend/src/views/game/managers/NetworkManager.ts b/frontend/src/views/game/managers/NetworkManager.ts
+index 54dcce0fbce499917bc296dfb5b69c6b2d10b5c9..8b0c02175d963f32f5a839aa44d6a29e60108c67 100644
+--- a/frontend/src/views/game/managers/NetworkManager.ts
++++ b/frontend/src/views/game/managers/NetworkManager.ts
+@@ -9,82 +9,99 @@ export class NetworkManager {
+     // Event handlers
+     private _onMatchFound: ((data: any) => void) | null = null;
+     private _onGameState: ((state: any) => void) | null = null;
+     private _onGameStart: ((data: any) => void) | null = null;
+     private _onGameEnd: ((data: any) => void) | null = null;
+     private _onScore: ((data: any) => void) | null = null;
+     private _onOpponentDisconnected: ((data: any) => void) | null = null;
+     private _onError: ((error: string) => void) | null = null;
+     
+     // Network optimization
+     private _lastInputSent: number = 0;
+     private _inputThrottle: number = 16; // ~60 FPS
+     private _pingInterval: NodeJS.Timeout | null = null;
+     private _reconnectAttempts: number = 0;
+     private _maxReconnectAttempts: number = 5;
+     private _reconnectTimeout: NodeJS.Timeout | null = null;
+ 
+     constructor() {
+         // Bind methods to preserve 'this' context
+         this._handleMessage = this._handleMessage.bind(this);
+         this._handleOpen = this._handleOpen.bind(this);
+         this._handleClose = this._handleClose.bind(this);
+         this._handleError = this._handleError.bind(this);
+     }
+ 
+-    public connect(playerId: string, playerName: string): Promise<void> {
++    public connect(playerId: string, playerName: string, existingSocket?: WebSocket): Promise<void> {
+         return new Promise((resolve, reject) => {
+             if (this._connected) {
+                 resolve();
+                 return;
+             }
+ 
+             this._playerId = playerId;
+             this._playerName = playerName;
+ 
+             try {
+-                // Detect the current host and use it for WebSocket connection
+-                const host = window.location.hostname;
+-                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+-                const wsUrl = process.env.NODE_ENV === 'production' 
+-                    ? 'wss://your-domain.com/ws'
+-                    : `${protocol}//${host}:3004/ws`;
+-                
+-                console.log(`Connecting to game service at: ${wsUrl}`);
+-                this._socket = new WebSocket(wsUrl);
+-                
+-                this._socket.addEventListener('open', () => {
+-                    this._handleOpen();
+-                    resolve();
+-                });
+-                
+-                this._socket.addEventListener('message', this._handleMessage);
+-                this._socket.addEventListener('close', this._handleClose);
+-                this._socket.addEventListener('error', (event) => {
+-                    this._handleError(event);
+-                    reject(new Error('WebSocket connection failed'));
+-                });
++                if (existingSocket) {
++                    this._socket = existingSocket;
++                    this._socket.addEventListener('message', this._handleMessage);
++                    this._socket.addEventListener('close', this._handleClose);
++                    this._socket.addEventListener('error', this._handleError);
++
++                    if (this._socket.readyState === WebSocket.OPEN) {
++                        this._handleOpen();
++                        resolve();
++                    } else {
++                        this._socket.addEventListener('open', () => {
++                            this._handleOpen();
++                            resolve();
++                        }, { once: true });
++                    }
++                } else {
++                    // Detect the current host and use it for WebSocket connection
++                    const host = window.location.hostname;
++                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
++                    const wsUrl = process.env.NODE_ENV === 'production'
++                        ? 'wss://your-domain.com/ws'
++                        : `${protocol}//${host}:3004/ws`;
++
++                    console.log(`Connecting to game service at: ${wsUrl}`);
++                    this._socket = new WebSocket(wsUrl);
++
++                    this._socket.addEventListener('open', () => {
++                        this._handleOpen();
++                        resolve();
++                    });
++
++                    this._socket.addEventListener('message', this._handleMessage);
++                    this._socket.addEventListener('close', this._handleClose);
++                    this._socket.addEventListener('error', (event) => {
++                        this._handleError(event);
++                        reject(new Error('WebSocket connection failed'));
++                    });
++                }
+             } catch (error) {
+                 reject(error);
+             }
+         });
+     }
+ 
+     public disconnect(): void {
+         if (this._socket) {
+             this._socket.close();
+         }
+         this._cleanup();
+     }
+ 
+     public joinQueue(): void {
+         if (!this._connected || !this._playerId || !this._playerName) {
+             console.error('Not connected or missing player info');
+             return;
+         }
+ 
+         this._send({
+             type: 'join_queue',
+             playerId: this._playerId,
+             playerName: this._playerName
+         });
+     }
+diff --git a/frontend/src/views/game/managers/RemoteGameManager.ts b/frontend/src/views/game/managers/RemoteGameManager.ts
+index 2d8f2a00097276748ff44a2a50f70581a9ae1723..940c0fe6d4f61829447a5c015dc76b9059a719e3 100644
+--- a/frontend/src/views/game/managers/RemoteGameManager.ts
++++ b/frontend/src/views/game/managers/RemoteGameManager.ts
+@@ -1,101 +1,132 @@
+ import { Scene } from "@babylonjs/core";
+ import { Ball } from "../gameObjects/Ball";
+ import { Paddle, PaddleType } from "../gameObjects/Paddle";
+ import { Wall, WallType } from "../gameObjects/Wall";
+ import { ScoreManager } from "./ScoreManager";
+ import { InputManager } from "./InputManager";
+ import { FieldManager } from "./FieldManager";
+ import { GameStateManager, GameState } from "./GameStateManager";
+ import { NetworkManager } from "./NetworkManager";
+ import { Language } from "../../i18n";
+ 
+ export class RemoteGameManager {
+     private _scene: Scene;
+     private _ball: Ball;
+     private _leftPaddle: Paddle;
+     private _rightPaddle: Paddle;
+     private _scoreManager: ScoreManager;
+     private _inputManager: InputManager;
+     private _fieldManager: FieldManager;
+     private _gameStateManager: GameStateManager;
+     private _networkManager: NetworkManager;
++    private _existingSocket?: WebSocket;
++    private _skipMenu: boolean = false;
+     
+     // UI Elements
+     private _menuUI: HTMLDivElement;
+     private _gameUI: HTMLDivElement;
+     private _statusUI: HTMLDivElement;
+     
+     // Game state
+     private _myPaddle: Paddle | null = null;
+     private _opponentPaddle: Paddle | null = null;
+     private _playerSide: 'left' | 'right' | null = null;
+     private _opponentInfo: { id: string; name: string } | null = null;
+     
+     // Network interpolation for smooth gameplay
+     private _interpolationBuffer: any[] = [];
+     private _lastServerState: any = null;
+     private _serverStateTime: number = 0;
+     
+     // User info (would normally come from auth service)
+     private _playerId: string;
+     private _playerName: string;
+     private _onGameStarted?: () => void;
+ 
+-    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void) {
++    constructor(
++        scene: Scene,
++        playerId: string,
++        playerName: string,
++        onGameStarted?: () => void,
++        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string } }
++    ) {
+         this._scene = scene;
+         this._playerId = playerId;
+         this._playerName = playerName;
+         this._onGameStarted = onGameStarted;
++
++        this._existingSocket = options?.socket;
++        this._skipMenu = options?.skipMenu ?? false;
++
++        if (options?.playerSide) {
++            this._playerSide = options.playerSide;
++        }
++        if (options?.opponent) {
++            this._opponentInfo = options.opponent;
++        }
+         
+         this._scoreManager = new ScoreManager();
+         this._inputManager = new InputManager();
+         this._gameStateManager = new GameStateManager();
+         this._networkManager = new NetworkManager();
+ 
+         // Initialize game objects
+         this._ball = new Ball(scene);
+         this._leftPaddle = new Paddle(scene, PaddleType.LEFT);
+         this._rightPaddle = new Paddle(scene, PaddleType.RIGHT);
+         new Wall(scene, WallType.TOP);
+         new Wall(scene, WallType.BOTTOM);
+ 
+         // Create playing field
+         this._fieldManager = new FieldManager(scene);
+ 
+         // Setup UI
+         this._createUI();
+-        
++
+         // Setup network event handlers
+         this._setupNetworkHandlers();
+-        
+-        // Show menu initially
+-        this._showMenu();
++
++        // Initialize player info if provided (lobby integration)
++        if (this._playerSide && this._opponentInfo) {
++            this._handleMatchFound({ playerSide: this._playerSide, opponent: this._opponentInfo });
++        }
++
++        if (this._skipMenu) {
++            this._networkManager.connect(this._playerId, this._playerName, this._existingSocket).then(() => {
++                this._showStatus('Waiting for game start...', 'info');
++            });
++        } else {
++            // Show menu initially
++            this._showMenu();
++        }
+     }
+ 
+     private _createUI(): void {
+-        this._createMenuUI();
++        if (!this._skipMenu) {
++            this._createMenuUI();
++        }
+         this._createGameUI();
+         this._createStatusUI();
+     }
+ 
+     private _createMenuUI(): void {
+         this._menuUI = document.createElement("div");
+         this._menuUI.style.position = "absolute";
+         this._menuUI.style.top = "0";
+         this._menuUI.style.left = "0";
+         this._menuUI.style.width = "100%";
+         this._menuUI.style.height = "100%";
+         this._menuUI.style.display = "flex";
+         this._menuUI.style.flexDirection = "column";
+         this._menuUI.style.justifyContent = "center";
+         this._menuUI.style.alignItems = "center";
+         this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+         this._menuUI.style.zIndex = "1000";
+         
+         const title = document.createElement("h1");
+         title.textContent = "MULTIPLAYER PONG";
+         title.style.color = "white";
+         title.style.fontSize = "48px";
+         title.style.marginBottom = "30px";
+         title.style.textAlign = "center";
+         
+@@ -206,52 +237,52 @@ export class RemoteGameManager {
+         
+         this._networkManager.onGameState((state) => {
+             this._handleGameState(state);
+         });
+         
+         this._networkManager.onScore((data) => {
+             this._handleScore(data);
+         });
+         
+         this._networkManager.onGameEnd((data) => {
+             this._handleGameEnd(data);
+         });
+         
+         this._networkManager.onOpponentDisconnected((data) => {
+             this._handleOpponentDisconnected(data);
+         });
+         
+         this._networkManager.onError((error) => {
+             this._showStatus(`Network Error: ${error}`, "error");
+         });
+     }
+ 
+     private async _connectAndFindMatch(): Promise<void> {
+         try {
+             this._showStatus("Connecting to server...", "info");
+-            
+-            await this._networkManager.connect(this._playerId, this._playerName);
++
++            await this._networkManager.connect(this._playerId, this._playerName, this._existingSocket);
+             
+             this._showStatus("Searching for opponent...", "info");
+             this._networkManager.joinQueue();
+             
+         } catch (error) {
+             console.error('Connection failed:', error);
+             this._showStatus("Failed to connect to server", "error");
+         }
+     }
+ 
+     private _handleMatchFound(data: any): void {
+         this._playerSide = data.playerSide;
+         this._opponentInfo = data.opponent;
+         
+         // Set up paddle references
+         if (this._playerSide === 'left') {
+             this._myPaddle = this._leftPaddle;
+             this._opponentPaddle = this._rightPaddle;
+         } else {
+             this._myPaddle = this._rightPaddle;
+             this._opponentPaddle = this._leftPaddle;
+         }
+         
+         this._showStatus(`Match found! Playing against ${this._opponentInfo.name}`, "success");
+         
+diff --git a/frontend/src/views/lobby/lobby.ts b/frontend/src/views/lobby/lobby.ts
+index d98f078f7d92aea246a9ff4e54bec8f1937788f9..2f3c08e3a43405d38ad4ff85fe6648353e910e4b 100644
+--- a/frontend/src/views/lobby/lobby.ts
++++ b/frontend/src/views/lobby/lobby.ts
+@@ -1,42 +1,45 @@
+ import { AView } from "../AView";
+ import { PongHeader, PongFooter, PongButton, PongInput } from "../../components/ui";
+ import { generateRoomCode } from "../../utils/codeGenerator";
+ import { WebSocketManager, RoomPlayer, RoomState } from "../../utils/WebSocketManager";
++import { navigateTo } from "../../router/Router";
++import { setWsManager } from "../../utils/connectionStore";
+ 
+ export class Lobby extends AView {
+   private elements: HTMLElement[] = [];
+   private container!: HTMLDivElement;
+ 
+   // elementos usados na sala
+   private playersList!: HTMLUListElement;
+   private roomCodeEl!: HTMLSpanElement;
+   private actionBtn!: HTMLButtonElement;
+   private roomCode: string = "";
+   
+   // WebSocket manager
+   private wsManager!: WebSocketManager;
++  private keepConnection: boolean = false;
+   private isHost: boolean = false;
+   private isConnecting: boolean = false;
+   private isSearching: boolean = false;
+   private currentPlayers: RoomPlayer[] = [];
+ 
+   public render(parent: HTMLElement = document.body): void {
+     parent.innerHTML = "";
+     this.container = document.createElement("div");
+     this.container.className = "min-h-screen flex flex-col";
+     this.container.style.cssText = `
+       min-height: 100vh;
+       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+       color: white;
+       font-family: Arial, sans-serif;
+     `;
+     parent.appendChild(this.container);
+     this.elements.push(this.container);
+ 
+     // header
+     this.container.appendChild(PongHeader({ homeOnly: false }));
+ 
+     // Initialize WebSocket manager
+     this.initializeWebSocket();
+ 
+     // mostra o menu de seleção inicial
+@@ -837,52 +840,57 @@ export class Lobby extends AView {
+     const countdown = document.createElement("div");
+     countdown.style.cssText = `
+       font-size: 4rem;
+       font-weight: bold;
+       color: #4CAF50;
+     `;
+     countdown.textContent = "3";
+     gameInfo.appendChild(countdown);
+ 
+     card.appendChild(gameInfo);
+     main.appendChild(card);
+     this.container.appendChild(main);
+ 
+     // Countdown timer
+     let count = 3;
+     const countdownInterval = setInterval(() => {
+       count--;
+       if (count > 0) {
+         countdown.textContent = count.toString();
+       } else {
+         countdown.textContent = "GO!";
+         clearInterval(countdownInterval);
+         
+         // Redirect to game after a short delay
+         setTimeout(() => {
+-          // TODO: Navigate to actual game view
+-          this.showError("Game would start here! (Not yet implemented)");
++          setWsManager(this.wsManager);
++          sessionStorage.setItem('roomCode', this.roomCode);
++          sessionStorage.setItem('playerId', this.wsManager.playerId);
++          sessionStorage.setItem('playerSide', data.playerSide);
++          sessionStorage.setItem('opponent', JSON.stringify(data.opponent));
++          this.keepConnection = true;
++          navigateTo('/online');
+         }, 1000);
+       }
+     }, 1000);
+   }
+ 
+   /** Tela para quando o jogador entra em uma sala existente */
+   private showJoinedRoom(data: RoomState) {
+     this.clearBody();
+ 
+     const main = document.createElement("main");
+     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+ 
+     const title = document.createElement("h1");
+     title.style.cssText = `
+       font-size: 2.5rem;
+       font-weight: bold;
+       margin-bottom: 2rem;
+       text-align: center;
+       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+     `;
+     title.textContent = "🎮 Joined Room!";
+     main.appendChild(title);
+ 
+     const card = document.createElement("div");
+     card.style.cssText = `
+@@ -1017,34 +1025,34 @@ export class Lobby extends AView {
+       width: 100%;
+       background: linear-gradient(45deg, #4CAF50, #45a049);
+       border: none;
+       color: white;
+       padding: 1rem 2rem;
+       font-size: 1.1rem;
+       border-radius: 10px;
+       cursor: pointer;
+       transition: transform 0.2s;
+       box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+     `;
+     this.actionBtn.onmouseover = () => this.actionBtn.style.transform = 'translateY(-2px)';
+     this.actionBtn.onmouseout = () => this.actionBtn.style.transform = 'translateY(0)';
+     card.appendChild(this.actionBtn);
+ 
+     main.appendChild(card);
+     this.container.appendChild(main);
+     this.container.appendChild(PongFooter());
+ 
+     // Update players display with initial data
+     this.updatePlayersDisplay();
+   }
+ 
+   public dispose(): void {
+     // Disconnect from WebSocket
+-    if (this.wsManager) {
++    if (this.wsManager && !this.keepConnection) {
+       this.wsManager.leaveRoom();
+       this.wsManager.disconnect();
+     }
+     
+     this.elements.forEach((el) => el.parentNode?.removeChild(el));
+     this.elements = [];
+   }
+ }
+diff --git a/frontend/src/views/online/Online.ts b/frontend/src/views/online/Online.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..9f8e462be361b4ffe713d808fecbb56a687e84de
+--- /dev/null
++++ b/frontend/src/views/online/Online.ts
+@@ -0,0 +1,36 @@
++import { AView } from "../AView";
++import { Game } from "../game/Game";
++import { getWsManager } from "../../utils/connectionStore";
++
++export class Online extends AView {
++  private game!: Game;
++
++  public render(parent: HTMLElement = document.body): void {
++    const wsManager = getWsManager();
++    if (!wsManager || !wsManager.socket) {
++      parent.innerHTML = '<p>Connection not available.</p>';
++      return;
++    }
++
++    const playerId = sessionStorage.getItem('playerId') || wsManager.playerId;
++    const playerName = wsManager.playerName;
++    const playerSide = sessionStorage.getItem('playerSide') as 'left' | 'right' | null;
++    const opponentRaw = sessionStorage.getItem('opponent');
++    const opponent = opponentRaw ? JSON.parse(opponentRaw) : undefined;
++
++    this.game = new Game('remote', playerId, playerName, undefined, {
++      socket: wsManager.socket,
++      skipMenu: true,
++      playerSide: playerSide ?? undefined,
++      opponent
++    });
++
++    this.game.render();
++  }
++
++  public dispose(): void {
++    if (this.game) {
++      this.game.dispose();
++    }
++  }
++}
+ 
+EOF
+)

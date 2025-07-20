@@ -2,6 +2,8 @@ import { AView } from "../AView";
 import { PongHeader, PongFooter, PongButton, PongInput } from "../../components/ui";
 import { generateRoomCode } from "../../utils/codeGenerator";
 import { WebSocketManager, RoomPlayer, RoomState } from "../../utils/WebSocketManager";
+import { navigateTo } from "../../router/Router";
+import { setWsManager } from "../../utils/connectionStore";
 
 export class Lobby extends AView {
   private elements: HTMLElement[] = [];
@@ -15,6 +17,7 @@ export class Lobby extends AView {
   
   // WebSocket manager
   private wsManager!: WebSocketManager;
+  private keepConnection: boolean = false;
   private isHost: boolean = false;
   private isConnecting: boolean = false;
   private isSearching: boolean = false;
@@ -68,11 +71,12 @@ export class Lobby extends AView {
       this.roomCode = data.roomCode;
       this.currentPlayers = data.players;
       
-      // Se não é host e não está na tela da sala ainda, mostrar a sala
+      // Se é um jogador que acabou de entrar (não é host e está procurando), mostrar a tela de joined
       if (!this.isHost && this.isSearching) {
         this.isSearching = false;
         this.showJoinedRoom(data);
       } else {
+        // Caso contrário, apenas atualizar a lista de jogadores (para host ou jogadores já na sala)
         this.updatePlayersDisplay();
       }
     });
@@ -621,11 +625,7 @@ export class Lobby extends AView {
     this.container.appendChild(main);
     this.container.appendChild(PongFooter());
 
-    // Simulate search and then go to room (for demo purposes)
-    setTimeout(() => {
-      // TODO: Replace with actual network response
-      this.showCreateRoom(); // Simulate successful join
-    }, 3000);
+    // The WebSocket event handlers will handle the actual room join response
   }
 
   /** limpa somente o corpo, mantendo header/footer */
@@ -859,8 +859,13 @@ export class Lobby extends AView {
         
         // Redirect to game after a short delay
         setTimeout(() => {
-          // TODO: Navigate to actual game view
-          this.showError("Game would start here! (Not yet implemented)");
+          setWsManager(this.wsManager);
+          sessionStorage.setItem('roomCode', this.roomCode);
+          sessionStorage.setItem('playerId', this.wsManager.playerId);
+          sessionStorage.setItem('playerSide', data.playerSide);
+          sessionStorage.setItem('opponent', JSON.stringify(data.opponent));
+          this.keepConnection = true;
+          navigateTo('/online');
         }, 1000);
       }
     }, 1000);
@@ -1039,7 +1044,7 @@ export class Lobby extends AView {
 
   public dispose(): void {
     // Disconnect from WebSocket
-    if (this.wsManager) {
+    if (this.wsManager && !this.keepConnection) {
       this.wsManager.leaveRoom();
       this.wsManager.disconnect();
     }

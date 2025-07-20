@@ -8,6 +8,7 @@ import { Players } from "./players/Players";
 import { Player } from "./player/Player";
 import { AView } from "./AView";
 import { Lobby } from "./lobby/lobby";
+import { Online } from "./online/Online";
 
 export class Builders {
     public static GameBuilder(): AView {
@@ -45,5 +46,9 @@ export class Builders {
 
     public static LobbyBuilder(): AView {
         return new Lobby();
+    }
+
+    public static OnlineBuilder(): AView {
+        return new Online();
     }
 }

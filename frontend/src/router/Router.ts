@@ -9,6 +9,7 @@ const routes: {[key: string]: () => AView } = {
     "/dashboard": Builders.DashboardBuilder,
     "/players": Builders.PlayersBuilder,
     "/player": Builders.PlayerBuilder,
+    "/online": Builders.OnlineBuilder,
     "/lobby": Builders.LobbyBuilder,
     "/": Builders.HomeBuilder
 };

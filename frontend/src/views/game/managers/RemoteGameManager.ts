@@ -19,6 +19,8 @@ export class RemoteGameManager {
     private _fieldManager: FieldManager;
     private _gameStateManager: GameStateManager;
     private _networkManager: NetworkManager;
+    private _existingSocket?: WebSocket;
+    private _skipMenu: boolean = false;
     
     // UI Elements
     private _menuUI: HTMLDivElement;
@@ -41,11 +43,27 @@ export class RemoteGameManager {
     private _playerName: string;
     private _onGameStarted?: () => void;
 
-    constructor(scene: Scene, playerId: string, playerName: string, onGameStarted?: () => void) {
+    constructor(
+        scene: Scene,
+        playerId: string,
+        playerName: string,
+        onGameStarted?: () => void,
+        options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string } }
+    ) {
         this._scene = scene;
         this._playerId = playerId;
         this._playerName = playerName;
         this._onGameStarted = onGameStarted;
+
+        this._existingSocket = options?.socket;
+        this._skipMenu = options?.skipMenu ?? false;
+
+        if (options?.playerSide) {
+            this._playerSide = options.playerSide;
+        }
+        if (options?.opponent) {
+            this._opponentInfo = options.opponent;
+        }
         
         this._scoreManager = new ScoreManager();
         this._inputManager = new InputManager();
@@ -64,16 +82,29 @@ export class RemoteGameManager {
 
         // Setup UI
         this._createUI();
-        
+
         // Setup network event handlers
         this._setupNetworkHandlers();
-        
-        // Show menu initially
-        this._showMenu();
+
+        // Initialize player info if provided (lobby integration)
+        if (this._playerSide && this._opponentInfo) {
+            this._handleMatchFound({ playerSide: this._playerSide, opponent: this._opponentInfo });
+        }
+
+        if (this._skipMenu) {
+            this._networkManager.connect(this._playerId, this._playerName, this._existingSocket).then(() => {
+                this._showStatus('Waiting for game start...', 'info');
+            });
+        } else {
+            // Show menu initially
+            this._showMenu();
+        }
     }
 
     private _createUI(): void {
-        this._createMenuUI();
+        if (!this._skipMenu) {
+            this._createMenuUI();
+        }
         this._createGameUI();
         this._createStatusUI();
     }
@@ -228,8 +259,8 @@ export class RemoteGameManager {
     private async _connectAndFindMatch(): Promise<void> {
         try {
             this._showStatus("Connecting to server...", "info");
-            
-            await this._networkManager.connect(this._playerId, this._playerName);
+
+            await this._networkManager.connect(this._playerId, this._playerName, this._existingSocket);
             
             this._showStatus("Searching for opponent...", "info");
             this._networkManager.joinQueue();
