@@ -1,4 +1,5 @@
 import { router } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 class startTournament extends HTMLElement {
 
@@ -81,7 +82,7 @@ class startTournament extends HTMLElement {
           }
     
           try {
-            const res = await fetch('http://localhost:3002/match', {
+            const res = await fetch(apiUrl(3002, '/match'), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

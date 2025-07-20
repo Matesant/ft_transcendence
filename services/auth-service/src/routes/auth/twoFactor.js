@@ -45,7 +45,7 @@ export default async function twoFactorRoutes(fastify, opts) {
 
     reply.setCookie('authToken', token, {
       httpOnly: false,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 24 * 60 * 60 * 1000 // 24 horas
     })

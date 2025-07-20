@@ -1,10 +1,11 @@
 import { router } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 class playersTable extends HTMLElement {
 
     private async getPlayersHtml(): Promise<string> {
         try {
-            const response = await fetch("http://localhost:3001/players", {credentials: "include"});
+            const response = await fetch(apiUrl(3001, '/players'), {credentials: "include"});
             if (!response.ok) throw new Error("HTTP error");
             const players = await response.json();
   

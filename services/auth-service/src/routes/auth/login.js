@@ -30,8 +30,8 @@ export default async function loginRoutes(fastify, opts) {
     const token = fastify.jwt.sign({ alias: player.alias, id: player.id })
     
     reply.setCookie('authToken', token, {
-      httpOnly: true, 
-      secure: true,    
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
       maxAge: 24 * 60 * 60 * 1000 // 24 horas
     })

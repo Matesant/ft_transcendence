@@ -1,4 +1,5 @@
 import { router } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 class playerProfile extends HTMLElement {
   private container!: HTMLDivElement;
@@ -25,7 +26,7 @@ class playerProfile extends HTMLElement {
           return;
       }
 
-      const url = `http://localhost:3003/users/${player_name}`;
+      const url = apiUrl(3003, `/users/${player_name}`);
 
       try {
           const resp = await fetch(url, {credentials: "include"});

@@ -6,6 +6,8 @@ interface MatchInfo {
     status: string;
 }
 
+import { apiUrl } from '../../../utils/api';
+
 export class MatchManager {
     private _currentMatch: MatchInfo | null = null;
     private _player1Name: string = "Player 1";
@@ -17,7 +19,7 @@ export class MatchManager {
 
     public async loadCurrentMatch(): Promise<void> {
         try {
-            const response = await fetch('http://localhost:3002/match/next', {
+            const response = await fetch(apiUrl(3002, '/match/next'), {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -60,7 +62,7 @@ export class MatchManager {
         }
         
         try {
-            const response = await fetch('http://localhost:3002/match/score', {
+            const response = await fetch(apiUrl(3002, '/match/score'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -81,7 +83,7 @@ export class MatchManager {
                 await this.loadCurrentMatch();
                 
                 // Check if tournament is complete
-                const nextResponse = await fetch('http://localhost:3002/match/next', {
+                const nextResponse = await fetch(apiUrl(3002, '/match/next'), {
                     method: 'GET',
                     credentials: 'include'
                 });

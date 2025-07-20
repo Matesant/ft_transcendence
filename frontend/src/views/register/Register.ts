@@ -1,6 +1,7 @@
 import { AView } from "../AView";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 export class Register extends AView {
 
@@ -97,7 +98,7 @@ export class Register extends AView {
                 password: formData.get('password'),
             };
             try {
-                const response = await fetch('http://localhost:3001/auth/register', {
+                const response = await fetch(apiUrl(3001, '/auth/register'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -111,7 +112,7 @@ export class Register extends AView {
                         password: data.password
                     };
                     try {
-                        const loginResponse = await fetch('http://localhost:3001/auth/login', {
+                        const loginResponse = await fetch(apiUrl(3001, '/auth/login'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             credentials: 'include',

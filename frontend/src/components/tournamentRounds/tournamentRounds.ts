@@ -1,4 +1,5 @@
 import { router } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 class tournamentRounds extends HTMLElement {
 
@@ -6,7 +7,7 @@ class tournamentRounds extends HTMLElement {
         var tournamentData: any = null;
 
         try {
-            let response = await fetch('http://localhost:3002/match/tournament', {credentials: 'include'});
+            let response = await fetch(apiUrl(3002, '/match/tournament'), {credentials: 'include'});
             tournamentData = await response.json();
   
         } catch (error) {
@@ -137,7 +138,7 @@ class tournamentRounds extends HTMLElement {
       var requestData: any = null;
 
       try {
-        let response = await fetch('http://localhost:3002/match/next', {credentials: 'include'});
+        let response = await fetch(apiUrl(3002, '/match/next'), {credentials: 'include'});
         requestData = await response.json();
 
         } catch (error) {

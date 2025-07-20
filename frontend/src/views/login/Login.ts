@@ -1,5 +1,6 @@
 import { AView } from "../AView";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
+import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
 
 export class Login extends AView {
@@ -101,7 +102,7 @@ export class Login extends AView {
                 password: String(formData.get('password'))
             };
             try {
-                const response = await fetch('http://localhost:3001/auth/login', {
+                const response = await fetch(apiUrl(3001, '/auth/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
