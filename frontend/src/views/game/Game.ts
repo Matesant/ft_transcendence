@@ -120,7 +120,13 @@ export class Game extends AView {
         // Clean up other resources if necessary
         this._gameManager = null!;
 
-        // Remove the event listener when needed
+        Array.from(document.body.children).forEach(child => {
+
+            if (child.tagName.toLowerCase() !== 'left-sidebar') {
+                document.body.removeChild(child);
+            }
+          });
+          
     }
 
     public getGameMode(): GameMode {

@@ -1,5 +1,5 @@
-import { router } from "../../router/Router";
-import { apiUrl } from "../../utils/api";
+import { router } from "../router/Router";
+import { apiUrl } from "../utils/api";
 
 class tournamentRounds extends HTMLElement {
 

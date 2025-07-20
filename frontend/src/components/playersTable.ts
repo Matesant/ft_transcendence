@@ -1,5 +1,5 @@
-import { router } from "../../router/Router";
-import { apiUrl } from "../../utils/api";
+import { router } from "../router/Router";
+import { apiUrl } from "../utils/api";
 
 class playersTable extends HTMLElement {
 
@@ -56,8 +56,7 @@ class playersTable extends HTMLElement {
             div.addEventListener('click', () => {
                 const alias = div.querySelector('p')?.textContent;
                 if (alias) {
-                    sessionStorage.setItem("selected_player", alias);
-                    history.pushState("", "", "/player");
+                    history.pushState(alias, "", "/player");
                     router();
                 }
             });

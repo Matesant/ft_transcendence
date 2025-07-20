@@ -1,10 +1,12 @@
-import { router } from "../../router/Router";
+import { router } from "../router/Router";
 
 class itemSidebar extends HTMLElement {
 
   constructor() {
     super ();
-    
+  }
+
+  connectedCallback() {
     let text: string = this.innerHTML;
     let href: string = this.getAttribute("href");
 
@@ -22,6 +24,13 @@ class itemSidebar extends HTMLElement {
 
     let item = this.querySelector("a");
     item.onclick = (e: MouseEvent) => {
+
+      document.querySelectorAll("ul item-sidebar a").forEach(a => {
+        a.classList.remove("bg-gray-700");
+      });
+
+      item.classList.add("bg-gray-700");
+
       e.preventDefault();
       history.pushState("", "", href);
       router();

@@ -1,11 +1,13 @@
-import { router } from "../../router/Router";
-import { apiUrl } from "../../utils/api";
+import { router } from "../router/Router";
+import { apiUrl } from "../utils/api";
 
 class startTournament extends HTMLElement {
 
     constructor() {
       super ();
-      
+    }
+
+    connectedCallback() {
         this.innerHTML = `
         <div class="flex">
             <!-- Sidebar ocupa uma largura fixa -->

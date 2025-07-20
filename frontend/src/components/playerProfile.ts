@@ -1,5 +1,5 @@
-import { router } from "../../router/Router";
-import { apiUrl } from "../../utils/api";
+import { router } from "../router/Router";
+import { apiUrl } from "../utils/api";
 
 class playerProfile extends HTMLElement {
   private container!: HTMLDivElement;
@@ -20,7 +20,7 @@ class playerProfile extends HTMLElement {
   }
 
   async loadProfile() {
-      const player_name = sessionStorage.getItem("selected_player");
+      const player_name = history.state;
       if (!player_name) {
           this.container.innerHTML = `<p class="text-red-500">Player not selected.</p>`;
           return;
