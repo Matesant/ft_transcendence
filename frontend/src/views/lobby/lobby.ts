@@ -4,6 +4,7 @@ import { generateRoomCode } from "../../utils/codeGenerator";
 import { WebSocketManager, RoomPlayer, RoomState } from "../../utils/WebSocketManager";
 import { navigateTo } from "../../router/Router";
 import { setWsManager } from "../../utils/connectionStore";
+import { requireAuth, getCurrentUserDisplayName, UserProfile } from "../../utils/userUtils";
 
 export class Lobby extends AView {
   private elements: HTMLElement[] = [];
@@ -22,8 +23,31 @@ export class Lobby extends AView {
   private isConnecting: boolean = false;
   private isSearching: boolean = false;
   private currentPlayers: RoomPlayer[] = [];
+  
+  // User information
+  private currentUserDisplayName: string = "";
 
   public render(parent: HTMLElement = document.body): void {
+    // Initialize the lobby asynchronously
+    this.initializeLobby(parent);
+  }
+
+  private async initializeLobby(parent: HTMLElement): Promise<void> {
+    // Verificar autenticação primeiro
+    const user = await requireAuth();
+    if (!user) {
+      return; // requireAuth já redireciona para /login
+    }
+
+    // Obter nome de exibição do usuário
+    const displayName = await getCurrentUserDisplayName();
+    if (!displayName) {
+      console.error("Could not get user display name");
+      navigateTo("/login");
+      return;
+    }
+    this.currentUserDisplayName = displayName;
+
     parent.innerHTML = "";
     this.container = document.createElement("div");
     this.container.className = "min-h-screen flex flex-col";
@@ -264,8 +288,8 @@ export class Lobby extends AView {
     this.roomCode = generateRoomCode();
     this.isHost = true;
     
-    // Create room on server
-    this.wsManager.createRoom(this.roomCode, "Host Player");
+    // Create room on server using the user's display name
+    this.wsManager.createRoom(this.roomCode, this.currentUserDisplayName);
 
     const title = document.createElement("h2");
     title.textContent = "🎮 Room Created";
@@ -481,7 +505,7 @@ export class Lobby extends AView {
         this.isHost = false;
         this.isSearching = true;
         this.showSearchingLobby();
-        this.wsManager.joinRoom(code, "Player");
+        this.wsManager.joinRoom(code, this.currentUserDisplayName);
       }
     });
     joinBtn.style.cssText = `
