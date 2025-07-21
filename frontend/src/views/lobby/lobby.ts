@@ -199,8 +199,6 @@ export class Lobby extends AView {
       text-align: center;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     `;
-    title.textContent = "🎮 Creating Room...";
-    main.appendChild(title);
 
     const card = document.createElement("div");
     card.style.cssText = `

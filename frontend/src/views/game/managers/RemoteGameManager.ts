@@ -279,20 +279,6 @@ export class RemoteGameManager {
         }
         
         this._showStatus(`Match found! Playing against ${this._opponentInfo.name}`, "success");
-        
-        // After 1.5 seconds, show waiting message
-        setTimeout(() => {
-            this._showStatus("Waiting for game to start...", "info", true);
-        }, 1500);
-        
-        // Update game info
-        const gameInfo = document.getElementById("remoteGameInfo");
-        if (gameInfo) {
-            gameInfo.innerHTML = `
-                <div>You: ${this._playerName} (${this._playerSide} side)</div>
-                <div>Opponent: ${this._opponentInfo.name}</div>
-            `;
-        }
     }
 
     private _handleGameStart(data: any): void {
