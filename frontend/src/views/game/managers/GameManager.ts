@@ -12,6 +12,7 @@ import { MatchManager } from "./MatchManager";
 import { CollisionManager } from "./CollisionManager";
 import { FieldManager } from "./FieldManager";
 import { GameStateManager, GameState } from "./GameStateManager";
+import { getWsManager } from "../../../utils/connectionStore";
 
 export class GameManager {
     private _scene: Scene;
@@ -77,6 +78,9 @@ export class GameManager {
             (speed) => this._onSpeedChange(speed),
             () => this._onTableThemeToggle()
         );
+
+        // Setup WebSocket for online mode
+        this._setupWebSocketHandlers();
 
         // Load current match and show menu
         this._initializeGame();
@@ -242,5 +246,16 @@ export class GameManager {
         // Continue updating paddles
         this._leftPaddle.update();
         this._rightPaddle.update();
+    }
+
+    private _setupWebSocketHandlers(): void {
+        const wsManager = getWsManager();
+        if (wsManager) {
+            wsManager.onGameEnd((data) => {
+                console.log('🎮 Received game_end from backend:', data);
+                // Call the same showGameOver method that local mode uses
+                this._showGameOver(data.winner.name);
+            });
+        }
     }
 }

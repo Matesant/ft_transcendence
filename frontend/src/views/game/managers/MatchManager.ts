@@ -78,11 +78,9 @@ export class MatchManager {
                 const result = await response.json();
                 console.log('Match result submitted successfully:', result);
                 
-                // Clear current match and try to load next one
                 this._currentMatch = null;
                 await this.loadCurrentMatch();
                 
-                // Check if tournament is complete
                 const nextResponse = await fetch(apiUrl(3002, '/match/next'), {
                     method: 'GET',
                     credentials: 'include'

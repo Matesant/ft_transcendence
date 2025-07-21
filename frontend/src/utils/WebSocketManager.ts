@@ -22,6 +22,7 @@ export class WebSocketManager {
     private _onRoomUpdated: ((data: RoomState) => void) | null = null;
     private _onRoomError: ((error: string) => void) | null = null;
     private _onGameStarting: ((data: any) => void) | null = null;
+    private _onGameEnd: ((data: any) => void) | null = null;
     private _onConnected: (() => void) | null = null;
     private _onDisconnected: (() => void) | null = null;
 
@@ -172,6 +173,10 @@ export class WebSocketManager {
             case 'game_starting':
                 this._onGameStarting?.(data);
                 break;
+            case 'game_end':
+                console.log('🎮 Game ended, winner:', data.winner);
+                this._onGameEnd?.(data);
+                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -192,6 +197,10 @@ export class WebSocketManager {
 
     public onGameStarting(callback: (data: any) => void): void {
         this._onGameStarting = callback;
+    }
+
+    public onGameEnd(callback: (data: any) => void): void {
+        this._onGameEnd = callback;
     }
 
     public onConnected(callback: () => void): void {
