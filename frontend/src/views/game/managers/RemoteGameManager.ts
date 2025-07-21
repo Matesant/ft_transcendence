@@ -8,6 +8,8 @@ import { FieldManager } from "./FieldManager";
 import { GameStateManager, GameState } from "./GameStateManager";
 import { NetworkManager } from "./NetworkManager";
 import { Language } from "../../i18n";
+import { apiUrl } from "../../../utils/api";
+import { getCurrentUser } from "../../../utils/userUtils";
 
 export class RemoteGameManager {
     private _scene: Scene;
@@ -346,10 +348,75 @@ export class RemoteGameManager {
             `You Lose!\nFinal Score: ${data.finalScore.player1} - ${data.finalScore.player2}`;
         
         this._showStatus(message, isWinner ? "success" : "error", true);
+
+        // Send match history to user-service
+        this._submitMatchHistory(data);
+    }
+
+    private async _submitMatchHistory(gameEndData: any): Promise<void> {
+        try {
+            const currentUser = await getCurrentUser();
+            if (!currentUser) {
+                console.warn('Cannot submit match history: user not authenticated');
+                return;
+            }
+
+            const isWinner = gameEndData.winner.id === this._playerId;
+            const opponentName = this._opponentInfo?.name || 'Unknown';
+
+            // Submit history for current user
+            await fetch(apiUrl(3003, '/users/history'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    alias: currentUser.alias,
+                    opponent: opponentName,
+                    result: isWinner ? 'win' : 'loss',
+                    date: new Date().toISOString()
+                })
+            });
+
+            console.log('Match history submitted successfully');
+        } catch (error) {
+            console.error('Failed to submit match history:', error);
+        }
     }
 
     private _handleOpponentDisconnected(data: any): void {
         this._showStatus(`${data.message}\nYou win by default!`, "warning", true);
+        
+        // Submit match history for disconnection win
+        this._submitDisconnectionHistory();
+    }
+
+    private async _submitDisconnectionHistory(): Promise<void> {
+        try {
+            const currentUser = await getCurrentUser();
+            if (!currentUser) {
+                console.warn('Cannot submit match history: user not authenticated');
+                return;
+            }
+
+            const opponentName = this._opponentInfo?.name || 'Unknown';
+
+            // Submit history for current user (win by opponent disconnection)
+            await fetch(apiUrl(3003, '/users/history'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    alias: currentUser.alias,
+                    opponent: opponentName,
+                    result: 'wo', // walkover
+                    date: new Date().toISOString()
+                })
+            });
+
+            console.log('Disconnection match history submitted successfully');
+        } catch (error) {
+            console.error('Failed to submit disconnection match history:', error);
+        }
     }
 
     private _showMenu(): void {
