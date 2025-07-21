@@ -227,7 +227,6 @@ export class GameManager {
             this._rightPaddle.moveRight();
         }
         
-        // Use arrow keys for left paddle
         if (this._inputManager.isKeyPressed("arrowleft")) {
             this._leftPaddle.moveLeft();
         }

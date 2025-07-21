@@ -38,6 +38,9 @@ export class RemoteGameManager {
     private _lastServerState: any = null;
     private _serverStateTime: number = 0;
     
+    // Status timer management
+    private _statusTimer: NodeJS.Timeout | null = null;
+    
     // User info (would normally come from auth service)
     private _playerId: string;
     private _playerName: string;
@@ -195,21 +198,7 @@ export class RemoteGameManager {
         gameInfo.style.textAlign = "center";
         gameInfo.style.marginBottom = "10px";
         
-        const controls = document.createElement("div");
-        controls.style.position = "absolute";
-        controls.style.bottom = "20px";
-        controls.style.left = "50%";
-        controls.style.transform = "translateX(-50%)";
-        controls.style.textAlign = "center";
-        controls.innerHTML = `
-            <div style="margin-bottom: 10px;">
-                <strong>Controls:</strong>
-            </div>
-            <div id="controlsInfo">Use ARROW KEYS to move your paddle</div>
-        `;
-        
         this._gameUI.appendChild(gameInfo);
-        this._gameUI.appendChild(controls);
         document.body.appendChild(this._gameUI);
     }
 
@@ -291,6 +280,11 @@ export class RemoteGameManager {
         
         this._showStatus(`Match found! Playing against ${this._opponentInfo.name}`, "success");
         
+        // After 1.5 seconds, show waiting message
+        setTimeout(() => {
+            this._showStatus("Waiting for game to start...", "info", true);
+        }, 1500);
+        
         // Update game info
         const gameInfo = document.getElementById("remoteGameInfo");
         if (gameInfo) {
@@ -298,16 +292,6 @@ export class RemoteGameManager {
                 <div>You: ${this._playerName} (${this._playerSide} side)</div>
                 <div>Opponent: ${this._opponentInfo.name}</div>
             `;
-        }
-        
-        // Update controls info
-        const controlsInfo = document.getElementById("controlsInfo");
-        if (controlsInfo) {
-            if (this._playerSide === 'left') {
-                controlsInfo.textContent = "Use ARROW KEYS to move your paddle (bottom)";
-            } else {
-                controlsInfo.textContent = "Use ARROW KEYS to move your paddle (top)";
-            }
         }
     }
 
@@ -403,6 +387,12 @@ export class RemoteGameManager {
         this._statusUI.textContent = message;
         this._statusUI.style.display = "block";
         
+        // Reset countdown styles
+        this._statusUI.style.fontSize = "18px";
+        this._statusUI.style.fontWeight = "normal";
+        this._statusUI.style.border = "none";
+        this._statusUI.style.padding = "20px";
+        
         // Color based on type
         switch (type) {
             case "success":
@@ -418,10 +408,17 @@ export class RemoteGameManager {
                 this._statusUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
         }
         
+        // Clear any existing status timer to prevent multiple timers
+        if (this._statusTimer) {
+            clearTimeout(this._statusTimer);
+            this._statusTimer = null;
+        }
+        
         if (!persistent) {
-            setTimeout(() => {
+            this._statusTimer = setTimeout(() => {
                 this._hideStatus();
-            }, 3000);
+                this._statusTimer = null;
+            }, 1000); // Reduzido de 3000 para 1000
         }
     }
 
@@ -448,6 +445,12 @@ export class RemoteGameManager {
     }
 
     public disconnect(): void {
+        // Clear any pending status timer
+        if (this._statusTimer) {
+            clearTimeout(this._statusTimer);
+            this._statusTimer = null;
+        }
+        
         this._networkManager.disconnect();
     }
 }

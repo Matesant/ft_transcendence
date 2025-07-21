@@ -58,6 +58,9 @@ export class GameRoom extends EventEmitter {
 
         // Track first paddle collision to accelerate the ball
         this.firstCollision = true;
+        
+        // Prevent multiple ball release timers
+        this.ballReleaseTimer = null;
     }
 
     startGame() {
@@ -66,8 +69,10 @@ export class GameRoom extends EventEmitter {
         this.state = 'playing';
         this.lastActivity = Date.now();
         
-        // Initialize game state
+        // Initialize game state with ball stopped
         this.resetGame();
+        this.gameState.ball.velocityX = 0;
+        this.gameState.ball.velocityZ = 0;
         
         // Notify players that game is starting
         this.broadcastToPlayers({
@@ -76,10 +81,22 @@ export class GameRoom extends EventEmitter {
             gameId: this.id
         });
         
-        // Start game loop
+        // Start game loop immediately
         this.startGameLoop();
         
-        console.log(`Game ${this.id} started`);
+        // Clear any existing ball release timer
+        if (this.ballReleaseTimer) {
+            clearTimeout(this.ballReleaseTimer);
+            this.ballReleaseTimer = null;
+        }
+        
+        // Release ball after 3 seconds
+        this.ballReleaseTimer = setTimeout(() => {
+            this.releaseBall();
+            this.ballReleaseTimer = null;
+        }, 3000);
+        
+        console.log(`Game ${this.id} started - ball will be released in 3 seconds`);
     }
 
     startGameLoop() {
@@ -234,9 +251,25 @@ export class GameRoom extends EventEmitter {
         this.gameState.ball = {
             x: 0,
             z: 0,
-            velocityX: (Math.random() - 0.5) * BALL_INITIAL_SPEED,
-            velocityZ: direction * BALL_INITIAL_SPEED * this.gameState.speedMultiplier
+            velocityX: 0, // Start stopped
+            velocityZ: 0  // Start stopped
         };
+        
+        // Clear any existing ball release timer
+        if (this.ballReleaseTimer) {
+            clearTimeout(this.ballReleaseTimer);
+            this.ballReleaseTimer = null;
+        }
+        
+        // Release ball after 3 seconds
+        this.ballReleaseTimer = setTimeout(() => {
+            if (this.state === 'playing') {
+                this.gameState.ball.velocityX = (Math.random() - 0.5) * BALL_INITIAL_SPEED;
+                this.gameState.ball.velocityZ = direction * BALL_INITIAL_SPEED * this.gameState.speedMultiplier;
+                console.log(`Ball released after point scored in game ${this.id}`);
+            }
+            this.ballReleaseTimer = null;
+        }, 3000);
     }
 
     resetGame() {
@@ -275,6 +308,12 @@ export class GameRoom extends EventEmitter {
         
         this.state = 'finished';
         clearInterval(this.gameLoop);
+        
+        // Clear any pending ball release timer
+        if (this.ballReleaseTimer) {
+            clearTimeout(this.ballReleaseTimer);
+            this.ballReleaseTimer = null;
+        }
         
         const winner = winnerId === this.player1.id ? this.player1 : this.player2;
         
@@ -348,6 +387,13 @@ export class GameRoom extends EventEmitter {
     pauseGame() {
         if (this.state === 'playing') {
             this.state = 'paused';
+            
+            // Clear any pending ball release timer when pausing
+            if (this.ballReleaseTimer) {
+                clearTimeout(this.ballReleaseTimer);
+                this.ballReleaseTimer = null;
+            }
+            
             this.broadcastToPlayers({
                 type: 'game_paused'
             });
@@ -361,5 +407,15 @@ export class GameRoom extends EventEmitter {
                 type: 'game_resumed'
             });
         }
+    }
+
+    releaseBall() {
+        if (this.state !== 'playing') return;
+        
+        // Set random initial velocity
+        this.gameState.ball.velocityX = (Math.random() - 0.5) * BALL_INITIAL_SPEED;
+        this.gameState.ball.velocityZ = (Math.random() > 0.5 ? 1 : -1) * BALL_INITIAL_SPEED * this.gameState.speedMultiplier;
+        
+        console.log(`Ball released in game ${this.id}`);
     }
 }
