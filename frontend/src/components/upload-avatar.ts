@@ -1,3 +1,5 @@
+import { apiUrl } from '../utils/api';
+
 class UploadAvatar extends HTMLElement {
     private fileInput!: HTMLInputElement;
     private uploadButton!: HTMLButtonElement;
@@ -58,7 +60,7 @@ class UploadAvatar extends HTMLElement {
       this.showStatus('Enviando...');
   
       try {
-        const resp = await fetch('http://localhost:3003/users/avatar', {
+        const resp = await fetch(apiUrl(3003, '/users/avatar'), {
           method: 'POST',
           body: formData,
           credentials: 'include'

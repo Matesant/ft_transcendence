@@ -1,3 +1,5 @@
+import { apiUrl } from '../utils/api';
+
 class selectAvatar extends HTMLElement {
     private selectedPath: string | null = null;
     private container!: HTMLDivElement;
@@ -29,7 +31,7 @@ class selectAvatar extends HTMLElement {
   
     private async loadAvatars() {
       try {
-        const resp = await fetch("http://localhost:3003/users/avatars", {
+        const resp = await fetch(apiUrl(3003, "/users/avatars"), {
           credentials: "include",
         });
         if (!resp.ok) {
@@ -70,12 +72,12 @@ class selectAvatar extends HTMLElement {
         this.messageBox.textContent = "Por favor, selecione um avatar primeiro.";
         return;
       }
-  
+
       // Extrai apenas o path relativo
-      const avatar = this.selectedPath.replace("http://localhost:3003/uploads/", "");
-  
+      const avatar = this.selectedPath.replace(apiUrl(3003, "/uploads/"), "");
+
       try {
-        const resp = await fetch("http://localhost:3003/users/avatar", {
+        const resp = await fetch(apiUrl(3003, "/users/avatar"), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
