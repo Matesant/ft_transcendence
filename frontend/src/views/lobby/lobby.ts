@@ -50,13 +50,7 @@ export class Lobby extends AView {
 
     parent.innerHTML = "";
     this.container = document.createElement("div");
-    this.container.className = "min-h-screen flex flex-col";
-    this.container.style.cssText = `
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      font-family: Arial, sans-serif;
-    `;
+    this.container.className = "min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans";
     parent.appendChild(this.container);
     this.elements.push(this.container);
 
@@ -132,75 +126,38 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 3rem;
-      font-weight: bold;
-      margin-bottom: 3rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    `;
+    title.className = "text-5xl font-bold mb-12 text-center drop-shadow-lg";
     title.textContent = "🎮 Multiplayer Lobby";
     main.appendChild(title);
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 2rem;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 400px;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 w-full max-w-md";
 
     const cardTitle = document.createElement("h2");
     cardTitle.className = "text-2xl font-bold mb-6";
     cardTitle.textContent = "Choose an Option";
     card.appendChild(cardTitle);
 
+    // Container para botões lado a lado
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.className = "flex gap-4";
+
     const btnCreate = PongButton({
-      text: "🚀 Create Room",
+      text: "🚀 Create",
       variant: "primary",
       onClick: () => this.showCreateRoom()
     });
-    btnCreate.style.cssText = `
-      width: 100%;
-      margin-bottom: 1rem;
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    `;
-    btnCreate.onmouseover = () => btnCreate.style.transform = 'translateY(-2px)';
-    btnCreate.onmouseout = () => btnCreate.style.transform = 'translateY(0)';
+    btnCreate.className = "flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-green-500/25";
 
     const btnJoin = PongButton({
-      text: "🔗 Join Room",
+      text: "🔗 Join",
       variant: "secondary",
       onClick: () => this.showJoinRoom()
     });
-    btnJoin.style.cssText = `
-      width: 100%;
-      background: linear-gradient(45deg, #2196F3, #1976D2);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-    `;
-    btnJoin.onmouseover = () => btnJoin.style.transform = 'translateY(-2px)';
-    btnJoin.onmouseout = () => btnJoin.style.transform = 'translateY(0)';
+    btnJoin.className = "flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25";
 
-    card.append(btnCreate, btnJoin);
+    buttonsContainer.append(btnCreate, btnJoin);
+    card.appendChild(buttonsContainer);
     main.appendChild(card);
     this.container.appendChild(main);
 
@@ -216,45 +173,22 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    `;
+    title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 2rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 500px;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-lg";
 
     if (this.isConnecting) {
       // Show connecting state
       const connectingText = document.createElement("p");
       connectingText.textContent = "Connecting to server...";
-      connectingText.style.cssText = `
-        text-align: center;
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-      `;
+      connectingText.className = "text-center text-xl mb-8";
       card.appendChild(connectingText);
     } else if (!this.wsManager?.connected) {
       // Show connection error
       const errorText = document.createElement("p");
       errorText.textContent = "Failed to connect to server. Please try again.";
-      errorText.style.cssText = `
-        text-align: center;
-        font-size: 1.2rem;
-        color: #f44336;
-        margin-bottom: 2rem;
-      `;
+      errorText.className = "text-center text-xl text-red-400 mb-8";
       card.appendChild(errorText);
 
       const retryBtn = PongButton({
@@ -262,16 +196,7 @@ export class Lobby extends AView {
         variant: "primary",
         onClick: () => this.initializeWebSocket().then(() => this.showCreateRoom())
       });
-      retryBtn.style.cssText = `
-        width: 100%;
-        background: linear-gradient(45deg, #4CAF50, #45a049);
-        border: none;
-        color: white;
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-        border-radius: 10px;
-        cursor: pointer;
-      `;
+      retryBtn.className = "w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200";
       card.appendChild(retryBtn);
     } else {
       // Connected - create room
@@ -293,83 +218,40 @@ export class Lobby extends AView {
 
     const title = document.createElement("h2");
     title.textContent = "🎮 Room Created";
-    title.style.cssText = `
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 2rem;
-    `;
+    title.className = "text-3xl text-center mb-8";
     card.appendChild(title);
 
     const codeSection = document.createElement("div");
-    codeSection.style.cssText = `
-      text-align: center;
-      margin-bottom: 2rem;
-    `;
+    codeSection.className = "text-center mb-8";
 
     const codeTitle = document.createElement("h3");
     codeTitle.textContent = "Room Code";
-    codeTitle.style.cssText = `
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      opacity: 0.9;
-    `;
+    codeTitle.className = "text-xl mb-4 opacity-90";
     codeSection.appendChild(codeTitle);
 
     this.roomCodeEl = document.createElement("div");
     this.roomCodeEl.id = "roomCode";
-    this.roomCodeEl.style.cssText = `
-      font-size: 2rem;
-      font-weight: bold;
-      background: rgba(0,0,0,0.2);
-      padding: 1rem;
-      border-radius: 8px;
-      letter-spacing: 0.2rem;
-      margin-bottom: 1rem;
-    `;
+    this.roomCodeEl.className = "text-3xl font-bold bg-black/20 p-4 rounded-lg tracking-widest mb-4";
     this.roomCodeEl.textContent = this.roomCode;
     codeSection.appendChild(this.roomCodeEl);
 
     // botões de copiar
     const buttonsContainer = document.createElement("div");
-    buttonsContainer.style.cssText = `
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    `;
+    buttonsContainer.className = "flex gap-2 justify-center";
 
     const copyBtn = PongButton({
       text: "📋 Copy Code",
       variant: "secondary",
       onClick: (e) => this.onCopyCode(e)
     });
-    copyBtn.style.cssText = `
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    `;
-    copyBtn.onmouseover = () => copyBtn.style.background = 'rgba(255,255,255,0.3)';
-    copyBtn.onmouseout = () => copyBtn.style.background = 'rgba(255,255,255,0.2)';
+    copyBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
     const shareLinkBtn = PongButton({
       text: "🔗 Copy Link",
-      variant: "secondary",
+      variant: "secondary", 
       onClick: (e) => this.onCopyLink(e)
     });
-    shareLinkBtn.style.cssText = `
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    `;
-    shareLinkBtn.onmouseover = () => shareLinkBtn.style.background = 'rgba(255,255,255,0.3)';
-    shareLinkBtn.onmouseout = () => shareLinkBtn.style.background = 'rgba(255,255,255,0.2)';
+    shareLinkBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
     buttonsContainer.append(copyBtn, shareLinkBtn);
     codeSection.appendChild(buttonsContainer);
@@ -377,26 +259,16 @@ export class Lobby extends AView {
 
     // lista de jogadores
     const playersSection = document.createElement("div");
-    playersSection.style.cssText = `
-      margin-bottom: 2rem;
-    `;
+    playersSection.className = "mb-8";
 
     const pListLabel = document.createElement("h3");
-    pListLabel.style.cssText = `
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    `;
+    pListLabel.className = "text-2xl mb-4 text-center";
     pListLabel.textContent = "👥 Players in Room";
     playersSection.appendChild(pListLabel);
 
     this.playersList = document.createElement("ul");
     this.playersList.id = "playersList";
-    this.playersList.style.cssText = `
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    `;
+    this.playersList.className = "list-none p-0 m-0";
     playersSection.appendChild(this.playersList);
     card.appendChild(playersSection);
 
@@ -406,20 +278,7 @@ export class Lobby extends AView {
       variant: "primary",
       onClick: () => this.onAction()
     });
-    this.actionBtn.style.cssText = `
-      width: 100%;
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    `;
-    this.actionBtn.onmouseover = () => this.actionBtn.style.transform = 'translateY(-2px)';
-    this.actionBtn.onmouseout = () => this.actionBtn.style.transform = 'translateY(0)';
+    this.actionBtn.className = "w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-green-500/25";
     card.appendChild(this.actionBtn);
   }
 
@@ -431,34 +290,15 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    `;
+    title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
     title.textContent = "🔗 Join Room";
     main.appendChild(title);
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 2rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 400px;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-md";
 
     const description = document.createElement("p");
-    description.style.cssText = `
-      text-align: center;
-      opacity: 0.8;
-      margin-bottom: 2rem;
-      line-height: 1.5;
-    `;
+    description.className = "text-center opacity-80 mb-8 leading-relaxed";
     description.textContent = "Enter the room code to connect";
     card.appendChild(description);
 
@@ -472,17 +312,7 @@ export class Lobby extends AView {
       placeholder: "Enter room code",
       required: true
     });
-    input.style.cssText = `
-      width: 100%;
-      padding: 1rem;
-      border: none;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.2);
-      color: white;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    `;
+    input.className = "w-full p-4 border-none rounded-lg bg-black/20 text-white text-base mb-4 text-center placeholder-white/60";
     input.setAttribute('autocomplete', 'off');
     inputDiv.appendChild(input);
     card.appendChild(inputDiv);
@@ -508,20 +338,7 @@ export class Lobby extends AView {
         this.wsManager.joinRoom(code, this.currentUserDisplayName);
       }
     });
-    joinBtn.style.cssText = `
-      width: 100%;
-      background: linear-gradient(45deg, #2196F3, #1976D2);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-    `;
-    joinBtn.onmouseover = () => joinBtn.style.transform = 'translateY(-2px)';
-    joinBtn.onmouseout = () => joinBtn.style.transform = 'translateY(0)';
+    joinBtn.className = "w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25";
     card.appendChild(joinBtn);
 
     // Enter key support
@@ -544,77 +361,30 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    `;
+    title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
     title.textContent = "🔍 Searching Lobby";
     main.appendChild(title);
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 3rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 w-full max-w-md text-center";
 
     // Loading animation
     const loadingContainer = document.createElement("div");
-    loadingContainer.style.cssText = `
-      margin-bottom: 2rem;
-    `;
+    loadingContainer.className = "mb-8";
 
     const spinner = document.createElement("div");
-    spinner.style.cssText = `
-      width: 60px;
-      height: 60px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top: 4px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem auto;
-    `;
-
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `;
-    document.head.appendChild(style);
+    spinner.className = "w-15 h-15 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4";
 
     loadingContainer.appendChild(spinner);
     card.appendChild(loadingContainer);
 
     const searchingText = document.createElement("p");
-    searchingText.style.cssText = `
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      opacity: 0.9;
-    `;
+    searchingText.className = "text-xl mb-4 opacity-90";
     searchingText.textContent = "Looking for lobby...";
     card.appendChild(searchingText);
 
     const codeText = document.createElement("p");
-    codeText.style.cssText = `
-      font-size: 1rem;
-      opacity: 0.7;
-      margin-bottom: 2rem;
-      background: rgba(0,0,0,0.2);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      letter-spacing: 0.1rem;
-    `;
+    codeText.className = "text-base opacity-70 mb-8 bg-black/20 py-2 px-4 rounded-lg tracking-wider";
     codeText.textContent = `Code: ${this.roomCode}`;
     card.appendChild(codeText);
 
@@ -624,23 +394,7 @@ export class Lobby extends AView {
       variant: "secondary",
       onClick: () => this.showJoinRoom()
     });
-    cancelBtn.style.cssText = `
-      background: rgba(244, 67, 54, 0.2);
-      border: 1px solid rgba(244, 67, 54, 0.3);
-      color: white;
-      padding: 0.8rem 2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-    `;
-    cancelBtn.onmouseover = () => {
-      cancelBtn.style.background = 'rgba(244, 67, 54, 0.3)';
-      cancelBtn.style.transform = 'translateY(-2px)';
-    };
-    cancelBtn.onmouseout = () => {
-      cancelBtn.style.background = 'rgba(244, 67, 54, 0.2)';
-      cancelBtn.style.transform = 'translateY(0)';
-    };
+    cancelBtn.className = "bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-white py-3 px-8 rounded-lg cursor-pointer transition-all duration-300 hover:-translate-y-1";
     card.appendChild(cancelBtn);
 
     main.appendChild(card);
@@ -662,11 +416,12 @@ export class Lobby extends AView {
     navigator.clipboard.writeText(this.roomCode).then(() => {
       const btn = event.target as HTMLButtonElement;
       const originalText = btn.textContent;
+      const originalClass = btn.className;
       btn.textContent = "✅ Copied!";
-      btn.style.background = "rgba(76, 175, 80, 0.3)";
+      btn.className = "bg-green-500/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
       setTimeout(() => {
         btn.textContent = originalText;
-        btn.style.background = "rgba(255,255,255,0.2)";
+        btn.className = originalClass;
       }, 2000);
     });
   }
@@ -676,11 +431,12 @@ export class Lobby extends AView {
     navigator.clipboard.writeText(url).then(() => {
       const btn = event.target as HTMLButtonElement;
       const originalText = btn.textContent;
+      const originalClass = btn.className;
       btn.textContent = "✅ Link Copied!";
-      btn.style.background = "rgba(76, 175, 80, 0.3)";
+      btn.className = "bg-green-500/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
       setTimeout(() => {
         btn.textContent = originalText;
-        btn.style.background = "rgba(255,255,255,0.2)";
+        btn.className = originalClass;
       }, 2000);
     });
   }
@@ -712,42 +468,22 @@ export class Lobby extends AView {
 
     this.currentPlayers.forEach(player => {
       const li = document.createElement("li");
-      li.style.cssText = `
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(255,255,255,0.1);
-        margin: 0.5rem 0;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid ${player.isHost ? '#FFD700' : '#2196F3'};
-      `;
+      li.className = `flex items-center justify-between bg-white/10 my-2 p-4 rounded-lg border-l-4 ${player.isHost ? 'border-yellow-400' : 'border-blue-400'}`;
 
       const playerInfo = document.createElement("div");
-      playerInfo.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      `;
+      playerInfo.className = "flex items-center gap-2";
 
       const icon = document.createElement("span");
       icon.textContent = player.isHost ? "👑" : "👤";
-      icon.style.fontSize = "1.2rem";
+      icon.className = "text-xl";
 
       const name = document.createElement("span");
       name.textContent = player.id === this.wsManager?.playerId ? "You" : player.name;
-      name.style.fontWeight = "bold";
+      name.className = "font-bold";
 
       const status = document.createElement("span");
       status.textContent = player.ready ? "Ready ✅" : (player.isHost ? "Host" : "Waiting");
-      status.style.cssText = `
-        font-size: 0.8rem;
-        opacity: 0.7;
-        background: rgba(0,0,0,0.2);
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        color: ${player.ready ? '#4CAF50' : 'white'};
-      `;
+      status.className = `text-sm opacity-70 bg-black/20 py-1 px-2 rounded ${player.ready ? 'text-green-400' : 'text-white'}`;
 
       playerInfo.append(icon, name);
       li.append(playerInfo, status);
@@ -764,19 +500,7 @@ export class Lobby extends AView {
   private showError(message: string): void {
     // Create a temporary error message
     const errorDiv = document.createElement("div");
-    errorDiv.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(244, 67, 54, 0.9);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      z-index: 2000;
-      font-size: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
+    errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
     errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
 
@@ -799,69 +523,28 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 3rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-      animation: pulse 2s infinite;
-    `;
+    title.className = "text-5xl font-bold mb-8 text-center drop-shadow-lg animate-pulse";
     title.textContent = "🎮 Game Starting!";
-
-    // Add pulse animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-    `;
-    document.head.appendChild(style);
-
     main.appendChild(title);
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 3rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 w-full max-w-lg text-center";
 
     const gameInfo = document.createElement("div");
-    gameInfo.style.cssText = `
-      margin-bottom: 2rem;
-    `;
+    gameInfo.className = "mb-8";
 
     const opponentInfo = document.createElement("p");
-    opponentInfo.style.cssText = `
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    `;
+    opponentInfo.className = "text-2xl mb-4";
     opponentInfo.textContent = `🎯 VS ${data.opponent.name}`;
     gameInfo.appendChild(opponentInfo);
 
     const sideInfo = document.createElement("p");
-    sideInfo.style.cssText = `
-      font-size: 1.2rem;
-      opacity: 0.8;
-      margin-bottom: 2rem;
-    `;
+    sideInfo.className = "text-xl opacity-80 mb-8";
     sideInfo.textContent = `You are playing on the ${data.playerSide} side`;
     gameInfo.appendChild(sideInfo);
 
     const countdown = document.createElement("div");
-    countdown.style.cssText = `
-      font-size: 4rem;
-      font-weight: bold;
-      color: #4CAF50;
-    `;
+    countdown.className = "text-6xl font-bold text-green-400";
     countdown.textContent = "3";
     gameInfo.appendChild(countdown);
 
@@ -902,109 +585,49 @@ export class Lobby extends AView {
     main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
 
     const title = document.createElement("h1");
-    title.style.cssText = `
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    `;
+    title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
     title.textContent = "🎮 Joined Room!";
     main.appendChild(title);
 
     const card = document.createElement("div");
-    card.style.cssText = `
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 2rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      width: 100%;
-      max-width: 500px;
-    `;
+    card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-lg";
 
     const successMessage = document.createElement("div");
-    successMessage.style.cssText = `
-      text-align: center;
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background: rgba(76, 175, 80, 0.2);
-      border-radius: 8px;
-      border: 1px solid rgba(76, 175, 80, 0.3);
-    `;
+    successMessage.className = "text-center mb-8 p-4 bg-green-500/20 rounded-lg border border-green-500/30";
     successMessage.textContent = "✅ Successfully joined the room!";
     card.appendChild(successMessage);
 
     // Room code display
     const codeSection = document.createElement("div");
-    codeSection.style.cssText = `
-      text-align: center;
-      margin-bottom: 2rem;
-    `;
+    codeSection.className = "text-center mb-8";
 
     const codeTitle = document.createElement("h3");
     codeTitle.textContent = "Room Code";
-    codeTitle.style.cssText = `
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      opacity: 0.9;
-    `;
+    codeTitle.className = "text-xl mb-4 opacity-90";
     codeSection.appendChild(codeTitle);
 
     this.roomCodeEl = document.createElement("div");
-    this.roomCodeEl.style.cssText = `
-      font-size: 2rem;
-      font-weight: bold;
-      background: rgba(0,0,0,0.2);
-      padding: 1rem;
-      border-radius: 8px;
-      letter-spacing: 0.2rem;
-      margin-bottom: 1rem;
-    `;
+    this.roomCodeEl.className = "text-3xl font-bold bg-black/20 p-4 rounded-lg tracking-widest mb-4";
     this.roomCodeEl.textContent = this.roomCode;
     codeSection.appendChild(this.roomCodeEl);
 
     // Copy buttons
     const buttonsContainer = document.createElement("div");
-    buttonsContainer.style.cssText = `
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    `;
+    buttonsContainer.className = "flex gap-2 justify-center";
 
     const copyBtn = PongButton({
       text: "📋 Copy Code",
       variant: "secondary",
       onClick: (e) => this.onCopyCode(e)
     });
-    copyBtn.style.cssText = `
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    `;
-    copyBtn.onmouseover = () => copyBtn.style.background = 'rgba(255,255,255,0.3)';
-    copyBtn.onmouseout = () => copyBtn.style.background = 'rgba(255,255,255,0.2)';
+    copyBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
     const shareLinkBtn = PongButton({
       text: "🔗 Copy Link",
       variant: "secondary",
       onClick: (e) => this.onCopyLink(e)
     });
-    shareLinkBtn.style.cssText = `
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    `;
-    shareLinkBtn.onmouseover = () => shareLinkBtn.style.background = 'rgba(255,255,255,0.3)';
-    shareLinkBtn.onmouseout = () => shareLinkBtn.style.background = 'rgba(255,255,255,0.2)';
+    shareLinkBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
     buttonsContainer.append(copyBtn, shareLinkBtn);
     codeSection.appendChild(buttonsContainer);
@@ -1012,26 +635,16 @@ export class Lobby extends AView {
 
     // Players list
     const playersSection = document.createElement("div");
-    playersSection.style.cssText = `
-      margin-bottom: 2rem;
-    `;
+    playersSection.className = "mb-8";
 
     const pListLabel = document.createElement("h3");
-    pListLabel.style.cssText = `
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    `;
+    pListLabel.className = "text-2xl mb-4 text-center";
     pListLabel.textContent = "👥 Players in Room";
     playersSection.appendChild(pListLabel);
 
     this.playersList = document.createElement("ul");
     this.playersList.id = "playersList";
-    this.playersList.style.cssText = `
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    `;
+    this.playersList.className = "list-none p-0 m-0";
     playersSection.appendChild(this.playersList);
     card.appendChild(playersSection);
 
@@ -1041,20 +654,7 @@ export class Lobby extends AView {
       variant: "primary",
       onClick: () => this.onAction()
     });
-    this.actionBtn.style.cssText = `
-      width: 100%;
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      border: none;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    `;
-    this.actionBtn.onmouseover = () => this.actionBtn.style.transform = 'translateY(-2px)';
-    this.actionBtn.onmouseout = () => this.actionBtn.style.transform = 'translateY(0)';
+    this.actionBtn.className = "w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-green-500/25";
     card.appendChild(this.actionBtn);
 
     main.appendChild(card);
