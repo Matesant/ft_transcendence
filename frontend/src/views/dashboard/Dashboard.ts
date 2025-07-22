@@ -10,11 +10,9 @@ export class Dashboard extends AView {
     dashboardContainer.className = 'w-full min-h-screen p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans';
     dashboardContainer.innerHTML = `
       <div class="flex justify-between items-center mb-10 w-full max-w-4xl p-5 animate-slideDown">
-        <button class="p-3 text-sm w-16 h-16 rounded-full flex items-center justify-center border-2 border-white/30 bg-white/15 backdrop-blur-sm text-white cursor-pointer font-medium transition-all duration-300 hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/50 relative overflow-hidden" data-route="/dashboard">
-          <svg class="w-7 h-7 transition-all duration-300 hover:scale-110 drop-shadow-sm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9.55228 21 10 20.5523 10 20V16C10 15.4477 10.4477 15 11 15H13C13.5523 15 14 15.4477 14 16V20C14 20.5523 14.4477 21 15 21M9 21H15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
+          <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-16 w-auto drop-shadow-lg">
+        </div>
         <div class="flex items-center gap-5">
           <div class="flex items-center gap-5">
             <div class="w-16 h-16 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center text-xs border-2 border-white/40 overflow-hidden transition-all duration-300 hover:scale-105 hover:border-white/60 shadow-2xl cursor-pointer" id="user-avatar-container">
