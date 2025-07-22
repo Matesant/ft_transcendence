@@ -2,11 +2,9 @@ import { AView } from "../AView";
 
 export class Settings extends AView
 {
-    public render(parent: HTMLElement = document.body): void{
+    public render(): void{
       
-            let element = document.createElement('p');
-            element.textContent = "Settings";
-            parent.appendChild(element);
+        document.body.innerHTML  = "<select-avatar></select-avatar>";
     }
 
     public dispose(): void {
