@@ -1,3 +1,5 @@
+import { getUserIdByAlias } from '../../utils/get_user.js'
+
 export default async function (fastify, opts) {
 	// --- User Synchronization ---
 	fastify.post('/sync', async (request, reply) => {
@@ -35,7 +37,18 @@ export default async function (fastify, opts) {
 				profile.avatar = `${protocol}://${host}/${profile.avatar}`;
 			}
 
-			return profile;
+			const userId = await getUserIdByAlias(fastify, alias);
+			let history = [];
+			
+			if (userId) {
+				history = await fastify.db.all(`
+					SELECT opponent, result, date FROM match_history
+					WHERE user_id = ?
+					ORDER BY date DESC
+				`, [userId]);
+			}
+
+			return { profile, history };
 		} catch (err) {
 			return reply.status(500).send({ error: 'Failed to retrieve profile' });
 		}

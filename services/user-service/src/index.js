@@ -10,6 +10,7 @@ import avatarRoutes from './routes/users/avatar.js';
 import friendsRoutes from './routes/users/friends.js';
 import publicRoutes from './routes/users/public.js';
 import historyRoutes from './routes/users/history.js';
+import playersRoutes from './routes/users/players.js';
 import crypto from 'node:crypto'
 import path from 'node:path'
 import fastifyStatic from '@fastify/static'
@@ -59,5 +60,6 @@ await fastify.register(avatarRoutes, { prefix: '/users' });
 await fastify.register(friendsRoutes, { prefix: '/users' });
 await fastify.register(publicRoutes, { prefix: '/users' });
 await fastify.register(historyRoutes, { prefix: '/users' });
+await fastify.register(playersRoutes, { prefix: '/players' });
 
 await fastify.listen({ port: 3003, host: '0.0.0.0' })

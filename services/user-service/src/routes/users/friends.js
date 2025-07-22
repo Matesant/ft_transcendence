@@ -19,6 +19,21 @@ export default async function (fastify, opts) {
 				return reply.status(404).send({ error: 'Friend not found' });
 			}
 
+			// Check if friendship already exists (in any direction)
+			const existingFriendship = await fastify.db.get(`
+				SELECT * FROM friends 
+				WHERE (user_id = ? AND friend_id = ?) 
+				OR (user_id = ? AND friend_id = ?)
+			`, [userId, friendId, friendId, userId]);
+
+			if (existingFriendship) {
+				if (existingFriendship.status === 'accepted') {
+					return reply.status(400).send({ error: 'You are already friends with this user' });
+				} else if (existingFriendship.status === 'pending') {
+					return reply.status(400).send({ error: 'Friend request already pending' });
+				}
+			}
+
 			await fastify.db.run(`
 				INSERT INTO friends (user_id, friend_id, status) 
 				VALUES (?, ?, 'pending')
