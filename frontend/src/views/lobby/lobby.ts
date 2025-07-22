@@ -55,7 +55,10 @@ export class Lobby extends AView {
     this.elements.push(this.container);
 
     // header
-    this.container.appendChild(PongHeader({ homeOnly: false }));
+    const headerContainer = document.createElement("div");
+    headerContainer.className = "w-full";
+    headerContainer.appendChild(PongHeader({ homeOnly: false }));
+    this.container.appendChild(headerContainer);
 
     // Initialize WebSocket manager
     this.initializeWebSocket();
@@ -123,7 +126,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4 max-w-5xl mx-auto";
 
     const title = document.createElement("h1");
     title.className = "text-5xl font-bold mb-12 text-center drop-shadow-lg";

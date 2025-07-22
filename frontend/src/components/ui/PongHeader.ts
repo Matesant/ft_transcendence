@@ -8,11 +8,18 @@ export interface PongHeaderProps {
 
 export function PongHeader({ rightContent = null, homeOnly = false }: PongHeaderProps = {}): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'w-full max-w-5xl mx-auto flex justify-between items-center px-4 md:px-8 py-4';
+  header.className = 'w-full flex justify-between items-center px-4 md:px-8 py-4';
 
   const logo = document.createElement('div');
-  logo.className = 'text-2xl md:text-3xl font-extrabold neon-glow-green select-none tracking-wide';
-  logo.textContent = 'ft_transcendence';
+  logo.className = 'cursor-pointer transition-all duration-300 hover:scale-105';
+  logo.addEventListener('click', () => navigateTo('/dashboard'));
+  
+  const logoImg = document.createElement('img');
+  logoImg.src = '/images/transcendence-logo.svg';
+  logoImg.alt = 'Transcendence Logo';
+  logoImg.className = 'max-h-16 w-auto drop-shadow-lg';
+  
+  logo.appendChild(logoImg);
 
   header.appendChild(logo);
 
