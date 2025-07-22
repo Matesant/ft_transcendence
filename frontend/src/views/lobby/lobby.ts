@@ -552,7 +552,6 @@ export class Lobby extends AView {
     main.appendChild(card);
     this.container.appendChild(main);
 
-    // Countdown timer
     let count = 3;
     const countdownInterval = setInterval(() => {
       count--;
@@ -572,7 +571,7 @@ export class Lobby extends AView {
           sessionStorage.setItem('opponent', JSON.stringify(data.opponent));
           this.keepConnection = true;
           navigateTo('/online');
-        }, 3000);
+        });
       }
     }, 1000);
   }
