@@ -31,7 +31,7 @@ class UploadAvatar extends HTMLElement {
                     focus:outline-none focus:ring-2 
                     focus:ring-blue-400 focus:ring-offset-2"
             >
-                Enviar avatar
+                Upload Avatar
             </button>
 
             <div></div>
@@ -71,9 +71,11 @@ class UploadAvatar extends HTMLElement {
   
         const data = await resp.json();
         if (data.success) {
-          this.showStatus(`Sucesso: ${data.message} (${data.path})`);
+          this.statusDiv.className = "text-green-700";
+          this.showStatus(`${data.message}`);
         } else {
-          this.showStatus(`Falha: ${data.message || 'Erro desconhecido'}`);
+          this.statusDiv.className = "text-red-500";
+          this.showStatus(`Error: ${data.statusCode || 'Erro desconhecido'}`);
         }
       } catch (err) {
         console.error(err);
