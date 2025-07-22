@@ -20,10 +20,11 @@ class playerProfile extends HTMLElement {
   }
 
   async loadProfile() {
-      const player_name = history.state;
-      if (!player_name) {
-          this.container.innerHTML = `<p class="text-red-500">Player not selected.</p>`;
-          return;
+
+      var player_name = history.state;
+
+      if (player_name === "") {
+          player_name = "me";
       }
 
       const url = apiUrl(3003, `/users/${player_name}`);
