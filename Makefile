@@ -44,16 +44,16 @@ logs:
 # Install frontend dependencies
 frontend-install:
 	@echo "$(CYAN)Installing frontend dependencies...$(RESET)"
-	cd $(FRONTEND_DIR) && npm install
+	@cd $(FRONTEND_DIR) && npm install
 	@echo "$(GREEN)✅ Frontend dependencies installed!$(RESET)"
 
 # Start frontend development
 frontend-dev:
 	@echo "$(CYAN)Starting frontend development...$(RESET)"
 	@$(MAKE) kill-frontend
-	cd $(FRONTEND_DIR) && nohup npx tailwindcss -i src/style.css -o public/style.css --watch > .tailwind.log 2>&1 & echo $$! > .tailwind.pid
+	@cd $(FRONTEND_DIR) && nohup npx tailwindcss -i src/style.css -o public/style.css --watch > .tailwind.log 2>&1 & echo $$! > .tailwind.pid
 	@sleep 2
-	cd $(FRONTEND_DIR) && nohup npm run start > .frontend.log 2>&1 & echo $$! > .frontend.pid
+	@cd $(FRONTEND_DIR) && nohup npm run start > .frontend.log 2>&1 & echo $$! > .frontend.pid
 	@echo "$(GREEN)✅ Frontend development started!$(RESET)"
 	@echo "$(GREEN)🌐 Frontend available at: http://localhost:8080$(RESET)"
 

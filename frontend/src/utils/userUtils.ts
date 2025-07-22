@@ -2,12 +2,12 @@ import { apiUrl } from "./api";
 import { navigateTo } from "../router/Router";
 
 export interface UserProfile {
-  id: number;
+  id?: number;
   alias: string;
-  display_name: string | null;
-  avatar: string | null;
-  wins: number;
-  losses: number;
+  display_name?: string | null;
+  avatar?: string | null;
+  wins?: number;
+  losses?: number;
 }
 
 export interface AuthUser {
@@ -58,7 +58,10 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // A nova API retorna { profile: {...}, history: [...] }
+    return data.profile || null;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
@@ -95,10 +98,23 @@ export async function getCurrentUserDisplayName(): Promise<string | null> {
   try {
     const profile = await getCurrentUserProfile();
     if (!profile) {
+      console.error("No profile found");
       return null;
     }
+    
+    console.log("Profile received:", profile);
+    
+    // Verifica se temos pelo menos o alias
+    if (!profile.alias) {
+      console.error("Profile has no alias");
+      return null;
+    }
+    
     // Usa display_name se existir e não for nulo/vazio, caso contrário usa alias
-    return profile.display_name && profile.display_name.trim() ? profile.display_name : profile.alias;
+    const displayName = profile.display_name && profile.display_name.trim() ? profile.display_name : profile.alias;
+    console.log("Display name resolved to:", displayName);
+    
+    return displayName;
   } catch (error) {
     console.error("Error getting current user display name:", error);
     return null;
