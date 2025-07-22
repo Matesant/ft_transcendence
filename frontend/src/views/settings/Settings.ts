@@ -4,7 +4,7 @@ export class Settings extends AView
 {
     public render(): void{
       
-        document.body.innerHTML  = "<select-avatar></select-avatar>";
+        document.body.innerHTML  = "<select-avatar></select-avatar><upload-avatar></upload-avatar>";
     }
 
     public dispose(): void {
