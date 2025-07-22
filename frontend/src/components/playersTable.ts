@@ -5,7 +5,7 @@ class playersTable extends HTMLElement {
 
     private async getPlayersHtml(): Promise<string> {
         try {
-            const response = await fetch(apiUrl(3001, '/players'), {credentials: "include"});
+            const response = await fetch(apiUrl(3003, '/players'), {credentials: "include"});
             if (!response.ok) throw new Error("HTTP error");
             const players = await response.json();
   

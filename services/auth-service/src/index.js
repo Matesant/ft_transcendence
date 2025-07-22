@@ -8,6 +8,7 @@ import playersRoutes from './routes/players.js'
 import registerRoutes from './routes/auth/register.js'
 import loginRoutes from './routes/auth/login.js'
 import twoFactorRoutes from './routes/auth/twoFactor.js'
+import passwordResetRoutes from './routes/auth/passwordReset.js'
 import credentialsRoutes from './routes/auth/credentials.js'
 import sessionRoutes from './routes/auth/session.js'
 import crypto from 'node:crypto'
@@ -62,6 +63,7 @@ await fastify.register(playersRoutes, { prefix: '/players' })
 await fastify.register(registerRoutes, { prefix: '/auth' })
 await fastify.register(loginRoutes, { prefix: '/auth' })
 await fastify.register(twoFactorRoutes, { prefix: '/auth' })
+await fastify.register(passwordResetRoutes, { prefix: '/auth' })
 await fastify.register(credentialsRoutes, { prefix: '/auth' })
 await fastify.register(sessionRoutes, { prefix: '/auth' })
 

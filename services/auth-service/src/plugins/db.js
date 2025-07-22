@@ -35,6 +35,16 @@ export default fp(async (fastify) => {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `)
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS password_reset_codes (
+        id INTEGER PRIMARY KEY,
+        alias TEXT NOT NULL,
+        code TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
   })
 
   fastify.decorate('db', {

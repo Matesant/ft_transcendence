@@ -16,10 +16,26 @@ export default async function (fastify) {
 
       const matchDate = date || new Date().toISOString()
 
+      // Insert match history
       await fastify.db.run(`
         INSERT INTO match_history (user_id, opponent, result, date)
         VALUES (?, ?, ?, ?)
       `, [userId, opponent, result, matchDate])
+
+      // Update user profile statistics
+      if (result === 'win') {
+        await fastify.db.run(`
+          UPDATE user_profiles 
+          SET wins = wins + 1 
+          WHERE id = ?
+        `, [userId])
+      } else if (result === 'loss') {
+        await fastify.db.run(`
+          UPDATE user_profiles 
+          SET losses = losses + 1 
+          WHERE id = ?
+        `, [userId])
+      }
 
       return { success: true, message: 'Match recorded' }
     } catch (err) {
@@ -42,6 +58,35 @@ export default async function (fastify) {
       return { alias, history }
     } catch (err) {
       return reply.status(500).send({ error: 'Failed to retrieve match history' })
+    }
+  })
+
+  // Rota para sincronizar estatísticas (recalcular wins/losses baseado no histórico)
+  fastify.post('/sync-stats', async (request, reply) => {
+    try {
+      const users = await fastify.db.all('SELECT id, alias FROM user_profiles')
+      
+      for (const user of users) {
+        const wins = await fastify.db.get(
+          'SELECT COUNT(*) as count FROM match_history WHERE user_id = ? AND result = ?',
+          [user.id, 'win']
+        )
+        
+        const losses = await fastify.db.get(
+          'SELECT COUNT(*) as count FROM match_history WHERE user_id = ? AND result = ?',
+          [user.id, 'loss']
+        )
+        
+        await fastify.db.run(`
+          UPDATE user_profiles 
+          SET wins = ?, losses = ? 
+          WHERE id = ?
+        `, [wins?.count || 0, losses?.count || 0, user.id])
+      }
+      
+      return { success: true, message: 'Statistics synchronized for all users' }
+    } catch (err) {
+      return reply.status(500).send({ error: 'Failed to sync statistics' })
     }
   })
 }

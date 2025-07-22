@@ -8,11 +8,11 @@ export const transporter = nodemailer.createTransport({
   }
 })
 
-export async function send2FACode(to, code) {
+export async function send2FACode(to, code, subject = 'Your authentication code') {
   await transporter.sendMail({
     from: `ft_transcendence <${process.env.MAIL_USER}>`,
     to,
-    subject: 'Your authentication code',
+    subject,
     html: `<p>Your verification code is: <strong>${code}</strong></p>`
   })
 }

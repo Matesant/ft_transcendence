@@ -74,8 +74,8 @@ export class Dashboard extends AView {
 
       // Cria o avatar
       const avatar = document.createElement("img");
-      avatar.src = data.avatar;
-      avatar.alt = data.alias;
+      avatar.src = data.profile.avatar;
+      avatar.alt = data.profile.alias;
       avatar.className = "w-full h-full object-cover";
 
       // Limpa o container e adiciona a imagem
@@ -84,20 +84,20 @@ export class Dashboard extends AView {
 
       // Atualiza as estatísticas com apenas vitórias, derrotas e win rate usando Tailwind
       if (statsContainer) {
-        const totalGames = data.wins + data.losses;
-        const winRate = totalGames > 0 ? Math.round((data.wins / totalGames) * 100) : 0;
+        const totalGames = data.profile.wins + data.profile.losses;
+        const winRate = totalGames > 0 ? Math.round((data.profile.wins / totalGames) * 100) : 0;
         
         statsContainer.innerHTML = `
           <div class="grid grid-cols-3 gap-6 mt-4">
             <div class="bg-white/10 rounded-2xl p-6 text-center transition-all duration-300 border border-white/20 hover:bg-white/15 hover:-translate-y-1 shadow-lg">
               <div class="text-3xl mb-3 drop-shadow-lg">🏆</div>
               <div class="text-sm text-white/70 mb-2 uppercase tracking-widest font-medium">Vitórias</div>
-              <div class="text-2xl font-bold text-white">${data.wins}</div>
+              <div class="text-2xl font-bold text-white">${data.profile.wins}</div>
             </div>
             <div class="bg-white/10 rounded-2xl p-6 text-center transition-all duration-300 border border-white/20 hover:bg-white/15 hover:-translate-y-1 shadow-lg">
               <div class="text-3xl mb-3 drop-shadow-lg">💔</div>
               <div class="text-sm text-white/70 mb-2 uppercase tracking-widest font-medium">Derrotas</div>
-              <div class="text-2xl font-bold text-white">${data.losses}</div>
+              <div class="text-2xl font-bold text-white">${data.profile.losses}</div>
             </div>
             <div class="bg-white/10 rounded-2xl p-6 text-center transition-all duration-300 border border-white/20 hover:bg-white/15 hover:-translate-y-1 shadow-lg">
               <div class="text-3xl mb-3 drop-shadow-lg">📊</div>
