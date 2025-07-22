@@ -94,7 +94,7 @@ export class GameRoom extends EventEmitter {
         this.ballReleaseTimer = setTimeout(() => {
             this.releaseBall();
             this.ballReleaseTimer = null;
-        }, 3000);
+        }, 5000);
         
         console.log(`Game ${this.id} started - ball will be released in 3 seconds`);
     }
@@ -269,7 +269,7 @@ export class GameRoom extends EventEmitter {
                 console.log(`Ball released after point scored in game ${this.id}`);
             }
             this.ballReleaseTimer = null;
-        }, 3000);
+        }, 1000);
     }
 
     resetGame() {

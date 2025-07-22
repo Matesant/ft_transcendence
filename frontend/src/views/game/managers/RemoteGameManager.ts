@@ -10,6 +10,7 @@ import { NetworkManager } from "./NetworkManager";
 import { Language } from "../../i18n";
 import { apiUrl } from "../../../utils/api";
 import { getCurrentUser } from "../../../utils/userUtils";
+import { router } from "../../../router/Router";
 
 export class RemoteGameManager {
     private _scene: Scene;
@@ -121,51 +122,23 @@ export class RemoteGameManager {
 
     private _createMenuUI(): void {
         this._menuUI = document.createElement("div");
-        this._menuUI.style.position = "absolute";
-        this._menuUI.style.top = "0";
-        this._menuUI.style.left = "0";
-        this._menuUI.style.width = "100%";
-        this._menuUI.style.height = "100%";
-        this._menuUI.style.display = "flex";
-        this._menuUI.style.flexDirection = "column";
-        this._menuUI.style.justifyContent = "center";
-        this._menuUI.style.alignItems = "center";
-        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        this._menuUI.style.zIndex = "1000";
+        this._menuUI.className = "fixed inset-0 flex flex-col justify-center items-center bg-black/80 z-[1000]";
         
         const title = document.createElement("h1");
         title.textContent = "MULTIPLAYER PONG";
-        title.style.color = "white";
-        title.style.fontSize = "48px";
-        title.style.marginBottom = "30px";
-        title.style.textAlign = "center";
+        title.className = "text-white text-5xl mb-8 text-center";
         
         const playerInfo = document.createElement("div");
         playerInfo.textContent = `Welcome, ${this._playerName}!`;
-        playerInfo.style.color = "white";
-        playerInfo.style.fontSize = "20px";
-        playerInfo.style.marginBottom = "30px";
+        playerInfo.className = "text-white text-xl mb-8";
         
         const connectButton = document.createElement("button");
         connectButton.textContent = "Connect & Find Match";
-        connectButton.style.padding = "15px 30px";
-        connectButton.style.fontSize = "20px";
-        connectButton.style.cursor = "pointer";
-        connectButton.style.backgroundColor = "#4CAF50";
-        connectButton.style.border = "none";
-        connectButton.style.borderRadius = "8px";
-        connectButton.style.color = "white";
-        connectButton.style.marginBottom = "20px";
+        connectButton.className = "px-8 py-4 text-xl cursor-pointer bg-green-500 border-none rounded-lg text-white mb-5 hover:bg-green-600 transition-colors";
         
         const backButton = document.createElement("button");
         backButton.textContent = "Back to Local Game";
-        backButton.style.padding = "10px 20px";
-        backButton.style.fontSize = "16px";
-        backButton.style.cursor = "pointer";
-        backButton.style.backgroundColor = "#f44336";
-        backButton.style.border = "none";
-        backButton.style.borderRadius = "5px";
-        backButton.style.color = "white";
+        backButton.className = "px-5 py-2.5 text-base cursor-pointer bg-red-500 border-none rounded text-white hover:bg-red-600 transition-colors";
         
         connectButton.addEventListener("click", () => {
             this._connectAndFindMatch();
@@ -185,20 +158,11 @@ export class RemoteGameManager {
 
     private _createGameUI(): void {
         this._gameUI = document.createElement("div");
-        this._gameUI.style.position = "absolute";
-        this._gameUI.style.top = "20px";
-        this._gameUI.style.left = "20px";
-        this._gameUI.style.right = "20px";
-        this._gameUI.style.color = "white";
-        this._gameUI.style.fontSize = "18px";
-        this._gameUI.style.display = "none";
-        this._gameUI.style.zIndex = "999";
-        this._gameUI.style.pointerEvents = "none";
+        this._gameUI.className = "absolute top-5 left-5 right-5 text-white text-lg hidden z-[999] pointer-events-none";
         
         const gameInfo = document.createElement("div");
         gameInfo.id = "remoteGameInfo";
-        gameInfo.style.textAlign = "center";
-        gameInfo.style.marginBottom = "10px";
+        gameInfo.className = "text-center mb-2.5";
         
         this._gameUI.appendChild(gameInfo);
         document.body.appendChild(this._gameUI);
@@ -206,18 +170,7 @@ export class RemoteGameManager {
 
     private _createStatusUI(): void {
         this._statusUI = document.createElement("div");
-        this._statusUI.style.position = "absolute";
-        this._statusUI.style.top = "50%";
-        this._statusUI.style.left = "50%";
-        this._statusUI.style.transform = "translate(-50%, -50%)";
-        this._statusUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        this._statusUI.style.color = "white";
-        this._statusUI.style.padding = "20px";
-        this._statusUI.style.borderRadius = "8px";
-        this._statusUI.style.textAlign = "center";
-        this._statusUI.style.fontSize = "18px";
-        this._statusUI.style.display = "none";
-        this._statusUI.style.zIndex = "1001";
+        this._statusUI.className = "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white p-5 rounded-lg text-center text-lg hidden z-[1001]";
         
         document.body.appendChild(this._statusUI);
     }
@@ -343,14 +296,56 @@ export class RemoteGameManager {
         this._gameStateManager.setState(GameState.GAME_OVER);
         
         const isWinner = data.winner.id === this._playerId;
-        const message = isWinner ? 
-            `🎉 You Win! 🎉\nFinal Score: ${data.finalScore.player1} - ${data.finalScore.player2}` :
-            `You Lose!\nFinal Score: ${data.finalScore.player1} - ${data.finalScore.player2}`;
-        
-        this._showStatus(message, isWinner ? "success" : "error", true);
+        this._showGameOverScreen(isWinner, data.finalScore);
 
         // Send match history to user-service
         this._submitMatchHistory(data);
+    }
+
+    private _showGameOverScreen(isWinner: boolean, finalScore: any): void {
+        // Clear existing content
+        this._statusUI.innerHTML = '';
+        
+        // Create game over container
+        const container = document.createElement('div');
+        container.className = 'text-center p-8';
+        
+        // Title
+        const title = document.createElement('h1');
+        title.textContent = isWinner ? '🎉 You Win! 🎉' : 'You Lose!';
+        title.className = `text-4xl mb-5 ${isWinner ? 'text-green-500' : 'text-red-500'}`;
+        container.appendChild(title);
+        
+        // Score
+        const scoreText = document.createElement('div');
+        scoreText.textContent = `Final Score: ${finalScore.player1} - ${finalScore.player2}`;
+        scoreText.className = 'text-2xl mb-8 text-white';
+        container.appendChild(scoreText);
+        
+        // Buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'flex gap-4 justify-center';
+        
+        // Back to lobby button
+        const lobbyButton = document.createElement('button');
+        lobbyButton.textContent = '🏠 Voltar para o Lobby';
+        lobbyButton.className = 'px-6 py-3 text-base cursor-pointer bg-blue-500 border-none rounded-lg text-white font-bold hover:bg-blue-600 transition-colors duration-300';
+        
+        lobbyButton.addEventListener('click', () => {
+            this.disconnect();
+            history.pushState('', '', '/lobby');
+            router();
+        });
+        
+        buttonsContainer.appendChild(lobbyButton);
+        container.appendChild(buttonsContainer);
+        
+        // Update status UI styles for game over screen
+        this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001]';
+        this._statusUI.style.border = `3px solid ${isWinner ? '#4CAF50' : '#f44336'}`;
+        this._statusUI.style.display = 'block';
+        
+        this._statusUI.appendChild(container);
     }
 
     private async _submitMatchHistory(gameEndData: any): Promise<void> {
@@ -384,10 +379,57 @@ export class RemoteGameManager {
     }
 
     private _handleOpponentDisconnected(data: any): void {
-        this._showStatus(`${data.message}\nYou win by default!`, "warning", true);
+        this._gameStateManager.setState(GameState.GAME_OVER);
+        this._showDisconnectionScreen(data.message);
         
         // Submit match history for disconnection win
         this._submitDisconnectionHistory();
+    }
+
+    private _showDisconnectionScreen(disconnectionMessage: string): void {
+        // Clear existing content
+        this._statusUI.innerHTML = '';
+        
+        // Create disconnection container
+        const container = document.createElement('div');
+        container.className = 'text-center p-8';
+        
+        // Title
+        const title = document.createElement('h1');
+        title.textContent = '🎉 You Win by Default! 🎉';
+        title.className = 'text-4xl mb-5 text-orange-500';
+        container.appendChild(title);
+        
+        // Disconnection message
+        const message = document.createElement('div');
+        message.textContent = disconnectionMessage;
+        message.className = 'text-xl mb-8 text-white';
+        container.appendChild(message);
+        
+        // Buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'flex gap-4 justify-center';
+        
+        // Back to lobby button
+        const lobbyButton = document.createElement('button');
+        lobbyButton.textContent = '🏠 Voltar para o Lobby';
+        lobbyButton.className = 'px-6 py-3 text-base cursor-pointer bg-blue-500 border-none rounded-lg text-white font-bold hover:bg-blue-600 transition-colors duration-300';
+        
+        lobbyButton.addEventListener('click', () => {
+            this.disconnect();
+            history.pushState('', '', '/lobby');
+            router();
+        });
+        
+        buttonsContainer.appendChild(lobbyButton);
+        container.appendChild(buttonsContainer);
+        
+        // Update status UI styles for disconnection screen
+        this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001]';
+        this._statusUI.style.border = '3px solid #FF9800';
+        this._statusUI.style.display = 'block';
+        
+        this._statusUI.appendChild(container);
     }
 
     private async _submitDisconnectionHistory(): Promise<void> {
@@ -421,44 +463,45 @@ export class RemoteGameManager {
 
     private _showMenu(): void {
         if (this._menuUI) {
-            this._menuUI.style.display = "flex";
+            this._menuUI.classList.remove('hidden');
+            this._menuUI.classList.add('flex');
         }
-        this._gameUI.style.display = "none";
+        this._gameUI.classList.add('hidden');
     }
 
     private _hideMenu(): void {
         if (this._menuUI) {
-            this._menuUI.style.display = "none";
+            this._menuUI.classList.add('hidden');
+            this._menuUI.classList.remove('flex');
         }
     }
 
     private _showGame(): void {
-        this._gameUI.style.display = "block";
+        this._gameUI.classList.remove('hidden');
+        this._gameUI.classList.add('block');
     }
 
     private _showStatus(message: string, type: "info" | "success" | "error" | "warning", persistent: boolean = false): void {
         this._statusUI.textContent = message;
-        this._statusUI.style.display = "block";
+        this._statusUI.classList.remove('hidden');
+        this._statusUI.classList.add('block');
         
-        // Reset countdown styles
-        this._statusUI.style.fontSize = "18px";
-        this._statusUI.style.fontWeight = "normal";
-        this._statusUI.style.border = "none";
-        this._statusUI.style.padding = "20px";
+        // Reset styles and add base classes
+        this._statusUI.className = "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white p-5 rounded-lg text-center text-lg block z-[1001]";
         
-        // Color based on type
+        // Add color based on type
         switch (type) {
             case "success":
-                this._statusUI.style.backgroundColor = "rgba(76, 175, 80, 0.9)";
+                this._statusUI.classList.add('bg-green-500/90');
                 break;
             case "error":
-                this._statusUI.style.backgroundColor = "rgba(244, 67, 54, 0.9)";
+                this._statusUI.classList.add('bg-red-500/90');
                 break;
             case "warning":
-                this._statusUI.style.backgroundColor = "rgba(255, 152, 0, 0.9)";
+                this._statusUI.classList.add('bg-orange-500/90');
                 break;
             default:
-                this._statusUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                this._statusUI.classList.add('bg-black/80');
         }
         
         // Clear any existing status timer to prevent multiple timers
@@ -471,12 +514,13 @@ export class RemoteGameManager {
             this._statusTimer = setTimeout(() => {
                 this._hideStatus();
                 this._statusTimer = null;
-            }, 1000); // Reduzido de 3000 para 1000
+            }, 1000);
         }
     }
 
     private _hideStatus(): void {
-        this._statusUI.style.display = "none";
+        this._statusUI.classList.add('hidden');
+        this._statusUI.classList.remove('block');
     }
 
     public update(): void {
