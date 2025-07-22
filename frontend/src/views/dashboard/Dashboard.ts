@@ -125,7 +125,8 @@ export class Dashboard extends AView {
     navigationButtons.forEach(button => {
       button.addEventListener('click', (e: Event) => {
         e.preventDefault();
-        const route = (e.target as HTMLElement).getAttribute('data-route');
+        // Use currentTarget to get the button element instead of the clicked element (emoji)
+        const route = (e.currentTarget as HTMLElement).getAttribute('data-route');
         if (route) {
           history.pushState("", "", route);
           router();
