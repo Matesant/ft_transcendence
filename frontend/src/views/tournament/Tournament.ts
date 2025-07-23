@@ -12,7 +12,7 @@ export class Tournament extends AView {
         
         // Header similar to Dashboard
         const header = document.createElement('div');
-        header.className = 'flex justify-between items-center mb-10 w-full max-w-4xl p-5 animate-slideDown';
+        header.className = 'flex justify-start items-center mb-10 w-full p-5 animate-slideDown';
         header.innerHTML = `
             <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
                 <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-16 w-auto drop-shadow-lg">

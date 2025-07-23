@@ -13,8 +13,6 @@ class startTournament extends HTMLElement {
             <div class="w-full max-w-3xl mx-auto">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
                     <h2 class="text-3xl font-bold mb-8 text-center text-white drop-shadow-lg">🎮 Configurar Torneio</h2>
-                    <p class="text-white/80 text-center mb-8 text-lg">Adicione os jogadores que participarão do torneio</p>
-            
                     <!-- Container com scroll para os inputs -->
                     <div class="flex-1 overflow-y-auto mb-8">
                         <div id="inputs" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
@@ -36,7 +34,6 @@ class startTournament extends HTMLElement {
                         </button>
                     </div>
             
-                    <div id="response" class="text-sm text-center text-white/80 bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 flex-shrink-0"></div>
                 </div>
             </div>
         `;
