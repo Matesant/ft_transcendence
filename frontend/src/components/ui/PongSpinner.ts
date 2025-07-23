@@ -22,7 +22,6 @@ export function PongSpinner({ size = 'md', extraClass = '' }: PongSpinnerProps =
       sizeClass = 'w-8 h-8 border-4';
       break;
   }
-  spinner.className = `border-gray-300 border-t-blue-600 rounded-full animate-spin ${sizeClass} ${extraClass}`;
-  spinner.style.borderStyle = 'solid';
+  spinner.className = `border-gray-300 border-t-blue-600 border-solid rounded-full animate-spin ${sizeClass} ${extraClass}`;
   return spinner;
 } 

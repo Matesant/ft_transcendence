@@ -41,12 +41,12 @@ export class UIManager {
     }
 
     public showMenu(): void {
-        this._menuUI.style.display = "flex";
-        this._gameOverUI.style.display = "none";
+        this._menuUI.className = this._menuUI.className.replace("hidden", "flex");
+        this._gameOverUI.className = this._gameOverUI.className.replace("flex", "hidden");
     }
 
     public hideMenu(): void {
-        this._menuUI.style.display = "none";
+        this._menuUI.className = this._menuUI.className.replace("flex", "hidden");
     }
 
     public showGameOver(
@@ -66,52 +66,54 @@ export class UIManager {
             // Tournament Complete layout
             if (gameOverText) {
                 gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
-                gameOverText.style.fontSize = "3rem";
-                gameOverText.style.color = "#ffd700";
-                gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700";
-                gameOverText.style.marginBottom = "20px";
+                gameOverText.className = "text-yellow-400 text-5xl mb-5 shadow-lg";
+                gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700"; // Keep custom shadow as Tailwind doesn't have exact equivalent
             }
             if (winnerText) {
-                winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span style="color:#ffd700;">${champion}</span> 🏆`;
-                winnerText.style.fontSize = "2.5rem";
-                winnerText.style.color = "#fff";
-                winnerText.style.marginBottom = "30px";
+                winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span class="text-yellow-400">${champion}</span> 🏆`;
+                winnerText.className = "text-white text-4xl mb-8";
             }
-            if (playAgainBtn) playAgainBtn.style.display = "none";
+            if (playAgainBtn) playAgainBtn.className = playAgainBtn.className.replace("block", "hidden");
             if (menuBtn) {
-                menuBtn.style.display = "block";
+                menuBtn.className = menuBtn.className.replace("hidden", "block");
                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
             }
         } else {
             // Normal game over
-            if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
-            if (winnerText) winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
+            if (gameOverText) {
+                gameOverText.textContent = STRINGS[this._lang].gameOver;
+                gameOverText.className = "text-white text-5xl m-0 mb-2.5"; // Reset to default
+            }
+            if (winnerText) {
+                winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
+                winnerText.className = "text-white text-2xl m-0 mb-5"; // Reset to default
+            }
 
             if (currentMatch) {
                 // Next match in tournament
                 if (playAgainBtn) {
-                    playAgainBtn.style.display = "block";
+                    playAgainBtn.className = playAgainBtn.className.replace("hidden", "block");
                     playAgainBtn.textContent = STRINGS[this._lang].nextMatch;
                 }
             } else {
                 // Practice mode
                 if (playAgainBtn) {
-                    playAgainBtn.style.display = "block";
+                    playAgainBtn.className = playAgainBtn.className.replace("hidden", "block");
                     playAgainBtn.textContent = STRINGS[this._lang].playAgain;
                 }
             }
             
             if (menuBtn) {
-                menuBtn.style.display = "inline-block";
+                menuBtn.className = menuBtn.className.replace("hidden", "inline-block");
                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
             }
         }
 
-        this._gameOverUI.style.display = "flex";
+        this._gameOverUI.className = this._gameOverUI.className.replace("hidden", "flex");
     }
 
     public hideGameOver(): void {
-        this._gameOverUI.style.display = "none";
+        this._gameOverUI.className = this._gameOverUI.className.replace("flex", "hidden");
     }
 
     public updateMatchInfo(
@@ -153,35 +155,19 @@ export class UIManager {
 
     private _createMenuUI(): void {
         this._menuUI = document.createElement("div");
-        this._menuUI.style.position = "absolute";
-        this._menuUI.style.top = "0";
-        this._menuUI.style.left = "0";
-        this._menuUI.style.width = "100%";
-        this._menuUI.style.height = "100%";
-        this._menuUI.style.display = "flex";
-        this._menuUI.style.flexDirection = "column";
-        this._menuUI.style.justifyContent = "center";
-        this._menuUI.style.alignItems = "center";
-        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        this._menuUI.className = "absolute inset-0 flex flex-col justify-center items-center bg-black/70";
         
         const title = document.createElement("h1");
         title.textContent = "PONG";
-        title.style.color = "white";
-        title.style.fontSize = "48px";
-        title.style.marginBottom = "30px";
+        title.className = "text-white text-5xl mb-8";
         
         const matchInfo = document.createElement("div");
         matchInfo.id = "matchInfo";
-        matchInfo.style.color = "white";
-        matchInfo.style.fontSize = "20px";
-        matchInfo.style.marginBottom = "20px";
-        matchInfo.style.textAlign = "center";
+        matchInfo.className = "text-white text-xl mb-5 text-center";
         
         const subtitle = document.createElement("h2");
         subtitle.textContent = STRINGS[this._lang].selectGameMode;
-        subtitle.style.color = "white";
-        subtitle.style.fontSize = "24px";
-        subtitle.style.marginBottom = "20px";
+        subtitle.className = "text-white text-2xl mb-5";
         
         const buttonsContainer = this._createGameModeButtons();
         const speedContainer = this._createSpeedControl();
@@ -199,61 +185,29 @@ export class UIManager {
 
     private _createGameModeButtons(): HTMLDivElement {
         const buttonsContainer = document.createElement("div");
-        buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "row";
-        buttonsContainer.style.gap = "20px";
-        buttonsContainer.style.justifyContent = "center";
-        buttonsContainer.style.alignItems = "center";
+        buttonsContainer.className = "flex flex-row gap-5 justify-center items-center";
         
         const classicContainer = document.createElement("div");
-        classicContainer.style.display = "flex";
-        classicContainer.style.flexDirection = "column";
-        classicContainer.style.alignItems = "center";
-        classicContainer.style.width = "200px";
+        classicContainer.className = "flex flex-col items-center w-48";
         
         const powerUpsContainer = document.createElement("div");
-        powerUpsContainer.style.display = "flex";
-        powerUpsContainer.style.flexDirection = "column";
-        powerUpsContainer.style.alignItems = "center";
-        powerUpsContainer.style.width = "200px";
+        powerUpsContainer.className = "flex flex-col items-center w-48";
         
         const classicLabel = document.createElement("div");
         classicLabel.textContent = STRINGS[this._lang].classicMode;
-        classicLabel.style.color = "white";
-        classicLabel.style.fontSize = "18px";
-        classicLabel.style.marginBottom = "10px";
-        classicLabel.classList.add("classic-label");
+        classicLabel.className = "text-white text-lg mb-2.5 classic-label";
         
         const powerUpsLabel = document.createElement("div");
         powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        powerUpsLabel.style.color = "white";
-        powerUpsLabel.style.fontSize = "18px";
-        powerUpsLabel.style.marginBottom = "10px";
-        powerUpsLabel.classList.add("powerups-label");
+        powerUpsLabel.className = "text-white text-lg mb-2.5 powerups-label";
         
         const classicButton = document.createElement("button");
         classicButton.textContent = STRINGS[this._lang].start;
-        classicButton.style.padding = "10px 20px";
-        classicButton.style.width = "120px";
-        classicButton.style.fontSize = "18px";
-        classicButton.style.cursor = "pointer";
-        classicButton.style.backgroundColor = "#4286f4";
-        classicButton.style.border = "none";
-        classicButton.style.borderRadius = "5px";
-        classicButton.style.color = "white";
-        classicButton.classList.add("classic-btn");
+        classicButton.className = "px-5 py-2.5 w-28 text-lg cursor-pointer bg-blue-500 border-none rounded text-white classic-btn hover:bg-blue-600 transition-colors";
         
         const powerUpsButton = document.createElement("button");
         powerUpsButton.textContent = STRINGS[this._lang].start;
-        powerUpsButton.style.padding = "10px 20px";
-        powerUpsButton.style.width = "120px";
-        powerUpsButton.style.fontSize = "18px";
-        powerUpsButton.style.cursor = "pointer";
-        powerUpsButton.style.backgroundColor = "#f44283";
-        powerUpsButton.style.border = "none";
-        powerUpsButton.style.borderRadius = "5px";
-        powerUpsButton.style.color = "white";
-        powerUpsButton.classList.add("powerups-btn");
+        powerUpsButton.className = "px-5 py-2.5 w-28 text-lg cursor-pointer bg-pink-500 border-none rounded text-white powerups-btn hover:bg-pink-600 transition-colors";
         
         classicButton.addEventListener("click", () => {
             this._onStartGame(false);
@@ -277,28 +231,18 @@ export class UIManager {
 
     private _createSpeedControl(): HTMLDivElement {
         const speedContainer = document.createElement("div");
-        speedContainer.style.display = "flex";
-        speedContainer.style.flexDirection = "column";
-        speedContainer.style.alignItems = "center";
-        speedContainer.style.marginTop = "30px";
-        speedContainer.style.width = "300px";
+        speedContainer.className = "flex flex-col items-center mt-8 w-72";
         
         const speedLabel = document.createElement("div");
         speedLabel.textContent = STRINGS[this._lang].gameSpeed || "Game Speed";
-        speedLabel.style.color = "white";
-        speedLabel.style.fontSize = "18px";
-        speedLabel.style.marginBottom = "10px";
+        speedLabel.className = "text-white text-lg mb-2.5";
         
         const speedSliderContainer = document.createElement("div");
-        speedSliderContainer.style.display = "flex";
-        speedSliderContainer.style.alignItems = "center";
-        speedSliderContainer.style.gap = "15px";
-        speedSliderContainer.style.width = "100%";
+        speedSliderContainer.className = "flex items-center gap-4 w-full";
         
         const minLabel = document.createElement("span");
         minLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MIN}x`;
-        minLabel.style.color = "white";
-        minLabel.style.fontSize = "14px";
+        minLabel.className = "text-white text-sm";
         
         const speedSlider = document.createElement("input");
         speedSlider.type = "range";
@@ -306,23 +250,15 @@ export class UIManager {
         speedSlider.max = CONFIG.SPEED.MULTIPLIER.MAX.toString();
         speedSlider.step = CONFIG.SPEED.MULTIPLIER.STEP.toString();
         speedSlider.value = this._speedMultiplier.toString();
-        speedSlider.style.flex = "1";
-        speedSlider.style.height = "6px";
-        speedSlider.style.background = "#ddd";
-        speedSlider.style.outline = "none";
-        speedSlider.style.borderRadius = "3px";
+        speedSlider.className = "flex-1 h-1.5 bg-gray-300 rounded outline-none";
         
         const maxLabel = document.createElement("span");
         maxLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MAX}x`;
-        maxLabel.style.color = "white";
-        maxLabel.style.fontSize = "14px";
+        maxLabel.className = "text-white text-sm";
         
         const speedValue = document.createElement("div");
         speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
-        speedValue.style.color = "#4CAF50";
-        speedValue.style.fontSize = "16px";
-        speedValue.style.fontWeight = "bold";
-        speedValue.style.marginTop = "5px";
+        speedValue.className = "text-green-500 text-base font-bold mt-1";
         
         speedSlider.addEventListener("input", (e) => {
             const target = e.target as HTMLInputElement;
@@ -344,31 +280,20 @@ export class UIManager {
 
     private _createTableColorControl(): HTMLDivElement {
         const tableColorContainer = document.createElement("div");
-        tableColorContainer.style.display = "flex";
-        tableColorContainer.style.flexDirection = "column";
-        tableColorContainer.style.alignItems = "center";
-        tableColorContainer.style.marginTop = "30px";
-        tableColorContainer.style.width = "300px";
+        tableColorContainer.className = "flex flex-col items-center mt-8 w-72";
         
         const tableColorLabel = document.createElement("div");
         tableColorLabel.textContent = STRINGS[this._lang].tableColor || "Table Color";
-        tableColorLabel.style.color = "white";
-        tableColorLabel.style.fontSize = "18px";
-        tableColorLabel.style.marginBottom = "15px";
+        tableColorLabel.className = "text-white text-lg mb-4";
         
         const tableColorButton = document.createElement("button");
         tableColorButton.id = "tableColorButton";
         tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
             (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
             (STRINGS[this._lang].switchToGreen || "Switch to Green");
-        tableColorButton.style.padding = "10px 20px";
-        tableColorButton.style.fontSize = "16px";
-        tableColorButton.style.cursor = "pointer";
-        tableColorButton.style.backgroundColor = this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
-        tableColorButton.style.border = "none";
-        tableColorButton.style.borderRadius = "5px";
-        tableColorButton.style.color = "white";
-        tableColorButton.style.width = "160px";
+        tableColorButton.className = `px-5 py-2.5 text-base cursor-pointer border-none rounded text-white w-40 transition-colors ${
+            this._tableTheme === 'GREEN' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+        }`;
         
         tableColorButton.addEventListener("click", () => {
             this._tableTheme = this._tableTheme === 'GREEN' ? 'BLUE' : 'GREEN';
@@ -384,41 +309,19 @@ export class UIManager {
 
     private _createGameOverUI(): void {
         this._gameOverUI = document.createElement("div");
-        this._gameOverUI.style.position = "absolute";
-        this._gameOverUI.style.top = "0";
-        this._gameOverUI.style.left = "0";
-        this._gameOverUI.style.width = "100%";
-        this._gameOverUI.style.height = "100%";
-        this._gameOverUI.style.display = "none";
-        this._gameOverUI.style.flexDirection = "column";
-        this._gameOverUI.style.justifyContent = "center";
-        this._gameOverUI.style.alignItems = "center";
-        this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        this._gameOverUI.className = "absolute inset-0 hidden flex-col justify-center items-center bg-black/70";
         
         const gameOverText = document.createElement("h2");
         gameOverText.id = "gameOverText";
-        gameOverText.style.color = "#fff";
-        gameOverText.style.fontSize = "48px";
-        gameOverText.style.margin = "0 0 10px";
+        gameOverText.className = "text-white text-5xl m-0 mb-2.5";
         
         const winnerText = document.createElement("h3");
         winnerText.id = "winnerText";
-        winnerText.style.color = "#fff";
-        winnerText.style.fontSize = "24px";
-        winnerText.style.margin = "0 0 20px";
+        winnerText.className = "text-white text-2xl m-0 mb-5";
         
         const playAgainButton = document.createElement("button");
         playAgainButton.id = "playAgainButton";
-        playAgainButton.style.padding = "10px 20px";
-        playAgainButton.style.fontSize = "20px";
-        playAgainButton.style.cursor = "pointer";
-        playAgainButton.style.backgroundColor = "#4CAF50";
-        playAgainButton.style.border = "none";
-        playAgainButton.style.borderRadius = "5px";
-        playAgainButton.style.color = "white";
-        playAgainButton.style.marginBottom = "10px";
-        playAgainButton.style.width = "180px";
-        playAgainButton.style.textAlign = "center";
+        playAgainButton.className = "px-5 py-2.5 text-xl cursor-pointer bg-green-500 border-none rounded text-white mb-2.5 w-44 text-center hover:bg-green-600 transition-colors";
         
         playAgainButton.addEventListener("click", () => {
             this._onResetGame();
@@ -426,15 +329,7 @@ export class UIManager {
         
         const menuButton = document.createElement("button");
         menuButton.id = "menuButton";
-        menuButton.style.padding = "10px 20px";
-        menuButton.style.fontSize = "20px";
-        menuButton.style.cursor = "pointer";
-        menuButton.style.backgroundColor = "#f44336";
-        menuButton.style.border = "none";
-        menuButton.style.borderRadius = "5px";
-        menuButton.style.color = "white";
-        menuButton.style.width = "180px";
-        menuButton.style.textAlign = "center";
+        menuButton.className = "px-5 py-2.5 text-xl cursor-pointer bg-red-500 border-none rounded text-white w-44 text-center hover:bg-red-600 transition-colors";
         
         menuButton.addEventListener("click", () => {
             this._onShowMenu();
@@ -453,17 +348,7 @@ export class UIManager {
 
         const selector = document.createElement("select");
         selector.id = "languageSelector";
-        selector.style.position = "fixed";
-        selector.style.top = "24px";
-        selector.style.right = "24px";
-        selector.style.zIndex = "10000";
-        selector.style.padding = "8px 16px";
-        selector.style.fontSize = "1rem";
-        selector.style.borderRadius = "8px";
-        selector.style.background = "#222";
-        selector.style.color = "#fff";
-        selector.style.border = "1px solid #444";
-        selector.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+        selector.className = "fixed top-6 right-6 z-[10000] px-4 py-2 text-base rounded-lg bg-gray-800 text-white border border-gray-600 shadow-lg";
 
         const languageLabels: Record<Language, string> = {
             ptBR: "Português (Brasil)",
@@ -548,8 +433,15 @@ export class UIManager {
             tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
                 (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
                 (STRINGS[this._lang].switchToGreen || "Switch to Green");
-            (tableColorButton as HTMLButtonElement).style.backgroundColor = 
-                this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
+            
+            // Update classes instead of inline styles
+            tableColorButton.className = tableColorButton.className.replace(
+                /bg-(blue|green)-(500|600)/g, 
+                this._tableTheme === 'GREEN' ? 'bg-blue-500' : 'bg-green-500'
+            ).replace(
+                /hover:bg-(blue|green)-(500|600)/g,
+                this._tableTheme === 'GREEN' ? 'hover:bg-blue-600' : 'hover:bg-green-600'
+            );
         }
     }
 }

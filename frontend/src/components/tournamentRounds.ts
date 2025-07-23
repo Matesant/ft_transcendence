@@ -3,37 +3,50 @@ import { apiUrl } from "../utils/api";
 
 class tournamentRounds extends HTMLElement {
 
-    private async  _fetchTournamentData(): Promise<any> {
-        var tournamentData: any = null;
+    constructor() {
+        super();
+    }
+
+    async connectedCallback() {
+        await this._fetchTournamentData();
+    }
+
+    private async _fetchTournamentData(): Promise<void> {
+        let tournamentData: any = null;
 
         try {
             let response = await fetch(apiUrl(3002, '/match/tournament'), {credentials: 'include'});
             tournamentData = await response.json();
-  
         } catch (error) {
             console.error('Erro ao buscar dados do torneio:', error);
         }
 
         this.innerHTML = `
-    
-              <div class="sm:ml-64 mt-8 px-4 p-8 justify-center">
-                <div class="max-w-4xl mx-auto">
-                  <h1 class="text-3xl font-bold text-center mb-8">Torneio de Partidas</h1>
+            <!-- Tournament rounds with glassmorphism design -->
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
+                    <h2 class="text-3xl font-bold text-center mb-8 text-white drop-shadow-lg">🏆 Rodadas do Torneio</h2>
+                    <p class="text-white/80 text-center mb-8 text-lg">Acompanhe o progresso das partidas</p>
 
-                  <div id="tournamentRounds" class="space-y-8">
-                    <!-- As rodadas serão inseridas aqui via JavaScript -->
-                  </div>
-              </div>
-                <div id="button-container" class="text-center mt-8">
-                    <button id="iniciar-partida" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition">
-                    Iniciar partida
-                    </button>
-                    <button id="novo-torneio" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition">
-                    Novo torneio
-                    </button>
+                    <!-- Container com scroll para as rodadas -->
+                    <div class="flex-1 overflow-y-auto mb-8">
+                        <div id="tournamentRounds" class="space-y-6 pr-2 custom-scrollbar">
+                            <!-- As rodadas serão inseridas aqui via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Botões fixos na parte inferior -->
+                    <div id="button-container" class="flex gap-4 justify-center flex-shrink-0">
+                        <button id="iniciar-partida" class="bg-green-500/80 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-green-400/30">
+                            🎮 Iniciar Partida
+                        </button>
+                        <button id="novo-torneio" class="bg-purple-500/80 hover:bg-purple-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-purple-400/30">
+                            🔄 Novo Torneio
+                        </button>
+                    </div>
                 </div>
             </div>
-    `;
+        `;
 
     document.getElementById('novo-torneio')?.addEventListener('click', () => {
 
@@ -47,17 +60,22 @@ class tournamentRounds extends HTMLElement {
         router();
     } );
 
-      if (tournamentData)
+      if (tournamentData && tournamentData.rounds)
       {
         const container = document.getElementById('tournamentRounds');
+        
+        if (!container) {
+            console.error('Tournament rounds container not found!');
+            return;
+        }
             
         tournamentData.rounds.forEach(round => {
             const roundElement = document.createElement('div');
-            roundElement.className = 'bg-white rounded-lg shadow-md p-6 border border-gray-800';
+            roundElement.className = 'bg-white/5 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:bg-white/10 transition-all duration-300';
             
-            const roundTitle = document.createElement('h2');
-            roundTitle.className = 'text-xl font-semibold mb-4 border-b pb-2';
-            roundTitle.textContent = `Rodada ${round.round}`;
+            const roundTitle = document.createElement('h3');
+            roundTitle.className = 'text-2xl font-bold mb-6 pb-3 border-b border-white/20 text-white text-center';
+            roundTitle.innerHTML = `<span class="text-yellow-400">🎯</span> Rodada ${round.round}`;
             
             roundElement.appendChild(roundTitle);
             
@@ -66,25 +84,25 @@ class tournamentRounds extends HTMLElement {
             
             round.matches.forEach(match => {
                 const matchElement = document.createElement('div');
-                matchElement.className = 'p-4 hover:bg-gray-50 transition rounded border border-gray-500';
+                matchElement.className = 'p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1';
                 
                 // Status da partida
                 const statusElement = document.createElement('div');
-                let statusClass = 'inline-block px-2 py-1 rounded-full text-xs font-semibold ';
+                let statusClass = 'inline-block px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm border ';
                 
                 switch(match.status) {
                     case 'pending':
-                        statusClass += 'bg-yellow-100 text-yellow-800';
+                        statusClass += 'bg-yellow-400/20 text-yellow-200 border-yellow-400/30';
                         break;
                     case 'in_progress':
-                        statusClass += 'bg-blue-100 text-blue-800';
+                        statusClass += 'bg-blue-400/20 text-blue-200 border-blue-400/30';
                         break;
                     case 'completed':
                     case 'wo': // walkover
-                        statusClass += 'bg-green-100 text-green-800';
+                        statusClass += 'bg-green-400/20 text-green-200 border-green-400/30';
                         break;
                     default:
-                        statusClass += 'bg-gray-100 text-gray-800';
+                        statusClass += 'bg-gray-400/20 text-gray-200 border-gray-400/30';
                 }
                 
                 statusElement.className = statusClass;
@@ -92,33 +110,29 @@ class tournamentRounds extends HTMLElement {
                 
                 // Jogadores
                 const playersElement = document.createElement('div');
-                playersElement.className = 'flex items-center justify-between my-2';
+                playersElement.className = 'flex items-center justify-center my-4 text-lg';
                 
-                const player1Element = document.createElement('span');
-                player1Element.className = 'font-medium';
-                player1Element.textContent = match.player1 || 'Nenhum';
+                // Usar innerHTML para garantir que o texto seja exibido corretamente
+                const player1Name = match.player1 || 'Player 1';
+                const player2Name = match.player2 || 'Player 2';
                 
-                const vsElement = document.createElement('span');
-                vsElement.className = 'mx-4 text-gray-500';
-                vsElement.textContent = 'vs';
-                
-                const player2Element = document.createElement('span');
-                player2Element.className = 'font-medium';
-                player2Element.textContent = match.player2 || 'Nenhum';
-                
-                playersElement.className = 'flex items-center justify-center my-2'; // Alinha os itens ao centro
-                vsElement.className = 'mx-4 text-gray-500 text-center'; // Centraliza o texto
-
-                playersElement.appendChild(player1Element);
-                playersElement.appendChild(vsElement);
-                playersElement.appendChild(player2Element);
+                playersElement.innerHTML = `
+                    <span class="font-semibold text-white">${player1Name}</span>
+                    <span class="text-blue-300 mx-4 font-bold">&nbsp;vs&nbsp;</span>
+                    <span class="font-semibold text-white">${player2Name}</span>
+                `;
                 
                 // Vencedor (se houver)
                 let winnerElement = null;
                 if (match.winner) {
                     winnerElement = document.createElement('div');
-                    winnerElement.className = 'mt-2 text-sm text-green-600 font-medium';
-                    winnerElement.textContent = `Vencedor: ${match.winner}`;
+                    winnerElement.className = 'mt-4 text-center';
+                    winnerElement.innerHTML = `
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-400/20 rounded-xl backdrop-blur-sm border border-green-400/30">
+                            <span class="text-xl">🏆</span>
+                            <span class="text-green-200 font-semibold">Vencedor: ${match.winner}</span>
+                        </div>
+                    `;
                 }
                 
                 // Montar o elemento da partida
@@ -155,13 +169,6 @@ class tournamentRounds extends HTMLElement {
             button.insertAdjacentElement('beforebegin', header);
 
         }
-
-    }
-
-    constructor() {
-
-        super();
-        this._fetchTournamentData();
 
     }
 

@@ -9,32 +9,36 @@ class startTournament extends HTMLElement {
 
     connectedCallback() {
         this.innerHTML = `
-        <div class="flex">
-            <!-- Sidebar ocupa uma largura fixa -->
-            <aside class="w-64"></aside>
-    
-            <!-- Div centralizada no espaço restante -->
-            <div class="flex-grow flex justify-center items-center">
-                <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold mb-4 text-center">Inserir Jogadores</h1>
+            <!-- Tournament setup form with glassmorphism design -->
+            <div class="w-full max-w-3xl mx-auto">
+                <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
+                    <h2 class="text-3xl font-bold mb-8 text-center text-white drop-shadow-lg">🎮 Configurar Torneio</h2>
+                    <p class="text-white/80 text-center mb-8 text-lg">Adicione os jogadores que participarão do torneio</p>
             
-                    <div id="inputs" class="space-y-2 mb-6">
-                        <!-- Campo inicial -->
-                        <div class="flex gap-2 items-center">
-                            <input type="text" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="Nome do jogador" />
-                            <button class="remove-btn text-red-600 text-sm hover:underline ml-4">Remover</button>
+                    <!-- Container com scroll para os inputs -->
+                    <div class="flex-1 overflow-y-auto mb-8">
+                        <div id="inputs" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                            <!-- Campo inicial -->
+                            <div class="flex gap-3 items-center">
+                                <input type="text" class="flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300" placeholder="Nome do jogador" />
+                                <button class="remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300">Remover</button>
+                            </div>
                         </div>
                     </div>
             
-                    <div class="flex gap-4 justify-center mb-6">
-                        <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">Adicionar nome</button>
-                        <button id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">Enviar</button>
+                    <!-- Botões fixos na parte inferior -->
+                    <div class="flex gap-4 justify-center mb-4 flex-shrink-0">
+                        <button id="addBtn" class="bg-blue-500/80 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-blue-400/30">
+                            ➕ Adicionar Jogador
+                        </button>
+                        <button id="submitBtn" class="bg-green-500/80 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-green-400/30">
+                            🚀 Iniciar Torneio
+                        </button>
                     </div>
             
-                    <div id="response" class="text-sm text-center text-gray-700 mt-4"></div>
+                    <div id="response" class="text-sm text-center text-white/80 bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 flex-shrink-0"></div>
                 </div>
             </div>
-        </div>
         `;
 
         const inputsContainer = document.getElementById('inputs');
@@ -44,16 +48,16 @@ class startTournament extends HTMLElement {
     
         function createInputRow() {
           const row = document.createElement('div');
-          row.className = 'flex gap-2 items-center';
+          row.className = 'flex gap-3 items-center';
     
           const input = document.createElement('input');
           input.type = 'text';
           input.placeholder = 'Nome do jogador';
-          input.className = 'w-full p-2 border border-gray-300 rounded-md text-sm';
+          input.className = 'flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300';
     
           const removeBtn = document.createElement('button');
           removeBtn.textContent = 'Remover';
-          removeBtn.className = 'remove-btn text-red-600 text-sm hover:underline ml-4';
+          removeBtn.className = 'remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300';
           removeBtn.addEventListener('click', () => {
             inputsContainer.removeChild(row);
           });

@@ -13,7 +13,6 @@ export class Register extends AView {
         // Fundo branco simples
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-white';
-        bg.style.minHeight = '100vh';
 
         // Header com botão Voltar
         const header = PongHeader({ homeOnly: true });
