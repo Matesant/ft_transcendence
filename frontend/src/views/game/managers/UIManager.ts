@@ -56,20 +56,36 @@ export class UIManager {
         const menuBtn = document.getElementById("menuButton") as HTMLButtonElement;
 
         if (tournamentComplete) {
-            // Tournament Complete layout
+            // Tournament Complete layout - only show champion
             if (gameOverText) {
-                gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
-                gameOverText.className = "text-yellow-400 text-5xl mb-5 shadow-lg";
-                gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700"; // Keep custom shadow as Tailwind doesn't have exact equivalent
+                // Hide the "Tournament Complete" text
+                gameOverText.style.display = "none";
             }
             if (winnerText) {
+                // Make champion display larger and more prominent
                 winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span class="text-yellow-400">${champion}</span> 🏆`;
-                winnerText.className = "text-white text-4xl mb-8";
+                winnerText.className = "text-white text-6xl mb-8 font-bold";
+                winnerText.style.textShadow = "0 0 30px #ffd700, 0 0 20px #fff";
+                winnerText.style.textAlign = "center";
+                winnerText.style.width = "100%";
             }
-            if (playAgainBtn) playAgainBtn.className = playAgainBtn.className.replace("block", "hidden");
+            if (playAgainBtn) {
+                playAgainBtn.style.display = "none";
+                playAgainBtn.disabled = true;
+            }
             if (menuBtn) {
-                menuBtn.className = menuBtn.className.replace("hidden", "block");
+                // Reset all previous styles and classes
+                menuBtn.className = "";
+                menuBtn.style.cssText = "";
+                
+                // Apply new tournament complete styles with absolute positioning
+                menuBtn.className = "px-8 py-4 text-2xl cursor-pointer bg-blue-500 border-none rounded-xl text-white w-60 text-center hover:bg-blue-600 transition-colors shadow-2xl";
                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                menuBtn.style.position = "absolute";
+                menuBtn.style.top = "60%";
+                menuBtn.style.left = "50%";
+                menuBtn.style.transform = "translateX(-50%)";
+                menuBtn.style.display = "block";
             }
         } else {
             // Normal game over

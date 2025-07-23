@@ -225,9 +225,9 @@ export class GameManager {
             // Check for game over condition
             const score = this._scoreManager.score;
             const { player1, player2 } = this._matchManager.getPlayerNames();
-            if (score.player1 >= 5) {
+            if (score.player1 >= 1) {
                 this._showGameOver(player1);
-            } else if (score.player2 >= 5) {
+            } else if (score.player2 >= 1) {
                 this._showGameOver(player2);
             }
         }

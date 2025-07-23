@@ -172,13 +172,17 @@ class tournamentRounds extends HTMLElement {
         }
 
         if ('champion' in requestData) {
-            const message = requestData.message;
-            let header = document.createElement('h2');
-            header.className = 'text-2xl font-bold text-center mb-4 mt-8';
-            header.textContent = message;
+            // Create champion display
+            let championHeader = document.createElement('div');
+            championHeader.className = 'text-center mb-6 mt-8';
+            championHeader.innerHTML = `
+                <h2 class="text-4xl font-bold text-yellow-400 mb-4">
+                    🏆 Campeão: ${requestData.champion} 🏆
+                </h2>
+            `;
 
             let button = document.getElementById('button-container');
-            button.insertAdjacentElement('beforebegin', header);
+            button.insertAdjacentElement('beforebegin', championHeader);
 
             // Hide/disable the "Iniciar Partida" button when tournament is complete
             const iniciarPartidaBtn = document.getElementById('iniciar-partida');
@@ -186,6 +190,13 @@ class tournamentRounds extends HTMLElement {
                 iniciarPartidaBtn.style.display = 'none';
                 iniciarPartidaBtn.style.pointerEvents = 'none';
                 (iniciarPartidaBtn as HTMLButtonElement).disabled = true;
+            }
+
+            // Change "Novo Torneio" button to "Voltar ao Menu"
+            const novoTorneioBtn = document.getElementById('novo-torneio');
+            if (novoTorneioBtn) {
+                novoTorneioBtn.innerHTML = '🏠 Voltar ao Menu';
+                novoTorneioBtn.className = 'bg-blue-500/80 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-blue-400/30';
             }
 
         }
