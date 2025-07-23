@@ -25,8 +25,6 @@ class tournamentRounds extends HTMLElement {
             <!-- Tournament rounds with glassmorphism design -->
             <div class="w-full max-w-5xl mx-auto">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
-                    <h2 class="text-3xl font-bold text-center mb-8 text-white drop-shadow-lg">🏆 Rodadas do Torneio</h2>
-                    <p class="text-white/80 text-center mb-8 text-lg">Acompanhe o progresso das partidas</p>
 
                     <!-- Container com scroll para as rodadas -->
                     <div class="flex-1 overflow-y-auto mb-8">
@@ -112,19 +110,33 @@ class tournamentRounds extends HTMLElement {
                 const playersElement = document.createElement('div');
                 playersElement.className = 'flex items-center justify-center my-4 text-lg';
                 
-                // Usar innerHTML para garantir que o texto seja exibido corretamente
-                const player1Name = match.player1 || 'Player 1';
-                const player2Name = match.player2 || 'Player 2';
+                // Tratar WO (walkover) de forma especial
+                if (match.status === 'wo') {
+                    // Para WO, mostra apenas o vencedor
+                    const winnerName = match.winner || match.player1 || 'Jogador';
+                    playersElement.innerHTML = `
+                        <div class="text-center">
+                            <span class="font-semibold text-white">${winnerName}</span>
+                            <div class="text-sm text-yellow-300 mt-1">
+                                <span class="text-lg">⚠️</span> Walkover (WO)
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Para partidas normais, mostra ambos os jogadores
+                    const player1Name = match.player1 || 'Player 1';
+                    const player2Name = match.player2 || 'Player 2';
+                    
+                    playersElement.innerHTML = `
+                        <span class="font-semibold text-white">${player1Name}</span>
+                        <span class="text-blue-300 mx-4 font-bold">&nbsp;vs&nbsp;</span>
+                        <span class="font-semibold text-white">${player2Name}</span>
+                    `;
+                }
                 
-                playersElement.innerHTML = `
-                    <span class="font-semibold text-white">${player1Name}</span>
-                    <span class="text-blue-300 mx-4 font-bold">&nbsp;vs&nbsp;</span>
-                    <span class="font-semibold text-white">${player2Name}</span>
-                `;
-                
-                // Vencedor (se houver)
+                // Vencedor (se houver e não for WO)
                 let winnerElement = null;
-                if (match.winner) {
+                if (match.winner && match.status !== 'wo') {
                     winnerElement = document.createElement('div');
                     winnerElement.className = 'mt-4 text-center';
                     winnerElement.innerHTML = `

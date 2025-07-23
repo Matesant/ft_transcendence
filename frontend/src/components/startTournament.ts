@@ -10,64 +10,75 @@ class startTournament extends HTMLElement {
     connectedCallback() {
         this.innerHTML = `
             <!-- Tournament setup form with glassmorphism design -->
-            <div class="w-full max-w-3xl mx-auto">
+            <div class="w-full max-w-5xl mx-auto">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
                     <h2 class="text-3xl font-bold mb-8 text-center text-white drop-shadow-lg">🎮 Configurar Torneio</h2>
                     
-                    <!-- Power-up toggle -->
-                    <div class="mb-8 flex items-center justify-between bg-white/10 rounded-xl p-4 border border-white/20">
-                        <div>
-                            <h3 class="text-lg font-semibold text-white mb-1">⚡ Power-ups</h3>
-                            <p class="text-sm text-white/70">Ativar power-ups durante o jogo</p>
-                        </div>
-                        <div class="relative">
-                            <input type="checkbox" id="powerupToggle" class="sr-only">
-                            <div id="toggleSwitch" class="w-14 h-7 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 relative">
-                                <div id="toggleThumb" class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-0"></div>
+                    <!-- Layout principal com duas colunas -->
+                    <div class="flex gap-8 flex-1">
+                        <!-- Coluna esquerda - Lista de jogadores -->
+                        <div class="flex-1 flex flex-col">
+                            <h3 class="text-xl font-semibold text-white mb-4">👥 Jogadores</h3>
+                            <!-- Container com scroll para os inputs -->
+                            <div class="flex-1 overflow-y-auto mb-6">
+                                <div id="inputs" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                                    <!-- Campo inicial -->
+                                    <div class="flex gap-3 items-center">
+                                        <input type="text" class="flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300" placeholder="Nome do jogador" />
+                                        <button class="remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300">Remover</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Game Speed Control -->
-                    <div class="mb-8 bg-white/10 rounded-xl p-4 border border-white/20">
-                        <h3 class="text-lg font-semibold text-white mb-3">🎯 Velocidade do Jogo</h3>
-                        <div class="flex items-center gap-4">
-                            <span class="text-white text-sm">0.8x</span>
-                            <div class="flex-1 relative">
-                                <input type="range" id="speedSlider" min="0.8" max="1.5" step="0.1" value="1.0" 
-                                    class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
+                        
+                        <!-- Coluna direita - Configurações do jogo -->
+                        <div class="w-80 flex flex-col space-y-4">
+                            <h3 class="text-xl font-semibold text-white mb-2">⚙️ Configurações</h3>
+                            
+                            <!-- Power-up toggle -->
+                            <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-white">⚡ Power-ups</h4>
+                                        <p class="text-xs text-white/60">Ativar power-ups</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" id="powerupToggle" class="sr-only">
+                                        <div id="toggleSwitch" class="w-12 h-6 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 relative">
+                                            <div id="toggleThumb" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-0"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="text-white text-sm">1.5x</span>
-                        </div>
-                        <div class="text-center mt-2">
-                            <span id="speedValue" class="text-green-500 text-lg font-bold">1.0x</span>
-                        </div>
-                    </div>
 
-                    <!-- Table Color Control -->
-                    <div class="mb-8 flex items-center justify-between bg-white/10 rounded-xl p-4 border border-white/20">
-                        <div>
-                            <h3 class="text-lg font-semibold text-white mb-1">🎨 Cor da Mesa</h3>
-                            <p class="text-sm text-white/70">Escolher a cor da mesa de jogo</p>
-                        </div>
-                        <button id="tableColorButton" class="px-4 py-2 text-sm cursor-pointer border-none rounded text-white transition-colors duration-300 font-medium">
-                            Cor da Mesa
-                        </button>
-                    </div>
-                    
-                    <!-- Container com scroll para os inputs -->
-                    <div class="flex-1 overflow-y-auto mb-8">
-                        <div id="inputs" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-                            <!-- Campo inicial -->
-                            <div class="flex gap-3 items-center">
-                                <input type="text" class="flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300" placeholder="Nome do jogador" />
-                                <button class="remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300">Remover</button>
+                            <!-- Game Speed Control -->
+                            <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                                <h4 class="text-sm font-semibold text-white mb-2">🎯 Velocidade</h4>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-white text-xs">0.8x</span>
+                                    <div class="flex-1 relative">
+                                        <input type="range" id="speedSlider" min="0.8" max="1.5" step="0.1" value="1.0" 
+                                            class="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer slider">
+                                    </div>
+                                    <span class="text-white text-xs">1.5x</span>
+                                </div>
+                                <div class="text-center">
+                                    <span id="speedValue" class="text-green-500 text-sm font-bold">1.0x</span>
+                                </div>
+                            </div>
+
+                            <!-- Table Color Control -->
+                            <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                                <h4 class="text-sm font-semibold text-white mb-2">🎨 Cor da Mesa</h4>
+                                <button id="tableColorButton" class="w-full px-3 py-2 text-xs cursor-pointer border-none rounded text-white transition-colors duration-300 font-medium">
+                                    Cor da Mesa
+                                </button>
                             </div>
                         </div>
                     </div>
             
                     <!-- Botões fixos na parte inferior -->
-                    <div class="flex gap-4 justify-center mb-4 flex-shrink-0">
+                    <div class="flex gap-4 justify-center mb-4 flex-shrink-0 mt-8">
                         <button id="addBtn" class="bg-blue-500/80 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-blue-400/30">
                             ➕ Adicionar Jogador
                         </button>
@@ -115,12 +126,12 @@ class startTournament extends HTMLElement {
         function updateToggleState() {
             if (powerupToggle.checked) {
                 // Activated state - blue background, thumb moves right
-                toggleSwitch.className = 'w-14 h-7 bg-blue-500 rounded-full cursor-pointer transition-colors duration-300 relative';
-                toggleThumb.className = 'absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-7';
+                toggleSwitch.className = 'w-12 h-6 bg-blue-500 rounded-full cursor-pointer transition-colors duration-300 relative';
+                toggleThumb.className = 'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-6';
             } else {
                 // Deactivated state - gray background, thumb on left
-                toggleSwitch.className = 'w-14 h-7 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 relative';
-                toggleThumb.className = 'absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-0';
+                toggleSwitch.className = 'w-12 h-6 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 relative';
+                toggleThumb.className = 'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-0';
             }
         }
         

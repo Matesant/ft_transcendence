@@ -92,7 +92,19 @@ export class GameManager {
         await this._matchManager.loadCurrentMatch();
         const { player1, player2 } = this._matchManager.getPlayerNames();
         this._scoreManager.setPlayerNames(player1, player2);
-        await this._showMenu();
+        
+        // Load settings from sessionStorage and start game directly
+        const powerupsEnabled = sessionStorage.getItem("powerupsEnabled") === "true";
+        const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
+        const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        
+        // Apply settings
+        this._onSpeedChange(gameSpeed);
+        this._fieldManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+        this._uiManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+        
+        // Start game immediately
+        this._startGame(powerupsEnabled);
     }
     
     private async _showMenu(): Promise<void> {
