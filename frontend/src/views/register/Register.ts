@@ -77,6 +77,43 @@ export class Register extends AView {
         });
         form.appendChild(submitBtn);
 
+
+
+        const divider = document.createElement('div');
+        divider.className = 'flex items-center my-4';
+        divider.innerHTML = `
+            <hr class="flex-grow border-gray-300">
+            <span class="mx-2 text-gray-500 font-semibold">ou</span>
+            <hr class="flex-grow border-gray-300">
+        `;
+        form.appendChild(divider);
+
+
+
+        const googleBtn = PongButton({
+            text: '',
+            variant: 'secondary',
+            extraClass: 'w-full font-semibold py-2 px-4 rounded-md text-lg mt-4 flex items-center justify-center gap-2',
+            onClick: () => {
+                alert('Funcionalidade em breve!');
+            }
+        });
+
+        googleBtn.innerHTML = `
+            <svg class="w-6 h-6 mr-2" viewBox="0 0 48 48">
+                <g>
+                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.23l6.85-6.85C36.45 2.36 30.62 0 24 0 14.82 0 6.71 5.13 2.69 12.56l7.99 6.21C12.16 13.18 17.62 9.5 24 9.5z"/>
+                    <path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.01h12.44c-.54 2.91-2.19 5.38-4.67 7.04l7.19 5.6C43.94 37.13 46.1 31.34 46.1 24.5z"/>
+                    <path fill="#FBBC05" d="M10.68 28.77c-1.13-3.37-1.13-7.17 0-10.54l-7.99-6.21C.86 16.13 0 20.01 0 24c0 3.99.86 7.87 2.69 11.54l7.99-6.21z"/>
+                    <path fill="#EA4335" d="M24 48c6.62 0 12.45-2.18 16.64-5.94l-7.19-5.6c-2.01 1.35-4.59 2.14-7.45 2.14-6.38 0-11.84-3.68-14.32-8.77l-7.99 6.21C6.71 42.87 14.82 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </g>
+            </svg>
+            <span>Continuar com o Google</span>
+        `;
+
+        form.appendChild(googleBtn);
+
         formContainer.appendChild(form);
         main.appendChild(formContainer);
         bg.appendChild(main);
