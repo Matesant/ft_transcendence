@@ -180,6 +180,14 @@ class tournamentRounds extends HTMLElement {
             let button = document.getElementById('button-container');
             button.insertAdjacentElement('beforebegin', header);
 
+            // Hide/disable the "Iniciar Partida" button when tournament is complete
+            const iniciarPartidaBtn = document.getElementById('iniciar-partida');
+            if (iniciarPartidaBtn) {
+                iniciarPartidaBtn.style.display = 'none';
+                iniciarPartidaBtn.style.pointerEvents = 'none';
+                (iniciarPartidaBtn as HTMLButtonElement).disabled = true;
+            }
+
         }
 
     }
