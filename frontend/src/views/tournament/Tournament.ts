@@ -23,14 +23,6 @@ export class Tournament extends AView {
         const mainContent = document.createElement('div');
         mainContent.className = 'flex flex-col gap-10 items-center w-full max-w-5xl animate-fadeInUp';
 
-        // Tournament title
-        const titleContainer = document.createElement('div');
-        titleContainer.className = 'text-center mb-8';
-        titleContainer.innerHTML = `
-            <h1 class="text-5xl font-extrabold mb-4 drop-shadow-lg">🏆 Torneio Local</h1>
-            <p class="text-xl text-white/80">Organize e jogue torneios locais com seus amigos</p>
-        `;
-
         // Content based on tournament state
         const contentContainer = document.createElement('div');
         contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 shadow-2xl';
@@ -49,7 +41,6 @@ export class Tournament extends AView {
 
         // Assemble the layout
         tournamentContainer.appendChild(header);
-        mainContent.appendChild(titleContainer);
         mainContent.appendChild(contentContainer);
         tournamentContainer.appendChild(mainContent);
 
