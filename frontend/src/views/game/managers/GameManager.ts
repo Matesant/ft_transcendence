@@ -50,6 +50,9 @@ export class GameManager {
 
         // Create playing field
         this._fieldManager = new FieldManager(scene);
+        
+        // Load settings from sessionStorage (from tournament configuration)
+        this._loadSettingsFromStorage();
 
         // Initialize power-up manager
         this._powerUpManager = new PowerUpManager(
@@ -197,6 +200,16 @@ export class GameManager {
     private _applySpeedMultiplierToBall(ball: Ball): void {
         const currentVel = ball.velocity;
         ball.velocity = currentVel.scale(this._speedMultiplier);
+    }
+
+    private _loadSettingsFromStorage(): void {
+        // Load game speed
+        const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
+        this._speedMultiplier = gameSpeed;
+        
+        // Load table theme
+        const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        this._fieldManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
     }
     
     public update(): void {

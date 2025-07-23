@@ -38,6 +38,10 @@ export class UIManager {
         this._createMenuUI();
         this._createGameOverUI();
         this._createLanguageSelector();
+        
+        // Load initial theme from sessionStorage
+        const initialTableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        this._tableTheme = initialTableTheme as 'GREEN' | 'BLUE';
     }
 
     public showMenu(): void {
@@ -146,7 +150,6 @@ export class UIManager {
 
     public setTableTheme(theme: 'GREEN' | 'BLUE'): void {
         this._tableTheme = theme;
-        this._updateTableThemeButton();
     }
 
     public getTableTheme(): 'GREEN' | 'BLUE' {
@@ -170,15 +173,11 @@ export class UIManager {
         subtitle.className = "text-white text-2xl mb-5";
         
         const buttonsContainer = this._createGameModeButtons();
-        const speedContainer = this._createSpeedControl();
-        const tableColorContainer = this._createTableColorControl();
         
         this._menuUI.appendChild(title);
         this._menuUI.appendChild(matchInfo);
         this._menuUI.appendChild(subtitle);
         this._menuUI.appendChild(buttonsContainer);
-        this._menuUI.appendChild(speedContainer);
-        this._menuUI.appendChild(tableColorContainer);
         
         document.body.appendChild(this._menuUI);
     }
@@ -190,121 +189,38 @@ export class UIManager {
         const classicContainer = document.createElement("div");
         classicContainer.className = "flex flex-col items-center w-48";
         
-        const powerUpsContainer = document.createElement("div");
-        powerUpsContainer.className = "flex flex-col items-center w-48";
-        
         const classicLabel = document.createElement("div");
         classicLabel.textContent = STRINGS[this._lang].classicMode;
         classicLabel.className = "text-white text-lg mb-2.5 classic-label";
-        
-        const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        powerUpsLabel.className = "text-white text-lg mb-2.5 powerups-label";
         
         const classicButton = document.createElement("button");
         classicButton.textContent = STRINGS[this._lang].start;
         classicButton.className = "px-5 py-2.5 w-28 text-lg cursor-pointer bg-blue-500 border-none rounded text-white classic-btn hover:bg-blue-600 transition-colors";
         
-        const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = STRINGS[this._lang].start;
-        powerUpsButton.className = "px-5 py-2.5 w-28 text-lg cursor-pointer bg-pink-500 border-none rounded text-white powerups-btn hover:bg-pink-600 transition-colors";
-        
         classicButton.addEventListener("click", () => {
-            this._onStartGame(false);
-        });
-        
-        powerUpsButton.addEventListener("click", () => {
-            this._onStartGame(true);
+            // Get settings from sessionStorage (set in tournament config)
+            const powerupsEnabled = sessionStorage.getItem("powerupsEnabled") === "true";
+            const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
+            const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+            
+            // Apply settings
+            this._onSpeedChange(gameSpeed);
+            
+            // Only toggle if the theme is different from current
+            if (this._tableTheme !== tableTheme) {
+                this.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+                this._onTableThemeToggle();
+            }
+            
+            this._onStartGame(powerupsEnabled);
         });
         
         classicContainer.appendChild(classicLabel);
         classicContainer.appendChild(classicButton);
         
-        powerUpsContainer.appendChild(powerUpsLabel);
-        powerUpsContainer.appendChild(powerUpsButton);
-        
         buttonsContainer.appendChild(classicContainer);
-        buttonsContainer.appendChild(powerUpsContainer);
         
         return buttonsContainer;
-    }
-
-    private _createSpeedControl(): HTMLDivElement {
-        const speedContainer = document.createElement("div");
-        speedContainer.className = "flex flex-col items-center mt-8 w-72";
-        
-        const speedLabel = document.createElement("div");
-        speedLabel.textContent = STRINGS[this._lang].gameSpeed || "Game Speed";
-        speedLabel.className = "text-white text-lg mb-2.5";
-        
-        const speedSliderContainer = document.createElement("div");
-        speedSliderContainer.className = "flex items-center gap-4 w-full";
-        
-        const minLabel = document.createElement("span");
-        minLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MIN}x`;
-        minLabel.className = "text-white text-sm";
-        
-        const speedSlider = document.createElement("input");
-        speedSlider.type = "range";
-        speedSlider.min = CONFIG.SPEED.MULTIPLIER.MIN.toString();
-        speedSlider.max = CONFIG.SPEED.MULTIPLIER.MAX.toString();
-        speedSlider.step = CONFIG.SPEED.MULTIPLIER.STEP.toString();
-        speedSlider.value = this._speedMultiplier.toString();
-        speedSlider.className = "flex-1 h-1.5 bg-gray-300 rounded outline-none";
-        
-        const maxLabel = document.createElement("span");
-        maxLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MAX}x`;
-        maxLabel.className = "text-white text-sm";
-        
-        const speedValue = document.createElement("div");
-        speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
-        speedValue.className = "text-green-500 text-base font-bold mt-1";
-        
-        speedSlider.addEventListener("input", (e) => {
-            const target = e.target as HTMLInputElement;
-            this._speedMultiplier = parseFloat(target.value);
-            speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
-            this._onSpeedChange(this._speedMultiplier);
-        });
-        
-        speedSliderContainer.appendChild(minLabel);
-        speedSliderContainer.appendChild(speedSlider);
-        speedSliderContainer.appendChild(maxLabel);
-        
-        speedContainer.appendChild(speedLabel);
-        speedContainer.appendChild(speedSliderContainer);
-        speedContainer.appendChild(speedValue);
-        
-        return speedContainer;
-    }
-
-    private _createTableColorControl(): HTMLDivElement {
-        const tableColorContainer = document.createElement("div");
-        tableColorContainer.className = "flex flex-col items-center mt-8 w-72";
-        
-        const tableColorLabel = document.createElement("div");
-        tableColorLabel.textContent = STRINGS[this._lang].tableColor || "Table Color";
-        tableColorLabel.className = "text-white text-lg mb-4";
-        
-        const tableColorButton = document.createElement("button");
-        tableColorButton.id = "tableColorButton";
-        tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
-            (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
-            (STRINGS[this._lang].switchToGreen || "Switch to Green");
-        tableColorButton.className = `px-5 py-2.5 text-base cursor-pointer border-none rounded text-white w-40 transition-colors ${
-            this._tableTheme === 'GREEN' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-        }`;
-        
-        tableColorButton.addEventListener("click", () => {
-            this._tableTheme = this._tableTheme === 'GREEN' ? 'BLUE' : 'GREEN';
-            this._updateTableThemeButton();
-            this._onTableThemeToggle();
-        });
-        
-        tableColorContainer.appendChild(tableColorLabel);
-        tableColorContainer.appendChild(tableColorButton);
-        
-        return tableColorContainer;
     }
 
     private _createGameOverUI(): void {
@@ -410,11 +326,6 @@ export class UIManager {
         const classicBtn = this._menuUI.querySelector(".classic-btn");
         if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
 
-        const puLabel = this._menuUI.querySelector(".powerups-label");
-        if (puLabel) puLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        const puBtn = this._menuUI.querySelector(".powerups-btn");
-        if (puBtn) puBtn.textContent = STRINGS[this._lang].start;
-
         const gameOverText = document.getElementById("gameOverText");
         if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
 
@@ -423,25 +334,5 @@ export class UIManager {
 
         const menuBtn = document.getElementById("menuButton");
         if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
-
-        this._updateTableThemeButton();
-    }
-
-    private _updateTableThemeButton(): void {
-        const tableColorButton = document.getElementById("tableColorButton");
-        if (tableColorButton) {
-            tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
-                (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
-                (STRINGS[this._lang].switchToGreen || "Switch to Green");
-            
-            // Update classes instead of inline styles
-            tableColorButton.className = tableColorButton.className.replace(
-                /bg-(blue|green)-(500|600)/g, 
-                this._tableTheme === 'GREEN' ? 'bg-blue-500' : 'bg-green-500'
-            ).replace(
-                /hover:bg-(blue|green)-(500|600)/g,
-                this._tableTheme === 'GREEN' ? 'hover:bg-blue-600' : 'hover:bg-green-600'
-            );
-        }
     }
 }
