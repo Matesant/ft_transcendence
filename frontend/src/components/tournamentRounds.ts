@@ -46,10 +46,15 @@ class tournamentRounds extends HTMLElement {
             </div>
         `;
 
-    document.getElementById('novo-torneio')?.addEventListener('click', () => {
-
+    document.getElementById('novo-torneio')?.addEventListener('click', async () => {
+        // Clear session storage to force showing setup page
         sessionStorage.removeItem("round_in_progress");
-        history.pushState("", "", "/tournament");
+        sessionStorage.removeItem("powerupsEnabled");
+        sessionStorage.removeItem("gameSpeed");
+        sessionStorage.removeItem("tableTheme");
+        
+        // Navigate to tournament page with new parameter to force setup
+        history.pushState("", "", "/tournament?new=true");
         router();
       });
     
@@ -191,11 +196,11 @@ class tournamentRounds extends HTMLElement {
                 (iniciarPartidaBtn as HTMLButtonElement).disabled = true;
             }
 
-            // Change "Novo Torneio" button to "Voltar ao Menu"
+            // Change "Novo Torneio" button text but keep functionality
             const novoTorneioBtn = document.getElementById('novo-torneio');
             if (novoTorneioBtn) {
-                novoTorneioBtn.innerHTML = '🏠 Voltar ao Menu';
-                novoTorneioBtn.className = 'bg-blue-500/80 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-blue-400/30';
+                novoTorneioBtn.innerHTML = '🔄 Novo Torneio';
+                novoTorneioBtn.className = 'bg-purple-500/80 hover:bg-purple-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-purple-400/30';
             }
 
         }

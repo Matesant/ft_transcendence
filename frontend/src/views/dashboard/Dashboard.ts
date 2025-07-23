@@ -135,12 +135,34 @@ export class Dashboard extends AView {
     // Handle logout button separately
     const logoutBtn = container.querySelector('.logout-btn');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', (e: Event) => {
+      logoutBtn.addEventListener('click', async (e: Event) => {
         e.preventDefault();
-        // Add logout logic here
-        // For example: clear session, redirect to login
-        history.pushState("", "", "/login");
-        router();
+        
+        try {
+          // Call logout API endpoint
+          const response = await fetch(apiUrl(3001, '/auth/logout'), {
+            method: 'POST',
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            // Clear any session storage if needed
+            sessionStorage.clear();
+            // Redirect to login
+            history.pushState("", "", "/login");
+            router();
+          } else {
+            console.error('Logout failed');
+            // Even if logout fails on server, redirect to login
+            history.pushState("", "", "/login");
+            router();
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          // Redirect to login even on error
+          history.pushState("", "", "/login");
+          router();
+        }
       });
     }
 

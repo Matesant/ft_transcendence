@@ -1,5 +1,6 @@
 import { AView } from "../AView";
 import { router } from "../../router/Router";
+import { apiUrl } from "../../utils/api";
 
 export class Tournament extends AView {
     
@@ -27,17 +28,8 @@ export class Tournament extends AView {
         const contentContainer = document.createElement('div');
         contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 shadow-2xl';
 
-        let round_in_progress = sessionStorage.getItem("round_in_progress");
-        
-        if (round_in_progress === "true") {
-            // Tournament in progress - show rounds component
-            const element = document.createElement('tournament-rounds');
-            contentContainer.appendChild(element);
-        } else {
-            // Start new tournament - show start tournament component
-            const element = document.createElement('start-tournament');
-            contentContainer.appendChild(element);
-        }
+        // Check if there's an active tournament in the backend
+        this.checkTournamentState(contentContainer);
 
         // Assemble the layout
         tournamentContainer.appendChild(header);
@@ -49,6 +41,44 @@ export class Tournament extends AView {
 
         // Setup navigation
         this.setupNavigation(tournamentContainer);
+    }
+
+    private async checkTournamentState(contentContainer: HTMLElement): Promise<void> {
+        // Check if user wants to start a new tournament
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceNew = urlParams.get('new') === 'true';
+        
+        if (forceNew) {
+            // Force show setup page for new tournament
+            sessionStorage.removeItem("round_in_progress");
+            const element = document.createElement('start-tournament');
+            contentContainer.appendChild(element);
+            return;
+        }
+
+        try {
+            // Check if there's an active tournament in the backend
+            const response = await fetch(apiUrl(3002, '/match/tournament'), {credentials: 'include'});
+            
+            if (response.ok) {
+                const tournamentData = await response.json();
+                
+                // If we have tournament data with rounds, show tournament rounds
+                if (tournamentData && tournamentData.rounds && tournamentData.rounds.length > 0) {
+                    sessionStorage.setItem("round_in_progress", "true");
+                    const element = document.createElement('tournament-rounds');
+                    contentContainer.appendChild(element);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('No active tournament found, showing setup page');
+        }
+
+        // No tournament found, show setup page
+        sessionStorage.removeItem("round_in_progress");
+        const element = document.createElement('start-tournament');
+        contentContainer.appendChild(element);
     }
 
     private setupNavigation(container: HTMLElement): void {
