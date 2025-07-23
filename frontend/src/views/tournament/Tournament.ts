@@ -9,24 +9,24 @@ export class Tournament extends AView {
     public render(parent: HTMLElement = document.body): void {
         // Create main tournament container using the same style as Dashboard
         const tournamentContainer = document.createElement('div');
-        tournamentContainer.className = 'w-full min-h-screen max-h-screen overflow-y-auto p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans custom-scrollbar';
+        tournamentContainer.className = 'w-full min-h-screen max-h-screen overflow-y-auto p-2 pt-2 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans custom-scrollbar';
         
         // Header similar to Dashboard
         const header = document.createElement('div');
-        header.className = 'flex justify-start items-center mb-10 w-full p-5 animate-slideDown';
+        header.className = 'flex justify-start items-center mb-4 w-full p-2 animate-slideDown';
         header.innerHTML = `
             <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
-                <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-16 w-auto drop-shadow-lg">
+                <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-12 w-auto drop-shadow-lg">
             </div>
         `;
 
         // Main content container
         const mainContent = document.createElement('div');
-        mainContent.className = 'flex flex-col gap-10 items-center w-full max-w-5xl animate-fadeInUp';
+        mainContent.className = 'flex flex-col gap-4 items-center w-full max-w-5xl animate-fadeInUp';
 
         // Content based on tournament state
         const contentContainer = document.createElement('div');
-        contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 shadow-2xl';
+        contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-6 border border-white/20 shadow-2xl';
 
         // Check if there's an active tournament in the backend
         this.checkTournamentState(contentContainer);
