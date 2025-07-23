@@ -20,7 +20,7 @@ class DisablefaBtn extends HTMLElement {
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ alias: 'alisson' }),
+              body: JSON.stringify({ alias: this.getAttribute('data-alias') }),
               credentials: 'include'
             });
   
