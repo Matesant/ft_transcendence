@@ -78,7 +78,6 @@ export class Lobby extends AView {
 
     this.wsManager.onDisconnected(() => {
       console.log('Disconnected from game server');
-      this.showConnectionError();
     });
 
     this.wsManager.onRoomCreated((data: RoomState) => {
