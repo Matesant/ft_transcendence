@@ -13,6 +13,7 @@ import { CollisionManager } from "./CollisionManager";
 import { FieldManager } from "./FieldManager";
 import { GameStateManager, GameState } from "./GameStateManager";
 import { getWsManager } from "../../../utils/connectionStore";
+import { router } from "../../../router/Router";
 
 export class GameManager {
     private _scene: Scene;
@@ -108,24 +109,13 @@ export class GameManager {
     }
     
     private async _showMenu(): Promise<void> {
-        this._gameStateManager.showMenu();
-        this._uiManager.showMenu();
-        this._uiManager.hideGameOver();
-        this._resetGame();
-        this._powerUpManager.deactivate();
-
-        await this._matchManager.loadCurrentMatch();
-        const { player1, player2 } = this._matchManager.getPlayerNames();
-        this._uiManager.updateMatchInfo(
-            this._matchManager.getCurrentMatch(),
-            player1,
-            player2
-        );
+        // Navigate back to tournament page
+        history.pushState("", "", "/tournament");
+        router();
     }
     
     private async _startGame(enablePowerUps: boolean = false): Promise<void> {
         this._gameStateManager.startGame(enablePowerUps);
-        this._uiManager.hideMenu();
         this._uiManager.hideGameOver();
 
         // Apply speed multiplier to paddles

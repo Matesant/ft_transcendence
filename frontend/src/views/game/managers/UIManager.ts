@@ -10,7 +10,6 @@ interface MatchInfo {
 }
 
 export class UIManager {
-    private _menuUI: HTMLDivElement;
     private _gameOverUI: HTMLDivElement;
     private _lang: Language = "ptBR";
     private _speedMultiplier: number = CONFIG.SPEED.MULTIPLIER.DEFAULT;
@@ -35,22 +34,12 @@ export class UIManager {
         this._onSpeedChange = onSpeedChange;
         this._onTableThemeToggle = onTableThemeToggle;
         
-        this._createMenuUI();
         this._createGameOverUI();
         this._createLanguageSelector();
         
         // Load initial theme from sessionStorage
         const initialTableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
         this._tableTheme = initialTableTheme as 'GREEN' | 'BLUE';
-    }
-
-    public showMenu(): void {
-        this._menuUI.className = this._menuUI.className.replace("hidden", "flex");
-        this._gameOverUI.className = this._gameOverUI.className.replace("flex", "hidden");
-    }
-
-    public hideMenu(): void {
-        this._menuUI.className = this._menuUI.className.replace("flex", "hidden");
     }
 
     public showGameOver(
@@ -133,7 +122,6 @@ export class UIManager {
 
     public setLanguage(lang: Language): void {
         this._lang = lang;
-        this._updateAllUIText();
     }
 
     public getLanguage(): Language {
@@ -154,73 +142,6 @@ export class UIManager {
 
     public getTableTheme(): 'GREEN' | 'BLUE' {
         return this._tableTheme;
-    }
-
-    private _createMenuUI(): void {
-        this._menuUI = document.createElement("div");
-        this._menuUI.className = "absolute inset-0 flex flex-col justify-center items-center bg-black/70";
-        
-        const title = document.createElement("h1");
-        title.textContent = "PONG";
-        title.className = "text-white text-5xl mb-8";
-        
-        const matchInfo = document.createElement("div");
-        matchInfo.id = "matchInfo";
-        matchInfo.className = "text-white text-xl mb-5 text-center";
-        
-        const subtitle = document.createElement("h2");
-        subtitle.textContent = STRINGS[this._lang].selectGameMode;
-        subtitle.className = "text-white text-2xl mb-5";
-        
-        const buttonsContainer = this._createGameModeButtons();
-        
-        this._menuUI.appendChild(title);
-        this._menuUI.appendChild(matchInfo);
-        this._menuUI.appendChild(subtitle);
-        this._menuUI.appendChild(buttonsContainer);
-        
-        document.body.appendChild(this._menuUI);
-    }
-
-    private _createGameModeButtons(): HTMLDivElement {
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.className = "flex flex-row gap-5 justify-center items-center";
-        
-        const classicContainer = document.createElement("div");
-        classicContainer.className = "flex flex-col items-center w-48";
-        
-        const classicLabel = document.createElement("div");
-        classicLabel.textContent = STRINGS[this._lang].classicMode;
-        classicLabel.className = "text-white text-lg mb-2.5 classic-label";
-        
-        const classicButton = document.createElement("button");
-        classicButton.textContent = STRINGS[this._lang].start;
-        classicButton.className = "px-5 py-2.5 w-28 text-lg cursor-pointer bg-blue-500 border-none rounded text-white classic-btn hover:bg-blue-600 transition-colors";
-        
-        classicButton.addEventListener("click", () => {
-            // Get settings from sessionStorage (set in tournament config)
-            const powerupsEnabled = sessionStorage.getItem("powerupsEnabled") === "true";
-            const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
-            const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
-            
-            // Apply settings
-            this._onSpeedChange(gameSpeed);
-            
-            // Only toggle if the theme is different from current
-            if (this._tableTheme !== tableTheme) {
-                this.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
-                this._onTableThemeToggle();
-            }
-            
-            this._onStartGame(powerupsEnabled);
-        });
-        
-        classicContainer.appendChild(classicLabel);
-        classicContainer.appendChild(classicButton);
-        
-        buttonsContainer.appendChild(classicContainer);
-        
-        return buttonsContainer;
     }
 
     private _createGameOverUI(): void {
@@ -285,7 +206,6 @@ export class UIManager {
 
         selector.addEventListener("change", () => {
             this._lang = selector.value as Language;
-            this._updateAllUIText();
         });
 
         document.body.appendChild(selector);
@@ -315,24 +235,5 @@ export class UIManager {
                 <div>${STRINGS[this._lang].practiceMode}</div>
             `;
         }
-    }
-
-    private _updateAllUIText(): void {
-        const subtitle = this._menuUI.querySelector("h2");
-        if (subtitle) subtitle.textContent = STRINGS[this._lang].selectGameMode;
-
-        const classicLabel = this._menuUI.querySelector(".classic-label");
-        if (classicLabel) classicLabel.textContent = STRINGS[this._lang].classicMode;
-        const classicBtn = this._menuUI.querySelector(".classic-btn");
-        if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
-
-        const gameOverText = document.getElementById("gameOverText");
-        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
-
-        const playAgainBtn = document.getElementById("playAgainButton");
-        if (playAgainBtn) playAgainBtn.textContent = STRINGS[this._lang].playAgain;
-
-        const menuBtn = document.getElementById("menuButton");
-        if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
     }
 }
