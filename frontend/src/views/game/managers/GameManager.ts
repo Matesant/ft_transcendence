@@ -127,9 +127,23 @@ export class GameManager {
         const { player1, player2 } = this._matchManager.getPlayerNames();
         this._scoreManager.setPlayerNames(player1, player2);
 
-        // Start the ball with speed multiplier applied
-        this._ball.start();
-        this._applySpeedMultiplierToBall(this._ball);
+        // Start the ball with delay for initial game start
+        // Check if this is the first game start (score is 0-0)
+        const score = this._scoreManager.score;
+        const isFirstStart = score.player1 === 0 && score.player2 === 0;
+        
+        if (isFirstStart) {
+            // First game start - wait 5 seconds
+            setTimeout(() => {
+                this._ball.start();
+                this._applySpeedMultiplierToBall(this._ball);
+            }, 2000);
+        } else {
+            // Regular restart - start immediately
+            this._ball.start();
+            this._applySpeedMultiplierToBall(this._ball);
+        }
+        
         this._firstCollision = true;
         this._collisionManager.setFirstCollision(true);
 
@@ -169,6 +183,7 @@ export class GameManager {
         this._scoreManager.reset();
         this._firstCollision = true;
         this._collisionManager.setFirstCollision(true);
+        this._collisionManager.clearBallReleaseTimer();
         
         // Reset paddles
         this._leftPaddle.reset();
@@ -225,9 +240,9 @@ export class GameManager {
             // Check for game over condition
             const score = this._scoreManager.score;
             const { player1, player2 } = this._matchManager.getPlayerNames();
-            if (score.player1 >= 1) {
+            if (score.player1 >= 2) {
                 this._showGameOver(player1);
-            } else if (score.player2 >= 1) {
+            } else if (score.player2 >= 2) {
                 this._showGameOver(player2);
             }
         }

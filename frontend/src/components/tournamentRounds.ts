@@ -54,8 +54,7 @@ class tournamentRounds extends HTMLElement {
       });
     
       document.getElementById('iniciar-partida')?.addEventListener('click', async () => {
-        history.pushState("", "", "/game");
-        router();
+        this._showGameStarting();
     } );
 
       if (tournamentData && tournamentData.rounds)
@@ -201,6 +200,54 @@ class tournamentRounds extends HTMLElement {
 
         }
 
+    }
+
+    private async _showGameStarting(): Promise<void> {
+        // Get next match data to show player info
+        let nextMatchData: any = null;
+        
+        try {
+            let response = await fetch(apiUrl(3002, '/match/next'), {credentials: 'include'});
+            nextMatchData = await response.json();
+        } catch (error) {
+            console.error('Erro ao buscar próxima partida:', error);
+        }
+
+        // Clear current content
+        this.innerHTML = `
+            <div class="w-full max-w-5xl mx-auto flex flex-1 flex-col items-center justify-center">
+                <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-12 border border-white/20 shadow-2xl text-center max-w-lg w-full">
+                    
+                    <div class="mb-8">
+                        <div id="countdown" class="text-6xl font-bold text-green-400">
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        `;
+
+        const countdownElement = document.getElementById('countdown') as HTMLDivElement;
+        
+        let count = 3;
+        countdownElement.textContent = count.toString(); // Mostrar o 3 imediatamente
+        
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownElement.textContent = count.toString();
+            } else {
+                countdownElement.textContent = "GO!";
+                clearInterval(countdownInterval);
+                
+                // Redirect to game after a short delay
+                setTimeout(() => {
+                    history.pushState("", "", "/game");
+                    router();
+                }, 1000);
+            }
+        }, 1000);
     }
 
 }
