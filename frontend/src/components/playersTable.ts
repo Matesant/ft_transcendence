@@ -21,15 +21,19 @@ class playersTable extends HTMLElement {
                 const totalGames = player.wins + player.losses;
                 const rankBadge = this.getRankBadge(index + 1);
                 const winrateColor = this.getWinrateColor(player.winrate);
+                const avatarUrl = player.avatar ? `http://localhost:3003/${player.avatar}` : 'http://localhost:3003/uploads/default.jpeg';
                 
                 return `
                     <div class="ranking-player bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 cursor-pointer" data-alias="${player.alias}">
                         <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 ${rankBadge}
-                                <div>
-                                    <h3 class="font-bold text-base text-white">${player.display_name || player.alias}</h3>
-                                    <p class="text-xs text-white/70">@${player.alias}</p>
+                                <div class="flex items-center gap-2">
+                                    <img src="${avatarUrl}" alt="${player.display_name || player.alias}" class="w-8 h-8 rounded-full object-cover border-2 border-white/30" onerror="this.src='http://localhost:3003/uploads/default.jpeg'">
+                                    <div>
+                                        <h3 class="font-bold text-base text-white">${player.display_name || player.alias}</h3>
+                                        <p class="text-xs text-white/70">@${player.alias}</p>
+                                    </div>
                                 </div>
                             </div>
                             <div class="text-right">
