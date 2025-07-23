@@ -91,30 +91,72 @@ export class UIManager {
             // Normal game over
             if (gameOverText) {
                 gameOverText.textContent = STRINGS[this._lang].gameOver;
-                gameOverText.className = "text-white text-5xl m-0 mb-2.5"; // Reset to default
+                gameOverText.className = "text-white text-5xl m-0 mb-2.5";
+                gameOverText.style.display = "block";
             }
             if (winnerText) {
                 winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
-                winnerText.className = "text-white text-2xl m-0 mb-5"; // Reset to default
+                winnerText.className = "text-white text-2xl m-0 mb-5";
+                winnerText.style.cssText = ""; // Reset any previous styles
             }
 
             if (currentMatch) {
-                // Next match in tournament
+                // Next match in tournament - show match info
+                if (winnerText) {
+                    winnerText.innerHTML = `🎯 ${winner} ${STRINGS[this._lang].wins}`;
+                    winnerText.className = "text-green-400 text-3xl mb-6 text-center font-bold";
+                    winnerText.style.position = "absolute";
+                    winnerText.style.top = "35%";
+                    winnerText.style.left = "50%";
+                    winnerText.style.transform = "translateX(-50%)";
+                    winnerText.style.width = "100%";
+                }
+                if (gameOverText) {
+                    gameOverText.textContent = `Próxima partida: ${currentMatch.player1} vs ${currentMatch.player2}`;
+                    gameOverText.className = "text-white text-4xl mb-8 font-bold text-center";
+                    gameOverText.style.display = "block";
+                    gameOverText.style.position = "absolute";
+                    gameOverText.style.top = "45%";
+                    gameOverText.style.left = "50%";
+                    gameOverText.style.transform = "translateX(-50%)";
+                    gameOverText.style.width = "100%";
+                }
                 if (playAgainBtn) {
-                    playAgainBtn.className = playAgainBtn.className.replace("hidden", "block");
-                    playAgainBtn.textContent = STRINGS[this._lang].nextMatch;
+                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.className = "px-10 py-5 text-2xl cursor-pointer bg-green-500 border-none rounded-xl text-white w-56 text-center hover:bg-green-600 transition-colors shadow-lg mb-4 font-bold";
+                    playAgainBtn.textContent = "Continuar";
+                    playAgainBtn.style.display = "block";
+                    playAgainBtn.style.position = "absolute";
+                    playAgainBtn.style.top = "62%";
+                    playAgainBtn.style.left = "50%";
+                    playAgainBtn.style.transform = "translateX(-50%)";
+                    playAgainBtn.disabled = false;
+                }
+                if (menuBtn) {
+                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.className = "px-6 py-3 text-lg cursor-pointer bg-red-500 border-none rounded-lg text-white w-40 text-center hover:bg-red-600 transition-colors shadow-md";
+                    menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                    menuBtn.style.display = "block";
+                    menuBtn.style.position = "absolute";
+                    menuBtn.style.top = "72%";
+                    menuBtn.style.left = "50%";
+                    menuBtn.style.transform = "translateX(-50%)";
                 }
             } else {
                 // Practice mode
                 if (playAgainBtn) {
-                    playAgainBtn.className = playAgainBtn.className.replace("hidden", "block");
+                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-green-500 border-none rounded text-white mb-2.5 w-44 text-center hover:bg-green-600 transition-colors";
                     playAgainBtn.textContent = STRINGS[this._lang].playAgain;
+                    playAgainBtn.style.display = "block";
+                    playAgainBtn.disabled = false;
                 }
-            }
-            
-            if (menuBtn) {
-                menuBtn.className = menuBtn.className.replace("hidden", "inline-block");
-                menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                if (menuBtn) {
+                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-red-500 border-none rounded text-white w-44 text-center hover:bg-red-600 transition-colors";
+                    menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                    menuBtn.style.display = "block";
+                }
             }
         }
 
