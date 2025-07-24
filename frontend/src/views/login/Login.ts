@@ -82,7 +82,7 @@ export class Login extends AView {
             variant: 'secondary',
             extraClass: 'w-full font-semibold py-2 px-4 rounded-md text-lg mt-4 flex items-center justify-center gap-2',
             onClick: () => {
-                alert('Funcionalidade em breve!');
+                window.location.href = apiUrl(3001, '/auth/google');
             }
         });
 

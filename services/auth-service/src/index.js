@@ -12,6 +12,7 @@ import passwordResetRoutes from './routes/auth/passwordReset.js'
 import credentialsRoutes from './routes/auth/credentials.js'
 import sessionRoutes from './routes/auth/session.js'
 import crypto from 'node:crypto'
+import googleRoutes from './routes/auth/google.js'
 
 dotenv.config()
 
@@ -66,6 +67,7 @@ await fastify.register(twoFactorRoutes, { prefix: '/auth' })
 await fastify.register(passwordResetRoutes, { prefix: '/auth' })
 await fastify.register(credentialsRoutes, { prefix: '/auth' })
 await fastify.register(sessionRoutes, { prefix: '/auth' })
+await fastify.register(googleRoutes, { prefix: '/auth' })
 
 // 7) Global Error Handler
 fastify.setErrorHandler((error, request, reply) => {
