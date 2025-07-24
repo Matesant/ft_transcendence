@@ -11,7 +11,8 @@ class UploadAvatar extends HTMLElement {
   
     connectedCallback() {
       this.innerHTML = `
-            <div class="flex flex-col gap-4 w-64">
+            <div class="flex flex-col gap-4 w-90 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md p-4 mx-auto mt-5">
+              <div class="text-lg font-bold">Avatar upload</div>
             <!-- Input estilizado -->
             <input 
                 type="file" 
@@ -33,7 +34,7 @@ class UploadAvatar extends HTMLElement {
                     focus:outline-none focus:ring-2 
                     focus:ring-blue-400 focus:ring-offset-2"
             >
-                Upload Avatar
+                Send
             </button>
 
             <div></div>

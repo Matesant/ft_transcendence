@@ -64,10 +64,6 @@ export async function router (){
             router();
             return ;
         }
-        else if (!document.body.querySelector('left-sidebar')) {
-            const leftSidebar = document.createElement('left-sidebar');
-            document.body.appendChild(leftSidebar);
-        }
     }
 
     if (view) {
