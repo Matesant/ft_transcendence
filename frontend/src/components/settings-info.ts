@@ -71,7 +71,6 @@ class UserInfo extends HTMLElement {
             </div>
           </div>
 
-
           `;
 
 
