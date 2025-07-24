@@ -50,7 +50,7 @@ class UploadAvatar extends HTMLElement {
   
     async handleUpload() {
       if (!this.fileInput.files || this.fileInput.files.length === 0) {
-        this.showStatus('Nenhum arquivo selecionado.');
+        this.showStatus('Please select an file.');
         return;
       }
   
@@ -74,8 +74,8 @@ class UploadAvatar extends HTMLElement {
   
         const data = await resp.json();
         if (data.success) {
-          this.statusDiv.className = "text-green-700";
-          this.showStatus(`${data.message}`);
+          // this.statusDiv.className = "text-green-950";
+          this.showStatus(`${data.message}!`);
         } else {
           this.statusDiv.className = "text-red-500";
           this.showStatus(`Error: ${data.statusCode || 'Erro desconhecido'}`);

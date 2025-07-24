@@ -29,7 +29,7 @@ class DisablefaBtn extends HTMLElement {
 
                 let msg = document.createElement('div');
                 msg.innerHTML = `${data.message}`;
-                msg.className = 'bg-green-100 text-green-800 p-2 rounded';
+                msg.className = 'bg-green-100 text-green-800 p-2 rounded mt-4';
                 this.parentElement.appendChild(msg);
                 setTimeout(() => {
                     msg.remove();
