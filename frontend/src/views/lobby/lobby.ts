@@ -248,14 +248,7 @@ export class Lobby extends AView {
     });
     copyBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
-    const shareLinkBtn = PongButton({
-      text: "🔗 Copy Link",
-      variant: "secondary", 
-      onClick: (e) => this.onCopyLink(e)
-    });
-    shareLinkBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
-
-    buttonsContainer.append(copyBtn, shareLinkBtn);
+    buttonsContainer.append(copyBtn);
     codeSection.appendChild(buttonsContainer);
     card.appendChild(codeSection);
 
@@ -420,21 +413,6 @@ export class Lobby extends AView {
       const originalText = btn.textContent;
       const originalClass = btn.className;
       btn.textContent = "✅ Copied!";
-      btn.className = "bg-green-500/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.className = originalClass;
-      }, 2000);
-    });
-  }
-
-  private onCopyLink(event: Event): void {
-    const url = `${window.location.origin}/lobby?code=${this.roomCode}`;
-    navigator.clipboard.writeText(url).then(() => {
-      const btn = event.target as HTMLButtonElement;
-      const originalText = btn.textContent;
-      const originalClass = btn.className;
-      btn.textContent = "✅ Link Copied!";
       btn.className = "bg-green-500/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
       setTimeout(() => {
         btn.textContent = originalText;
@@ -623,14 +601,7 @@ export class Lobby extends AView {
     });
     copyBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
 
-    const shareLinkBtn = PongButton({
-      text: "🔗 Copy Link",
-      variant: "secondary",
-      onClick: (e) => this.onCopyLink(e)
-    });
-    shareLinkBtn.className = "bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
-
-    buttonsContainer.append(copyBtn, shareLinkBtn);
+    buttonsContainer.append(copyBtn);
     codeSection.appendChild(buttonsContainer);
     card.appendChild(codeSection);
 

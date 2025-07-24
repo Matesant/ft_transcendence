@@ -4,7 +4,7 @@ import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
 import { Dashboard } from "./dashboard/Dashboard";
-import { Players } from "./players/Players";
+import { Players } from "./ranking/Ranking";
 import { Player } from "./player/Player";
 import { Friends } from "./friends/Friends";
 import { AView } from "./AView";

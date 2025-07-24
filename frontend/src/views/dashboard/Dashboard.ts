@@ -9,9 +9,9 @@ export class Dashboard extends AView {
     const dashboardContainer = document.createElement('div');
     dashboardContainer.className = 'w-full min-h-screen p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans';
     dashboardContainer.innerHTML = `
-      <div class="flex justify-between items-center mb-10 w-full max-w-4xl p-5 animate-slideDown">
+      <div class="flex justify-between items-center mb-10 w-full p-5 animate-slideDown">
         <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
-          <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-16 w-auto drop-shadow-lg">
+          <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
         </div>
         <div class="flex items-center gap-5">
           <div class="flex items-center gap-5">
@@ -33,9 +33,9 @@ export class Dashboard extends AView {
             <span class="text-4xl drop-shadow-lg">🕹️</span>
             <span class="text-lg text-center leading-relaxed font-bold">Local</span>
           </button>
-          <button class="flex flex-col items-center gap-4 py-9 px-24 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md text-white cursor-pointer font-semibold transition-all duration-500 min-h-40 shadow-xl hover:bg-white/20 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl hover:border-white/50 active:-translate-y-1 active:scale-98 relative overflow-hidden" data-route="/players">
-            <span class="text-4xl drop-shadow-lg">👥</span>
-            <span class="text-lg text-center leading-relaxed font-bold">Jogadores</span>
+          <button class="flex flex-col items-center gap-4 py-9 px-24 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md text-white cursor-pointer font-semibold transition-all duration-500 min-h-40 shadow-xl hover:bg-white/20 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl hover:border-white/50 active:-translate-y-1 active:scale-98 relative overflow-hidden" data-route="/ranking">
+            <span class="text-4xl drop-shadow-lg">🏆</span>
+            <span class="text-lg text-center leading-relaxed font-bold">Ranking</span>
           </button>
           <button class="flex flex-col items-center gap-4 py-9 px-24 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md text-white cursor-pointer font-semibold transition-all duration-500 min-h-40 shadow-xl hover:bg-white/20 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl hover:border-white/50 active:-translate-y-1 active:scale-98 relative overflow-hidden" data-route="/settings">
             <span class="text-4xl drop-shadow-lg">⚙️</span> 
@@ -171,7 +171,7 @@ export class Dashboard extends AView {
     if (avatarContainer) {
       avatarContainer.addEventListener('click', (e: Event) => {
         e.preventDefault();
-        history.pushState("", "", "/player"); // Redireciona para /player
+        history.pushState("", "", "/settings"); // Redireciona para /player
         router();
       });
     }

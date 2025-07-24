@@ -24,11 +24,11 @@ class tournamentRounds extends HTMLElement {
         this.innerHTML = `
             <!-- Tournament rounds with glassmorphism design -->
             <div class="w-full max-w-5xl mx-auto">
-                <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
+                <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-4 border border-white/20 shadow-2xl flex flex-col max-h-[85vh]">
 
                     <!-- Container com scroll para as rodadas -->
-                    <div class="flex-1 overflow-y-auto mb-8">
-                        <div id="tournamentRounds" class="space-y-6 pr-2 custom-scrollbar">
+                    <div class="flex-1 overflow-y-auto mb-4">
+                        <div id="tournamentRounds" class="space-y-4 pr-2 custom-scrollbar">
                             <!-- As rodadas serão inseridas aqui via JavaScript -->
                         </div>
                     </div>
