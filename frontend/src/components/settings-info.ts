@@ -6,6 +6,25 @@ class UserInfo extends HTMLElement {
     connectedCallback() {
       this.loadData();
     }
+
+    public async renderAvatar() {
+
+      try {
+        const response = await fetch("http://localhost:3003/users/me", {credentials: "include"});
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+  
+        return `
+          <img class="w-24 h-24 rounded-full object-cover mb-2" src="${data.profile.avatar}" alt="${data.profile.alias}"></img>
+        `;
+
+  
+      } catch (err) {
+        console.error("Network error:", err);
+      }
+
+      return '';
+    }
   
     private async loadData() {
       try {
@@ -21,9 +40,12 @@ class UserInfo extends HTMLElement {
           const alias = data.user.alias;
           const email = data.user.email;
           const is2fa = data.user.is_2fa_enabled;
+          const avatarHtml = await this.renderAvatar();
   
           this.innerHTML = `
             <div class="mx-auto w-140 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 text-center space-y-2 mt-7">
+                      <!-- Aqui vão avatar e alias -->
+              <div id="user-info" class="mb-6 flex flex-col items-center">${avatarHtml}</div>
               <div class="text-lg font-bold">${alias}</div>
               <div>${email}</div>
               <div>2FA ${is2fa ? "enabled" : "disabled"}</div>
