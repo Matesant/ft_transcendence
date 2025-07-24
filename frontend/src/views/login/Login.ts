@@ -10,6 +10,7 @@ export class Login extends AView {
 
     public render(parent: HTMLElement = document.body): void {
         parent.innerHTML = '';
+        parent.className = '';
 
         // Fundo branco simples
         const bg = document.createElement('div');
