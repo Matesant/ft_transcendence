@@ -171,7 +171,7 @@ export class Dashboard extends AView {
     if (avatarContainer) {
       avatarContainer.addEventListener('click', (e: Event) => {
         e.preventDefault();
-        history.pushState("", "", "/player"); // Redireciona para /player
+        history.pushState("", "", "/settings"); // Redireciona para /player
         router();
       });
     }
