@@ -37,9 +37,9 @@ export class Dashboard extends AView {
             <span class="text-4xl drop-shadow-lg">🏆</span>
             <span class="text-lg text-center leading-relaxed font-bold">Ranking</span>
           </button>
-          <button class="flex flex-col items-center gap-4 py-9 px-24 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md text-white cursor-pointer font-semibold transition-all duration-500 min-h-40 shadow-xl hover:bg-white/20 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl hover:border-white/50 active:-translate-y-1 active:scale-98 relative overflow-hidden" data-route="/settings">
-            <span class="text-4xl drop-shadow-lg">⚙️</span> 
-            <span class="text-lg text-center leading-relaxed font-bold">Settings</span>
+          <button class="flex flex-col items-center gap-4 py-9 px-24 border-2 border-white/30 rounded-2xl bg-white/10 backdrop-blur-md text-white cursor-pointer font-semibold transition-all duration-500 min-h-40 shadow-xl hover:bg-white/20 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl hover:border-white/50 active:-translate-y-1 active:scale-98 relative overflow-hidden" data-route="/friends">
+            <span class="text-4xl drop-shadow-lg">💬</span> 
+            <span class="text-lg text-center leading-relaxed font-bold">Friends</span>
           </button>
         </div>
         
