@@ -10,7 +10,6 @@ interface MatchInfo {
 }
 
 export class UIManager {
-    private _menuUI: HTMLDivElement;
     private _gameOverUI: HTMLDivElement;
     private _lang: Language = "ptBR";
     private _speedMultiplier: number = CONFIG.SPEED.MULTIPLIER.DEFAULT;
@@ -35,18 +34,12 @@ export class UIManager {
         this._onSpeedChange = onSpeedChange;
         this._onTableThemeToggle = onTableThemeToggle;
         
-        this._createMenuUI();
         this._createGameOverUI();
         this._createLanguageSelector();
-    }
-
-    public showMenu(): void {
-        this._menuUI.style.display = "flex";
-        this._gameOverUI.style.display = "none";
-    }
-
-    public hideMenu(): void {
-        this._menuUI.style.display = "none";
+        
+        // Load initial theme from sessionStorage
+        const initialTableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        this._tableTheme = initialTableTheme as 'GREEN' | 'BLUE';
     }
 
     public showGameOver(
@@ -63,55 +56,115 @@ export class UIManager {
         const menuBtn = document.getElementById("menuButton") as HTMLButtonElement;
 
         if (tournamentComplete) {
-            // Tournament Complete layout
+            // Tournament Complete layout - only show champion
             if (gameOverText) {
-                gameOverText.textContent = STRINGS[this._lang].tournamentCompleteTitle;
-                gameOverText.style.fontSize = "3rem";
-                gameOverText.style.color = "#ffd700";
-                gameOverText.style.textShadow = "0 0 20px #fff, 0 0 10px #ffd700";
-                gameOverText.style.marginBottom = "20px";
+                // Hide the "Tournament Complete" text
+                gameOverText.style.display = "none";
             }
             if (winnerText) {
-                winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span style="color:#ffd700;">${champion}</span> 🏆`;
-                winnerText.style.fontSize = "2.5rem";
-                winnerText.style.color = "#fff";
-                winnerText.style.marginBottom = "30px";
+                // Make champion display larger and more prominent
+                winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span class="text-yellow-400">${champion}</span> 🏆`;
+                winnerText.className = "text-white text-6xl mb-8 font-bold";
+                winnerText.style.textShadow = "0 0 30px #ffd700, 0 0 20px #fff";
+                winnerText.style.textAlign = "center";
+                winnerText.style.width = "100%";
             }
-            if (playAgainBtn) playAgainBtn.style.display = "none";
+            if (playAgainBtn) {
+                playAgainBtn.style.display = "none";
+                playAgainBtn.disabled = true;
+            }
             if (menuBtn) {
-                menuBtn.style.display = "block";
+                // Reset all previous styles and classes
+                menuBtn.className = "";
+                menuBtn.style.cssText = "";
+                
+                // Apply new tournament complete styles with absolute positioning
+                menuBtn.className = "px-8 py-4 text-2xl cursor-pointer bg-blue-500 border-none rounded-xl text-white w-60 text-center hover:bg-blue-600 transition-colors shadow-2xl";
                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                menuBtn.style.position = "absolute";
+                menuBtn.style.top = "60%";
+                menuBtn.style.left = "50%";
+                menuBtn.style.transform = "translateX(-50%)";
+                menuBtn.style.display = "block";
             }
         } else {
             // Normal game over
-            if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
-            if (winnerText) winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
+            if (gameOverText) {
+                gameOverText.textContent = STRINGS[this._lang].gameOver;
+                gameOverText.className = "text-white text-5xl m-0 mb-2.5";
+                gameOverText.style.display = "block";
+            }
+            if (winnerText) {
+                winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
+                winnerText.className = "text-white text-2xl m-0 mb-5";
+                winnerText.style.cssText = ""; // Reset any previous styles
+            }
 
             if (currentMatch) {
-                // Next match in tournament
+                // Next match in tournament - show match info
+                if (winnerText) {
+                    winnerText.innerHTML = `🎯 ${winner} ${STRINGS[this._lang].wins}`;
+                    winnerText.className = "text-green-400 text-3xl mb-6 text-center font-bold";
+                    winnerText.style.position = "absolute";
+                    winnerText.style.top = "35%";
+                    winnerText.style.left = "50%";
+                    winnerText.style.transform = "translateX(-50%)";
+                    winnerText.style.width = "100%";
+                }
+                if (gameOverText) {
+                    gameOverText.textContent = `Próxima partida: ${currentMatch.player1} vs ${currentMatch.player2}`;
+                    gameOverText.className = "text-white text-4xl mb-8 font-bold text-center";
+                    gameOverText.style.display = "block";
+                    gameOverText.style.position = "absolute";
+                    gameOverText.style.top = "45%";
+                    gameOverText.style.left = "50%";
+                    gameOverText.style.transform = "translateX(-50%)";
+                    gameOverText.style.width = "100%";
+                }
                 if (playAgainBtn) {
+                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.className = "px-10 py-5 text-2xl cursor-pointer bg-green-500 border-none rounded-xl text-white w-56 text-center hover:bg-green-600 transition-colors shadow-lg mb-4 font-bold";
+                    playAgainBtn.textContent = "Continuar";
                     playAgainBtn.style.display = "block";
-                    playAgainBtn.textContent = STRINGS[this._lang].nextMatch;
+                    playAgainBtn.style.position = "absolute";
+                    playAgainBtn.style.top = "62%";
+                    playAgainBtn.style.left = "50%";
+                    playAgainBtn.style.transform = "translateX(-50%)";
+                    playAgainBtn.disabled = false;
+                }
+                if (menuBtn) {
+                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.className = "px-6 py-3 text-lg cursor-pointer bg-red-500 border-none rounded-lg text-white w-40 text-center hover:bg-red-600 transition-colors shadow-md";
+                    menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                    menuBtn.style.display = "block";
+                    menuBtn.style.position = "absolute";
+                    menuBtn.style.top = "72%";
+                    menuBtn.style.left = "50%";
+                    menuBtn.style.transform = "translateX(-50%)";
                 }
             } else {
                 // Practice mode
                 if (playAgainBtn) {
-                    playAgainBtn.style.display = "block";
+                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-green-500 border-none rounded text-white mb-2.5 w-44 text-center hover:bg-green-600 transition-colors";
                     playAgainBtn.textContent = STRINGS[this._lang].playAgain;
+                    playAgainBtn.style.display = "block";
+                    playAgainBtn.disabled = false;
                 }
-            }
-            
-            if (menuBtn) {
-                menuBtn.style.display = "inline-block";
-                menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                if (menuBtn) {
+                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-red-500 border-none rounded text-white w-44 text-center hover:bg-red-600 transition-colors";
+                    menuBtn.textContent = STRINGS[this._lang].mainMenu;
+                    menuBtn.style.display = "block";
+                }
             }
         }
 
-        this._gameOverUI.style.display = "flex";
+        this._gameOverUI.className = this._gameOverUI.className.replace("hidden", "flex");
     }
 
     public hideGameOver(): void {
-        this._gameOverUI.style.display = "none";
+        this._gameOverUI.className = this._gameOverUI.className.replace("flex", "hidden");
     }
 
     public updateMatchInfo(
@@ -127,7 +180,6 @@ export class UIManager {
 
     public setLanguage(lang: Language): void {
         this._lang = lang;
-        this._updateAllUIText();
     }
 
     public getLanguage(): Language {
@@ -144,281 +196,27 @@ export class UIManager {
 
     public setTableTheme(theme: 'GREEN' | 'BLUE'): void {
         this._tableTheme = theme;
-        this._updateTableThemeButton();
     }
 
     public getTableTheme(): 'GREEN' | 'BLUE' {
         return this._tableTheme;
     }
 
-    private _createMenuUI(): void {
-        this._menuUI = document.createElement("div");
-        this._menuUI.style.position = "absolute";
-        this._menuUI.style.top = "0";
-        this._menuUI.style.left = "0";
-        this._menuUI.style.width = "100%";
-        this._menuUI.style.height = "100%";
-        this._menuUI.style.display = "flex";
-        this._menuUI.style.flexDirection = "column";
-        this._menuUI.style.justifyContent = "center";
-        this._menuUI.style.alignItems = "center";
-        this._menuUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        
-        const title = document.createElement("h1");
-        title.textContent = "PONG";
-        title.style.color = "white";
-        title.style.fontSize = "48px";
-        title.style.marginBottom = "30px";
-        
-        const matchInfo = document.createElement("div");
-        matchInfo.id = "matchInfo";
-        matchInfo.style.color = "white";
-        matchInfo.style.fontSize = "20px";
-        matchInfo.style.marginBottom = "20px";
-        matchInfo.style.textAlign = "center";
-        
-        const subtitle = document.createElement("h2");
-        subtitle.textContent = STRINGS[this._lang].selectGameMode;
-        subtitle.style.color = "white";
-        subtitle.style.fontSize = "24px";
-        subtitle.style.marginBottom = "20px";
-        
-        const buttonsContainer = this._createGameModeButtons();
-        const speedContainer = this._createSpeedControl();
-        const tableColorContainer = this._createTableColorControl();
-        
-        this._menuUI.appendChild(title);
-        this._menuUI.appendChild(matchInfo);
-        this._menuUI.appendChild(subtitle);
-        this._menuUI.appendChild(buttonsContainer);
-        this._menuUI.appendChild(speedContainer);
-        this._menuUI.appendChild(tableColorContainer);
-        
-        document.body.appendChild(this._menuUI);
-    }
-
-    private _createGameModeButtons(): HTMLDivElement {
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "row";
-        buttonsContainer.style.gap = "20px";
-        buttonsContainer.style.justifyContent = "center";
-        buttonsContainer.style.alignItems = "center";
-        
-        const classicContainer = document.createElement("div");
-        classicContainer.style.display = "flex";
-        classicContainer.style.flexDirection = "column";
-        classicContainer.style.alignItems = "center";
-        classicContainer.style.width = "200px";
-        
-        const powerUpsContainer = document.createElement("div");
-        powerUpsContainer.style.display = "flex";
-        powerUpsContainer.style.flexDirection = "column";
-        powerUpsContainer.style.alignItems = "center";
-        powerUpsContainer.style.width = "200px";
-        
-        const classicLabel = document.createElement("div");
-        classicLabel.textContent = STRINGS[this._lang].classicMode;
-        classicLabel.style.color = "white";
-        classicLabel.style.fontSize = "18px";
-        classicLabel.style.marginBottom = "10px";
-        classicLabel.classList.add("classic-label");
-        
-        const powerUpsLabel = document.createElement("div");
-        powerUpsLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        powerUpsLabel.style.color = "white";
-        powerUpsLabel.style.fontSize = "18px";
-        powerUpsLabel.style.marginBottom = "10px";
-        powerUpsLabel.classList.add("powerups-label");
-        
-        const classicButton = document.createElement("button");
-        classicButton.textContent = STRINGS[this._lang].start;
-        classicButton.style.padding = "10px 20px";
-        classicButton.style.width = "120px";
-        classicButton.style.fontSize = "18px";
-        classicButton.style.cursor = "pointer";
-        classicButton.style.backgroundColor = "#4286f4";
-        classicButton.style.border = "none";
-        classicButton.style.borderRadius = "5px";
-        classicButton.style.color = "white";
-        classicButton.classList.add("classic-btn");
-        
-        const powerUpsButton = document.createElement("button");
-        powerUpsButton.textContent = STRINGS[this._lang].start;
-        powerUpsButton.style.padding = "10px 20px";
-        powerUpsButton.style.width = "120px";
-        powerUpsButton.style.fontSize = "18px";
-        powerUpsButton.style.cursor = "pointer";
-        powerUpsButton.style.backgroundColor = "#f44283";
-        powerUpsButton.style.border = "none";
-        powerUpsButton.style.borderRadius = "5px";
-        powerUpsButton.style.color = "white";
-        powerUpsButton.classList.add("powerups-btn");
-        
-        classicButton.addEventListener("click", () => {
-            this._onStartGame(false);
-        });
-        
-        powerUpsButton.addEventListener("click", () => {
-            this._onStartGame(true);
-        });
-        
-        classicContainer.appendChild(classicLabel);
-        classicContainer.appendChild(classicButton);
-        
-        powerUpsContainer.appendChild(powerUpsLabel);
-        powerUpsContainer.appendChild(powerUpsButton);
-        
-        buttonsContainer.appendChild(classicContainer);
-        buttonsContainer.appendChild(powerUpsContainer);
-        
-        return buttonsContainer;
-    }
-
-    private _createSpeedControl(): HTMLDivElement {
-        const speedContainer = document.createElement("div");
-        speedContainer.style.display = "flex";
-        speedContainer.style.flexDirection = "column";
-        speedContainer.style.alignItems = "center";
-        speedContainer.style.marginTop = "30px";
-        speedContainer.style.width = "300px";
-        
-        const speedLabel = document.createElement("div");
-        speedLabel.textContent = STRINGS[this._lang].gameSpeed || "Game Speed";
-        speedLabel.style.color = "white";
-        speedLabel.style.fontSize = "18px";
-        speedLabel.style.marginBottom = "10px";
-        
-        const speedSliderContainer = document.createElement("div");
-        speedSliderContainer.style.display = "flex";
-        speedSliderContainer.style.alignItems = "center";
-        speedSliderContainer.style.gap = "15px";
-        speedSliderContainer.style.width = "100%";
-        
-        const minLabel = document.createElement("span");
-        minLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MIN}x`;
-        minLabel.style.color = "white";
-        minLabel.style.fontSize = "14px";
-        
-        const speedSlider = document.createElement("input");
-        speedSlider.type = "range";
-        speedSlider.min = CONFIG.SPEED.MULTIPLIER.MIN.toString();
-        speedSlider.max = CONFIG.SPEED.MULTIPLIER.MAX.toString();
-        speedSlider.step = CONFIG.SPEED.MULTIPLIER.STEP.toString();
-        speedSlider.value = this._speedMultiplier.toString();
-        speedSlider.style.flex = "1";
-        speedSlider.style.height = "6px";
-        speedSlider.style.background = "#ddd";
-        speedSlider.style.outline = "none";
-        speedSlider.style.borderRadius = "3px";
-        
-        const maxLabel = document.createElement("span");
-        maxLabel.textContent = `${CONFIG.SPEED.MULTIPLIER.MAX}x`;
-        maxLabel.style.color = "white";
-        maxLabel.style.fontSize = "14px";
-        
-        const speedValue = document.createElement("div");
-        speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
-        speedValue.style.color = "#4CAF50";
-        speedValue.style.fontSize = "16px";
-        speedValue.style.fontWeight = "bold";
-        speedValue.style.marginTop = "5px";
-        
-        speedSlider.addEventListener("input", (e) => {
-            const target = e.target as HTMLInputElement;
-            this._speedMultiplier = parseFloat(target.value);
-            speedValue.textContent = `${this._speedMultiplier.toFixed(1)}x`;
-            this._onSpeedChange(this._speedMultiplier);
-        });
-        
-        speedSliderContainer.appendChild(minLabel);
-        speedSliderContainer.appendChild(speedSlider);
-        speedSliderContainer.appendChild(maxLabel);
-        
-        speedContainer.appendChild(speedLabel);
-        speedContainer.appendChild(speedSliderContainer);
-        speedContainer.appendChild(speedValue);
-        
-        return speedContainer;
-    }
-
-    private _createTableColorControl(): HTMLDivElement {
-        const tableColorContainer = document.createElement("div");
-        tableColorContainer.style.display = "flex";
-        tableColorContainer.style.flexDirection = "column";
-        tableColorContainer.style.alignItems = "center";
-        tableColorContainer.style.marginTop = "30px";
-        tableColorContainer.style.width = "300px";
-        
-        const tableColorLabel = document.createElement("div");
-        tableColorLabel.textContent = STRINGS[this._lang].tableColor || "Table Color";
-        tableColorLabel.style.color = "white";
-        tableColorLabel.style.fontSize = "18px";
-        tableColorLabel.style.marginBottom = "15px";
-        
-        const tableColorButton = document.createElement("button");
-        tableColorButton.id = "tableColorButton";
-        tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
-            (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
-            (STRINGS[this._lang].switchToGreen || "Switch to Green");
-        tableColorButton.style.padding = "10px 20px";
-        tableColorButton.style.fontSize = "16px";
-        tableColorButton.style.cursor = "pointer";
-        tableColorButton.style.backgroundColor = this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
-        tableColorButton.style.border = "none";
-        tableColorButton.style.borderRadius = "5px";
-        tableColorButton.style.color = "white";
-        tableColorButton.style.width = "160px";
-        
-        tableColorButton.addEventListener("click", () => {
-            this._tableTheme = this._tableTheme === 'GREEN' ? 'BLUE' : 'GREEN';
-            this._updateTableThemeButton();
-            this._onTableThemeToggle();
-        });
-        
-        tableColorContainer.appendChild(tableColorLabel);
-        tableColorContainer.appendChild(tableColorButton);
-        
-        return tableColorContainer;
-    }
-
     private _createGameOverUI(): void {
         this._gameOverUI = document.createElement("div");
-        this._gameOverUI.style.position = "absolute";
-        this._gameOverUI.style.top = "0";
-        this._gameOverUI.style.left = "0";
-        this._gameOverUI.style.width = "100%";
-        this._gameOverUI.style.height = "100%";
-        this._gameOverUI.style.display = "none";
-        this._gameOverUI.style.flexDirection = "column";
-        this._gameOverUI.style.justifyContent = "center";
-        this._gameOverUI.style.alignItems = "center";
-        this._gameOverUI.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        this._gameOverUI.className = "absolute inset-0 hidden flex-col justify-center items-center bg-black/70";
         
         const gameOverText = document.createElement("h2");
         gameOverText.id = "gameOverText";
-        gameOverText.style.color = "#fff";
-        gameOverText.style.fontSize = "48px";
-        gameOverText.style.margin = "0 0 10px";
+        gameOverText.className = "text-white text-5xl m-0 mb-2.5";
         
         const winnerText = document.createElement("h3");
         winnerText.id = "winnerText";
-        winnerText.style.color = "#fff";
-        winnerText.style.fontSize = "24px";
-        winnerText.style.margin = "0 0 20px";
+        winnerText.className = "text-white text-2xl m-0 mb-5";
         
         const playAgainButton = document.createElement("button");
         playAgainButton.id = "playAgainButton";
-        playAgainButton.style.padding = "10px 20px";
-        playAgainButton.style.fontSize = "20px";
-        playAgainButton.style.cursor = "pointer";
-        playAgainButton.style.backgroundColor = "#4CAF50";
-        playAgainButton.style.border = "none";
-        playAgainButton.style.borderRadius = "5px";
-        playAgainButton.style.color = "white";
-        playAgainButton.style.marginBottom = "10px";
-        playAgainButton.style.width = "180px";
-        playAgainButton.style.textAlign = "center";
+        playAgainButton.className = "px-5 py-2.5 text-xl cursor-pointer bg-green-500 border-none rounded text-white mb-2.5 w-44 text-center hover:bg-green-600 transition-colors";
         
         playAgainButton.addEventListener("click", () => {
             this._onResetGame();
@@ -426,15 +224,7 @@ export class UIManager {
         
         const menuButton = document.createElement("button");
         menuButton.id = "menuButton";
-        menuButton.style.padding = "10px 20px";
-        menuButton.style.fontSize = "20px";
-        menuButton.style.cursor = "pointer";
-        menuButton.style.backgroundColor = "#f44336";
-        menuButton.style.border = "none";
-        menuButton.style.borderRadius = "5px";
-        menuButton.style.color = "white";
-        menuButton.style.width = "180px";
-        menuButton.style.textAlign = "center";
+        menuButton.className = "px-5 py-2.5 text-xl cursor-pointer bg-red-500 border-none rounded text-white w-44 text-center hover:bg-red-600 transition-colors";
         
         menuButton.addEventListener("click", () => {
             this._onShowMenu();
@@ -453,17 +243,7 @@ export class UIManager {
 
         const selector = document.createElement("select");
         selector.id = "languageSelector";
-        selector.style.position = "fixed";
-        selector.style.top = "24px";
-        selector.style.right = "24px";
-        selector.style.zIndex = "10000";
-        selector.style.padding = "8px 16px";
-        selector.style.fontSize = "1rem";
-        selector.style.borderRadius = "8px";
-        selector.style.background = "#222";
-        selector.style.color = "#fff";
-        selector.style.border = "1px solid #444";
-        selector.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+        selector.className = "fixed top-6 right-6 z-[10000] px-4 py-2 text-base rounded-lg bg-gray-800 text-white border border-gray-600 shadow-lg";
 
         const languageLabels: Record<Language, string> = {
             ptBR: "Português (Brasil)",
@@ -484,7 +264,6 @@ export class UIManager {
 
         selector.addEventListener("change", () => {
             this._lang = selector.value as Language;
-            this._updateAllUIText();
         });
 
         document.body.appendChild(selector);
@@ -513,43 +292,6 @@ export class UIManager {
                 <div style="color: #ffa500;">${STRINGS[this._lang].noTournament}</div>
                 <div>${STRINGS[this._lang].practiceMode}</div>
             `;
-        }
-    }
-
-    private _updateAllUIText(): void {
-        const subtitle = this._menuUI.querySelector("h2");
-        if (subtitle) subtitle.textContent = STRINGS[this._lang].selectGameMode;
-
-        const classicLabel = this._menuUI.querySelector(".classic-label");
-        if (classicLabel) classicLabel.textContent = STRINGS[this._lang].classicMode;
-        const classicBtn = this._menuUI.querySelector(".classic-btn");
-        if (classicBtn) classicBtn.textContent = STRINGS[this._lang].start;
-
-        const puLabel = this._menuUI.querySelector(".powerups-label");
-        if (puLabel) puLabel.textContent = STRINGS[this._lang].powerUpsMode;
-        const puBtn = this._menuUI.querySelector(".powerups-btn");
-        if (puBtn) puBtn.textContent = STRINGS[this._lang].start;
-
-        const gameOverText = document.getElementById("gameOverText");
-        if (gameOverText) gameOverText.textContent = STRINGS[this._lang].gameOver;
-
-        const playAgainBtn = document.getElementById("playAgainButton");
-        if (playAgainBtn) playAgainBtn.textContent = STRINGS[this._lang].playAgain;
-
-        const menuBtn = document.getElementById("menuButton");
-        if (menuBtn) menuBtn.textContent = STRINGS[this._lang].mainMenu;
-
-        this._updateTableThemeButton();
-    }
-
-    private _updateTableThemeButton(): void {
-        const tableColorButton = document.getElementById("tableColorButton");
-        if (tableColorButton) {
-            tableColorButton.textContent = this._tableTheme === 'GREEN' ? 
-                (STRINGS[this._lang].switchToBlue || "Switch to Blue") : 
-                (STRINGS[this._lang].switchToGreen || "Switch to Green");
-            (tableColorButton as HTMLButtonElement).style.backgroundColor = 
-                this._tableTheme === 'GREEN' ? "#2196F3" : "#4CAF50";
         }
     }
 }

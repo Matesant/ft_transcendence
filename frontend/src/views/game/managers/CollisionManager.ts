@@ -12,6 +12,7 @@ export class CollisionManager {
     private _powerUpManager: PowerUpManager;
     private _speedMultiplier: number;
     private _firstCollision: boolean = true;
+    private _ballReleaseTimer: number | null = null;
     
     private _onScore: () => void;
 
@@ -38,6 +39,13 @@ export class CollisionManager {
 
     public setFirstCollision(value: boolean): void {
         this._firstCollision = value;
+    }
+
+    public clearBallReleaseTimer(): void {
+        if (this._ballReleaseTimer) {
+            window.clearTimeout(this._ballReleaseTimer);
+            this._ballReleaseTimer = null;
+        }
     }
 
     public checkCollisions(): void {
@@ -127,8 +135,21 @@ export class CollisionManager {
             this._powerUpManager.reset();
             this._ball.reset();
             this._firstCollision = true;
-            this._ball.start(direction);
-            this._applySpeedMultiplierToBall(this._ball);
+            
+            // Clear any existing ball release timer
+            if (this._ballReleaseTimer) {
+                window.clearTimeout(this._ballReleaseTimer);
+                this._ballReleaseTimer = null;
+            }
+            
+            // Release ball after 1 second (similar to server)
+            this._ballReleaseTimer = window.setTimeout(() => {
+                this._ball.start(direction);
+                this._applySpeedMultiplierToBall(this._ball);
+                console.log(`Ball released after point scored`);
+                this._ballReleaseTimer = null;
+            }, 1000) as number;
+            
         } else {
             // Extra ball scored - just remove it
             ball.reset();

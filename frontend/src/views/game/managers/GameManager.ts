@@ -13,6 +13,7 @@ import { CollisionManager } from "./CollisionManager";
 import { FieldManager } from "./FieldManager";
 import { GameStateManager, GameState } from "./GameStateManager";
 import { getWsManager } from "../../../utils/connectionStore";
+import { router } from "../../../router/Router";
 
 export class GameManager {
     private _scene: Scene;
@@ -50,6 +51,9 @@ export class GameManager {
 
         // Create playing field
         this._fieldManager = new FieldManager(scene);
+        
+        // Load settings from sessionStorage (from tournament configuration)
+        this._loadSettingsFromStorage();
 
         // Initialize power-up manager
         this._powerUpManager = new PowerUpManager(
@@ -89,28 +93,29 @@ export class GameManager {
         await this._matchManager.loadCurrentMatch();
         const { player1, player2 } = this._matchManager.getPlayerNames();
         this._scoreManager.setPlayerNames(player1, player2);
-        await this._showMenu();
+        
+        // Load settings from sessionStorage and start game directly
+        const powerupsEnabled = sessionStorage.getItem("powerupsEnabled") === "true";
+        const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
+        const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        
+        // Apply settings
+        this._onSpeedChange(gameSpeed);
+        this._fieldManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+        this._uiManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+        
+        // Start game immediately
+        this._startGame(powerupsEnabled);
     }
     
     private async _showMenu(): Promise<void> {
-        this._gameStateManager.showMenu();
-        this._uiManager.showMenu();
-        this._uiManager.hideGameOver();
-        this._resetGame();
-        this._powerUpManager.deactivate();
-
-        await this._matchManager.loadCurrentMatch();
-        const { player1, player2 } = this._matchManager.getPlayerNames();
-        this._uiManager.updateMatchInfo(
-            this._matchManager.getCurrentMatch(),
-            player1,
-            player2
-        );
+        // Navigate back to tournament page
+        history.pushState("", "", "/tournament");
+        router();
     }
     
     private async _startGame(enablePowerUps: boolean = false): Promise<void> {
         this._gameStateManager.startGame(enablePowerUps);
-        this._uiManager.hideMenu();
         this._uiManager.hideGameOver();
 
         // Apply speed multiplier to paddles
@@ -122,9 +127,23 @@ export class GameManager {
         const { player1, player2 } = this._matchManager.getPlayerNames();
         this._scoreManager.setPlayerNames(player1, player2);
 
-        // Start the ball with speed multiplier applied
-        this._ball.start();
-        this._applySpeedMultiplierToBall(this._ball);
+        // Start the ball with delay for initial game start
+        // Check if this is the first game start (score is 0-0)
+        const score = this._scoreManager.score;
+        const isFirstStart = score.player1 === 0 && score.player2 === 0;
+        
+        if (isFirstStart) {
+            // First game start - wait 5 seconds
+            setTimeout(() => {
+                this._ball.start();
+                this._applySpeedMultiplierToBall(this._ball);
+            }, 2000);
+        } else {
+            // Regular restart - start immediately
+            this._ball.start();
+            this._applySpeedMultiplierToBall(this._ball);
+        }
+        
         this._firstCollision = true;
         this._collisionManager.setFirstCollision(true);
 
@@ -164,6 +183,7 @@ export class GameManager {
         this._scoreManager.reset();
         this._firstCollision = true;
         this._collisionManager.setFirstCollision(true);
+        this._collisionManager.clearBallReleaseTimer();
         
         // Reset paddles
         this._leftPaddle.reset();
@@ -198,6 +218,16 @@ export class GameManager {
         const currentVel = ball.velocity;
         ball.velocity = currentVel.scale(this._speedMultiplier);
     }
+
+    private _loadSettingsFromStorage(): void {
+        // Load game speed
+        const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
+        this._speedMultiplier = gameSpeed;
+        
+        // Load table theme
+        const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
+        this._fieldManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
+    }
     
     public update(): void {
         // Only update game logic if in PLAYING state
@@ -210,9 +240,9 @@ export class GameManager {
             // Check for game over condition
             const score = this._scoreManager.score;
             const { player1, player2 } = this._matchManager.getPlayerNames();
-            if (score.player1 >= 5) {
+            if (score.player1 >= 2) {
                 this._showGameOver(player1);
-            } else if (score.player2 >= 5) {
+            } else if (score.player2 >= 2) {
                 this._showGameOver(player2);
             }
         }

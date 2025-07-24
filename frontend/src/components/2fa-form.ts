@@ -1,0 +1,79 @@
+import { navigateTo } from "../router/Router";
+
+export class TwoFactorAuth extends HTMLElement {
+  public alias: string = "alisson";
+
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    // Cria o conteúdo interno com classes Tailwind
+    this.innerHTML = `
+      <div class="mx-auto mt-20 w-96"> <!-- centralizado horizontal, largura fixa -->
+      <h1 class="text-center text-2xl pb-4">Two factor authentication</h1>
+        <div class="p-4 space-y-4 border rounded shadow">
+          <button id="requestBtn" class="px-4 py-2 bg-blue-500 text-white rounded w-full">Send code to email</button>
+          <form id="verifyForm" class="space-y-2 border border-black rounded p-4"> <!-- borda preta, arredondada, padding -->
+            <input id="codeInput" type="text" placeholder="Type the code" class="border p-2 rounded w-full" required>
+            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded w-full">Check code</button>
+          </form>
+          <div id="status" class="text-sm"></div>
+        </div>
+      </div>
+    `;
+
+    const requestBtn = this.querySelector<HTMLButtonElement>("#requestBtn")!;
+    const form = this.querySelector<HTMLFormElement>("#verifyForm")!;
+    const codeInput = this.querySelector<HTMLInputElement>("#codeInput")!;
+    const status = this.querySelector<HTMLDivElement>("#status")!;
+
+    // Enviar pedido de código
+    requestBtn.addEventListener("click", async () => {
+      status.textContent = "Enviando código...";
+      try {
+        const res = await fetch("http://localhost:3001/auth/2fa/request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alias: this.alias })
+        });
+        const data = await res.json();
+        if (data.success) {
+          status.textContent = data.message;
+        } else {
+          status.textContent = data.error || "Erro ao solicitar código";
+        }
+      } catch (err) {
+        status.textContent = "Erro de rede ao solicitar código";
+      }
+    });
+
+    // Ouvir submit do form
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = codeInput.value.trim();
+      if (!code) return;
+      status.textContent = "Verificando código...";
+      try {
+        const res = await fetch("http://localhost:3001/auth/2fa/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alias: this.alias, code }),
+          credentials: "include"
+        });
+        const data = await res.json();
+        if (data.success) {
+          status.textContent = data.message;
+          debugger;
+          navigateTo("/dashboard");
+        } else {
+          status.textContent = data.error || "Falha na verificação";
+        }
+      } catch (err) {
+        status.textContent = "Erro de rede ao verificar código";
+      }
+    });
+  }
+}
+
+customElements.define("two-factor-auth", TwoFactorAuth);

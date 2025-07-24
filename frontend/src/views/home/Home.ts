@@ -11,7 +11,6 @@ export class Home extends AView {
     // Fundo animado
     const bg = document.createElement('div');
     bg.className = 'pong-bg min-h-screen flex flex-col';
-    bg.style.minHeight = '100vh';
 
     // Header
     const header = document.createElement('header');

@@ -5,7 +5,7 @@ export default async function (fastify, opts) {
     async (request, reply) => {
       try {
         const players = await fastify.db.all(
-          'SELECT alias, display_name, wins, losses FROM user_profiles ORDER BY alias ASC'
+          'SELECT alias, display_name, wins, losses, avatar FROM user_profiles ORDER BY alias ASC'
         );
 
         // Calculate winrate for each player
@@ -20,7 +20,8 @@ export default async function (fastify, opts) {
             display_name: player.display_name,
             wins: winsCount,
             losses: lossesCount,
-            winrate: winrate
+            winrate: winrate,
+            avatar: player.avatar
           };
         });
 

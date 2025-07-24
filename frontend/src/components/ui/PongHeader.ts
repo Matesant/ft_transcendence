@@ -17,7 +17,7 @@ export function PongHeader({ rightContent = null, homeOnly = false }: PongHeader
   const logoImg = document.createElement('img');
   logoImg.src = '/images/transcendence-logo.svg';
   logoImg.alt = 'Transcendence Logo';
-  logoImg.className = 'max-h-16 w-auto drop-shadow-lg';
+  logoImg.className = 'max-h-36 w-auto drop-shadow-lg';
   
   logo.appendChild(logoImg);
 

@@ -41,7 +41,10 @@ fastify.decorate("authenticate", async function (request, reply) {
   }
 })
 
-await fastify.register(cors, { origin: true, credentials: true })
+await fastify.register(cors, {
+  origin: true, credentials: true,
+  methods: ['OPTIONS', 'PATCH']
+})
 await fastify.register(jwt, { secret: process.env.JWT_SECRET })
 await fastify.register(cookie, { secret: process.env.COOKIE_SECRET })
 await fastify.register(dbPlugin)

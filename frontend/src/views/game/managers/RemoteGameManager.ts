@@ -341,9 +341,9 @@ export class RemoteGameManager {
         container.appendChild(buttonsContainer);
         
         // Update status UI styles for game over screen
-        this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001]';
-        this._statusUI.style.border = `3px solid ${isWinner ? '#4CAF50' : '#f44336'}`;
-        this._statusUI.style.display = 'block';
+        this._statusUI.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001] border-4 block ${
+            isWinner ? 'border-green-500' : 'border-red-500'
+        }`;
         
         this._statusUI.appendChild(container);
     }
@@ -425,9 +425,7 @@ export class RemoteGameManager {
         container.appendChild(buttonsContainer);
         
         // Update status UI styles for disconnection screen
-        this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001]';
-        this._statusUI.style.border = '3px solid #FF9800';
-        this._statusUI.style.display = 'block';
+        this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001] border-4 border-orange-500 block';
         
         this._statusUI.appendChild(container);
     }

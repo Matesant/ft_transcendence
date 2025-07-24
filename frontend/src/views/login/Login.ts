@@ -2,6 +2,7 @@ import { AView } from "../AView";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
+import { TwoFactorAuth } from "../../components/2fa-form";
 
 export class Login extends AView {
     
@@ -13,7 +14,6 @@ export class Login extends AView {
         // Fundo branco simples
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-white';
-        bg.style.minHeight = '100vh';
 
         // Header com botão Voltar
         const header = PongHeader({ homeOnly: true });
@@ -147,8 +147,14 @@ export class Login extends AView {
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
+
                     const result = await response.json();
-                    navigateTo('/dashboard');
+                    if ('require2FA' in result) {
+                        this.twoFa(data.alias, result);
+                    } else {
+                        navigateTo('/dashboard');
+                    }
+
                 } else {
                     const errorResponse = await response.json();
                     main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${errorResponse.error}</h1>`;
@@ -157,6 +163,17 @@ export class Login extends AView {
                 main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${error}</h1>`;
             }
         });
+    }
+
+    public twoFa(alias: string, data: {message: string, success: boolean}): void {
+
+        Array.from(document.body.children).forEach(child => {
+              document.body.removeChild(child);
+          });
+
+        const twoFaElement = document.createElement('two-factor-auth') as TwoFactorAuth;
+        twoFaElement.alias = alias;
+        document.body.appendChild(twoFaElement);
     }
 
     public dispose(): void {
