@@ -9,9 +9,9 @@ export class Dashboard extends AView {
     const dashboardContainer = document.createElement('div');
     dashboardContainer.className = 'w-full min-h-screen p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans';
     dashboardContainer.innerHTML = `
-      <div class="flex justify-between items-center mb-10 w-full max-w-4xl p-5 animate-slideDown">
+      <div class="flex justify-between items-center mb-10 w-full p-5 animate-slideDown">
         <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
-          <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-16 w-auto drop-shadow-lg">
+          <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
         </div>
         <div class="flex items-center gap-5">
           <div class="flex items-center gap-5">

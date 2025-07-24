@@ -12,7 +12,7 @@ class playerProfile extends HTMLElement {
       // cria o container principal
       this.container = document.createElement("div");
       this.container.className = `
-          ml-64 flex justify-center w-[calc(100%-16rem)] p-4
+          flex justify-center items-center w-full p-4
       `;
       this.appendChild(this.container);
 
@@ -51,45 +51,58 @@ class playerProfile extends HTMLElement {
       const historyHtml = history.length > 0
           ? history.map(item => {
     
-            let itemResultStyle = 'inline-block px-2 py-1 rounded-full text-xs font-semibold ';
+            let itemResultStyle = 'inline-block px-3 py-1.5 rounded-full text-sm font-semibold ';
 
             if (item.result === 'win') {
-                itemResultStyle += 'bg-green-100 text-green-800';
+                itemResultStyle += 'bg-green-500/20 text-green-200 border border-green-500/30';
             }
             else if (item.result === 'loss') {
-                itemResultStyle += 'bg-red-100 text-red-800';
+                itemResultStyle += 'bg-red-500/20 text-red-200 border border-red-500/30';
             }
 
             return `
-              <tr class="border-b">
-                  <td class="py-2 px-4 text-center">${item.opponent}</td>
-                  <td class="py-2 px-4 text-center"> <div class="${itemResultStyle}">${item.result}</div></td>
-                  <td class="py-2 px-4 text-center">${new Date(item.date).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'})}</td>
-              </tr>
+              <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                  <div class="flex justify-between items-center mb-2">
+                      <span class="font-semibold text-white">${item.opponent}</span>
+                      <div class="${itemResultStyle}">${item.result.toUpperCase()}</div>
+                  </div>
+                  <div class="text-sm text-white/70">
+                      ${new Date(item.date).toLocaleString('pt-BR', { 
+                          day: '2-digit', 
+                          month: '2-digit', 
+                          year: '2-digit', 
+                          hour: '2-digit', 
+                          minute: '2-digit'
+                      })}
+                  </div>
+              </div>
           `;
           }).join("")
-          : `<tr><td colspan="3" class="py-2 px-4 text-center text-gray-500">Nenhum histórico disponível.</td></tr>`;
+          : `<div class="text-center text-white/60 py-8 px-4 bg-white/5 rounded-xl border border-white/10">
+                <div class="text-2xl mb-2">📊</div>
+                <p>Nenhum histórico disponível.</p>
+             </div>`;
 
       this.container.innerHTML = `
-          <div class="max-w-md w-full">
-              <div class="flex flex-col items-center mb-6">
-                  <img src="${profile.avatar}" alt="avatar" class="w-32 h-32 rounded-full mb-4 object-cover" />
-                  <h1 class="text-2xl font-bold">${profile.alias}</h1>
+          <div class="max-w-2xl w-full">
+              <!-- Avatar Section -->
+              <div class="flex flex-col items-center mb-8">
+                  <div class="relative">
+                      <img src="${profile.avatar}" alt="avatar" class="w-40 h-40 rounded-full object-cover border-4 border-white/20 shadow-2xl" />
+                      <div class="absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
+                  <h1 class="text-4xl font-bold text-white mt-6 drop-shadow-lg">${profile.alias}</h1>
               </div>
-              <h2 class="text-xl font-semibold mb-4 text-center border-b pb-2">Match history</h2>
-              <div class="overflow-x-auto">
-                  <table class="min-w-full bg-white border border-gray-800">
-                      <thead>
-                          <tr class="bg-gray-100 border-b border-gray-800">
-                              <th class="py-2 px-4 text-center">Opponent</th>
-                              <th class="py-2 px-4 text-center">Result</th>
-                              <th class="py-2 px-4 text-center">Date</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          ${historyHtml}
-                      </tbody>
-                  </table>
+              
+              <!-- Match History Section -->
+              <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <h2 class="text-2xl font-semibold text-white mb-6 text-center flex items-center justify-center gap-3">
+                      <span class="text-3xl">🏆</span>
+                      Match history
+                  </h2>
+                  <div class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+                      ${historyHtml}
+                  </div>
               </div>
           </div>
       `;
