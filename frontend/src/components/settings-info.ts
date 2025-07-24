@@ -44,8 +44,7 @@ class UserInfo extends HTMLElement {
   
           this.innerHTML = `
             <div class="mx-auto w-140 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 text-center space-y-2 mt-7">
-                      <!-- Aqui vão avatar e alias -->
-              <div id="user-info" class="mb-6 flex flex-col items-center">${avatarHtml}</div>
+              <div id="user-info" class="mb-2 flex flex-col items-center">${avatarHtml}</div>
               <div class="text-lg font-bold">${alias}</div>
               <div>${email}</div>
               <div>2FA ${is2fa ? "enabled" : "disabled"}</div>
