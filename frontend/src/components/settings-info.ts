@@ -88,6 +88,17 @@ class UserInfo extends HTMLElement {
               Choose avatar
             </button>
 
+            <br>
+
+              <!-- Botões extras -->
+            <button id="changeEmailBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Change Email
+            </button>
+            <button id="changePasswordBtn" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+              Change Password
+            </button>
+
+
               <upload-avatar></upload-avatar>
             </div>
 
@@ -100,6 +111,146 @@ class UserInfo extends HTMLElement {
             </div>
           </div>
           `;
+
+
+          const createModal = (innerHtml: string) => {
+            const overlay = document.createElement('div');
+            overlay.className = "fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50";
+            
+            const modal = document.createElement('div');
+            modal.className = "bg-white p-6 rounded-xl shadow-xl w-96 space-y-4 text-black";
+            modal.innerHTML = innerHtml;
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+          
+            // Fecha clicando fora
+            overlay.addEventListener('click', (e) => {
+              if (e.target === overlay) {
+                document.body.removeChild(overlay);
+              }
+            });
+          };
+          
+          const changeEmailBtn = this.querySelector('#changeEmailBtn') as HTMLButtonElement;
+          const changePasswordBtn = this.querySelector('#changePasswordBtn') as HTMLButtonElement;
+          
+          changeEmailBtn.addEventListener('click', () => {
+            createModal(`
+              <h2 class="text-lg font-bold mb-2">Change Email</h2>
+              <input id="newEmailInput" type="email" placeholder="New Email" class="border p-2 rounded w-full" />
+              <input id="currentPasswordEmail" type="password" placeholder="Current Password" class="border p-2 rounded w-full" />
+              <button id="submitEmailChange" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+            `);
+          
+            // Lógica submit
+            setTimeout(() => {
+              const submitBtn = document.getElementById('submitEmailChange') as HTMLButtonElement;
+              submitBtn.addEventListener('click', async () => {
+                const newEmail = (document.getElementById('newEmailInput') as HTMLInputElement).value;
+                const currentPassword = (document.getElementById('currentPasswordEmail') as HTMLInputElement).value;
+     
+                try {
+                    let response = await fetch(apiUrl(3001, '/auth/update-credentials'), {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ currentPassword, newEmail }),
+                      credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to update email');
+                    }
+
+                    const data = await response.json();
+                    let status = document.createElement('div');
+                    status.className = "text-green-500 mt-2";
+                    status.textContent = data.message || "Email updated successfully!";
+    
+                    // adiciona o status abaixo de submitBtn
+                    submitBtn.insertAdjacentElement('afterend', status);
+
+                    setTimeout(() => {
+                        status.remove();
+                    }, 2000);
+
+                  
+                  
+                } catch (error) {
+
+                    let errorMessage = document.createElement('div');
+                    errorMessage.className = "text-red-500 mt-2";
+                    errorMessage.textContent = "Error updating email. Please try again.";
+                    
+                    submitBtn.insertAdjacentElement('afterend', errorMessage);
+
+
+                    setTimeout(() => {
+                        errorMessage.remove();
+                    }, 2000);
+                    
+                }
+
+              });
+            }, 0);
+          });
+          
+          changePasswordBtn.addEventListener('click', () => {
+            createModal(`
+              <h2 class="text-lg font-bold mb-2">Change Password</h2>
+              <input id="newPasswordInput" type="password" placeholder="New Password" class="border p-2 rounded w-full" />
+              <input id="currentPasswordPass" type="password" placeholder="Current Password" class="border p-2 rounded w-full" />
+              <button id="submitPassChange" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Submit</button>
+            `);
+          
+            // Lógica submit
+            setTimeout(() => {
+              const submitBtn = document.getElementById('submitPassChange') as HTMLButtonElement;
+              submitBtn.addEventListener('click', async () => {
+                const newPassword = (document.getElementById('newPasswordInput') as HTMLInputElement).value;
+                const currentPassword = (document.getElementById('currentPasswordPass') as HTMLInputElement).value;
+
+
+                  try {
+                    
+                    let response = await fetch(apiUrl(3001, '/auth/update-credentials'), {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ currentPassword, newPassword }),
+                      credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to update password');
+                    }
+
+                    const data = await response.json();
+                    let status = document.createElement('div');
+                    status.className = "text-green-500 mt-2";
+                    status.textContent = data.message || "Password updated successfully!";
+                    submitBtn.insertAdjacentElement('afterend', status);
+
+                    setTimeout(() => {
+                        status.remove();
+                    }, 2000);
+
+                  } catch (error) {
+
+                      let errorMessage = document.createElement('div');
+                      errorMessage.className = "text-red-500 mt-2";
+                      errorMessage.textContent = "Error updating password. Please try again.";
+                      
+                      submitBtn.insertAdjacentElement('afterend', errorMessage);
+
+                      setTimeout(() => {
+                          errorMessage.remove();
+                      }, 2000);
+                    
+                  }
+              });
+            }, 0);
+          });
+          
 
           this.setupNavigation();
           
