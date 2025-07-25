@@ -7,26 +7,39 @@ class UserInfo extends HTMLElement {
       this.loadData();
     }
 
-    public async renderAvatar() {
-
-      try {
-        const response = await fetch("http://localhost:3003/users/me", {credentials: "include"});
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-  
-        return `
-          <img class="w-24 h-24 rounded-full object-cover mb-2" src="${data.profile.avatar}" alt="${data.profile.alias}"></img>
-        `;
-
-  
-      } catch (err) {
-        console.error("Network error:", err);
+    private setupNavigation(): void {
+      // Navegação para dashboard
+      const dashboardBtn = this.querySelector('[data-route="/dashboard"]');
+      if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', (e: Event) => {
+          e.preventDefault();
+          history.pushState("", "", "/dashboard");
+          // Chame seu router aqui, se necessário
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        });
       }
-
-      return '';
+    }
+    
+    private async loadUserAvatar(): Promise<void> {
+      const avatarContainer = this.querySelector("#user-avatar-container");
+      try {
+        const response = await fetch("http://localhost:3003/users/me", { credentials: "include" });
+        if (!response.ok) throw new Error("Falha na request");
+        const data = await response.json();
+        const avatar = document.createElement("img");
+        avatar.src = data.profile.avatar;
+        avatar.alt = data.profile.alias;
+        avatar.className = "w-full h-full object-cover";
+        avatarContainer!.innerHTML = "";
+        avatarContainer!.appendChild(avatar);
+      } catch (err) {
+        avatarContainer!.textContent = "foto user";
+      }
     }
   
     private async loadData() {
+
+
       try {
         const resp = await fetch("http://localhost:3001/auth/verify", {
           credentials: "include",
@@ -40,11 +53,25 @@ class UserInfo extends HTMLElement {
           const alias = data.user.alias;
           const email = data.user.email;
           const is2fa = data.user.is_2fa_enabled;
-          const avatarHtml = await this.renderAvatar();
   
           this.innerHTML = `
+            
+            <div class="flex justify-between items-center mb-10 w-full p-5 animate-slideDown">
+              <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
+                <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
+              </div>
+              <div class="flex items-center gap-5">
+                <div class="flex items-center gap-5">
+                  <div class="w-16 h-16 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center text-xs border-2 border-white/40 overflow-hidden transition-all duration-300 hover:scale-105 hover:border-white/60 shadow-2xl cursor-pointer" id="user-avatar-container">
+                    <!-- Avatar será carregado aqui -->
+                  </div>
+                  <button class="logout-btn py-2.5 px-5 text-xs border-2 border-white/30 rounded-xl bg-white/15 backdrop-blur-sm text-white cursor-pointer font-medium transition-all duration-300 hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/50 relative overflow-hidden">🚪 logout</button>
+                </div>
+              </div>
+            </div>
+
+
             <div class="mx-auto w-140 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 text-center space-y-2 mt-7">
-              <div id="user-info" class="mb-2 flex flex-col items-center">${avatarHtml}</div>
               <div class="text-lg font-bold">${alias}</div>
               <div>${email}</div>
               <div>2FA ${is2fa ? "enabled" : "disabled"}</div>
@@ -70,11 +97,33 @@ class UserInfo extends HTMLElement {
               <select-avatar></select-avatar>
             </div>
           </div>
-
           `;
 
+          this.setupNavigation();
+          
+        // Logout
+        const logoutBtn = this.querySelector('.logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async (e: Event) => {
+            e.preventDefault();
+            try {
+              await fetch("http://localhost:3001/auth/logout", {
+                method: 'POST',
+                credentials: 'include'
+              });
+              sessionStorage.clear();
+              history.pushState("", "", "/login");
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            } catch (error) {
+              history.pushState("", "", "/login");
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+          });
+        }
 
-                  // lógica do modal
+        this.loadUserAvatar();
+
+        // lógica do modal
         const modal = this.querySelector("#avatarModal") as HTMLDivElement;
         const modalContent = this.querySelector("#modalContent") as HTMLDivElement;
         const openBtn = this.querySelector("#openModalBtn") as HTMLButtonElement;
