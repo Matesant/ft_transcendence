@@ -205,8 +205,8 @@ class UserInfo extends HTMLElement {
           
             // Lógica submit
             setTimeout(() => {
-              const submitBtn = document.getElementById('submitPassChange') as HTMLButtonElement;
-              submitBtn.addEventListener('click', async () => {
+                const submitBtn = document.getElementById('submitPassChange') as HTMLButtonElement;
+                submitBtn.addEventListener('click', async () => {
                 const newPassword = (document.getElementById('newPasswordInput') as HTMLInputElement).value;
                 const currentPassword = (document.getElementById('currentPasswordPass') as HTMLInputElement).value;
 
