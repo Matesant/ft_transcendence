@@ -7,6 +7,7 @@ const routes: {[key: string]: () => AView } = {
     "/tournament": Builders.TournamentBuilder,
     "/login": Builders.LoginBuilder,
     "/register": Builders.RegisterBuilder,
+    "/forgotPassword": Builders.ForgotPasswordBuilder,
     "/dashboard": Builders.DashboardBuilder,
     "/ranking": Builders.PlayersBuilder,
     "/player": Builders.PlayerBuilder,
@@ -53,7 +54,7 @@ export async function router (){
     let path: string = location.pathname;
     view = routes[path] ? routes[path]() : undefined;
 
-    if (path === "/" || path === "/register" || path === "/login") {
+    if (path === "/" || path === "/register" || path === "/login" || path === "/forgotPassword") {
         view.render(document.body);
         return ;
     } else {
