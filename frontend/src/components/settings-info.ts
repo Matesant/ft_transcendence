@@ -1,3 +1,5 @@
+import { apiUrl } from "../utils/api";
+
 class UserInfo extends HTMLElement {
     constructor() {
       super();
@@ -23,7 +25,7 @@ class UserInfo extends HTMLElement {
     private async loadUserAvatar(): Promise<void> {
       const avatarContainer = this.querySelector("#user-avatar-container");
       try {
-        const response = await fetch("http://localhost:3003/users/me", { credentials: "include" });
+        const response = await fetch(apiUrl(3003, '/users/me'), { credentials: "include" });
         if (!response.ok) throw new Error("Falha na request");
         const data = await response.json();
         const avatar = document.createElement("img");
@@ -41,7 +43,7 @@ class UserInfo extends HTMLElement {
 
 
       try {
-        const resp = await fetch("http://localhost:3001/auth/verify", {
+        const resp = await fetch(apiUrl(3001, '/auth/verify'), {
           credentials: "include",
         });
         if (!resp.ok) {
@@ -107,7 +109,7 @@ class UserInfo extends HTMLElement {
           logoutBtn.addEventListener('click', async (e: Event) => {
             e.preventDefault();
             try {
-              await fetch("http://localhost:3001/auth/logout", {
+              await fetch(apiUrl(3001, '/auth/logout'), {
                 method: 'POST',
                 credentials: 'include'
               });

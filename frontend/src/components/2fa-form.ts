@@ -1,4 +1,5 @@
 import { navigateTo } from "../router/Router";
+import { apiUrl } from "../utils/api";
 
 export class TwoFactorAuth extends HTMLElement {
   public alias: string = "alisson";
@@ -32,7 +33,7 @@ export class TwoFactorAuth extends HTMLElement {
     requestBtn.addEventListener("click", async () => {
       status.textContent = "Enviando código...";
       try {
-        const res = await fetch("http://localhost:3001/auth/2fa/request", {
+        const res = await fetch(apiUrl(3001, '/auth/2fa/request'), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ alias: this.alias })
@@ -55,7 +56,7 @@ export class TwoFactorAuth extends HTMLElement {
       if (!code) return;
       status.textContent = "Verificando código...";
       try {
-        const res = await fetch("http://localhost:3001/auth/2fa/verify", {
+        const res = await fetch(apiUrl(3001, '/auth/2fa/verify'), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ alias: this.alias, code }),
