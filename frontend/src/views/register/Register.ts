@@ -1,4 +1,5 @@
 import { AView } from "../AView";
+import { PongHeaderPublic }  from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
 import { apiUrl } from "../../utils/api";
@@ -15,7 +16,7 @@ export class Register extends AView {
         bg.className = 'min-h-screen flex flex-col bg-white';
 
         // Header com botão Voltar
-        const header = PongHeader({ homeOnly: true });
+        const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
         // Conteúdo central

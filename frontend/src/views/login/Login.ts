@@ -1,4 +1,5 @@
 import { AView } from "../AView";
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
@@ -17,7 +18,7 @@ export class Login extends AView {
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
         // Header com botão Voltar
-        const header = PongHeader({ homeOnly: true });
+        const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
         // Conteúdo central
@@ -206,9 +207,8 @@ export class Login extends AView {
               document.body.removeChild(child);
           });
 
-        const twoFaElement = document.createElement('two-factor-auth') as TwoFactorAuth;
-        twoFaElement.alias = alias;
-        document.body.appendChild(twoFaElement);
+          sessionStorage.setItem("alias", alias);
+          navigateTo('/2fa');
     }
 
     public dispose(): void {

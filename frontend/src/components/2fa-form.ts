@@ -1,6 +1,6 @@
 import { navigateTo } from "../router/Router";
 import { apiUrl } from "../utils/api";
-import { PongHeader } from "./ui";
+import { PongHeaderPublic } from "./ui/PongHeaderPublic";
 
 export class TwoFactorAuth extends HTMLElement {
   public alias: string = "alisson";
@@ -15,7 +15,6 @@ export class TwoFactorAuth extends HTMLElement {
 
     // Cria o conteúdo interno com classes Tailwind
     this.innerHTML = `
-      ${PongHeader({ homeOnly: true }).outerHTML}
       <div class="mx-auto mt-20 w-96"> <!-- centralizado horizontal, largura fixa -->
       <h1 class="text-center text-2xl pb-4">Two factor authentication</h1>
         <div class="p-4 space-y-4 border rounded shadow border-2 border-white/20 rounded-2xl bg-white/10 backdrop-blur-md">
@@ -28,6 +27,9 @@ export class TwoFactorAuth extends HTMLElement {
         </div>
       </div>
     `;
+
+    let header = PongHeaderPublic({ homeOnly: true });
+    this.insertAdjacentElement("afterbegin", header);
 
     const requestBtn = this.querySelector<HTMLButtonElement>("#requestBtn")!;
     const form = this.querySelector<HTMLFormElement>("#verifyForm")!;

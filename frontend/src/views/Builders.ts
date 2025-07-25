@@ -12,11 +12,16 @@ import { AView } from "./AView";
 import { Lobby } from "./lobby/lobby";
 import { Online } from "./online/Online";
 import { Settings } from "./settings/Settings";
+import { twoFa } from "./2fa/2fa";
 
 export class Builders {
     public static GameBuilder(): AView {
         // Return a wrapper that shows the game mode selector
         return new Game();
+    }
+
+    public static TwoFaBuilder(): AView {
+        return new twoFa();
     }
 
     public static FriendsBuilder(): AView {

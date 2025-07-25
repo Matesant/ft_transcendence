@@ -15,7 +15,8 @@ const routes: {[key: string]: () => AView } = {
     "/lobby": Builders.LobbyBuilder,
     "/settings": Builders.SettingsBuilder,
     "/friends": Builders.FriendsBuilder,
-    "/": Builders.HomeBuilder
+    "/": Builders.HomeBuilder,
+    "/2fa": Builders.TwoFaBuilder,
 };
 
 async function isAuthenticated(): Promise<boolean> {
@@ -54,7 +55,7 @@ export async function router (){
     let path: string = location.pathname;
     view = routes[path] ? routes[path]() : undefined;
 
-    if (path === "/" || path === "/register" || path === "/login" || path === "/forgotPassword") {
+    if (path === "/" || path === "/register" || path === "/login" || path === "/forgotPassword" || path === "/2fa") {
         view.render(document.body);
         return ;
     } else {

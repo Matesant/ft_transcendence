@@ -1,4 +1,5 @@
 import { AView } from "../AView";
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton, PongSpinner } from "../../components/ui";
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
@@ -19,7 +20,7 @@ export class ForgotPassword extends AView {
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
         // Header com botão Voltar
-        const header = PongHeader({ homeOnly: true });
+        const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
         // Conteúdo central
