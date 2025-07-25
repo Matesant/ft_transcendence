@@ -125,7 +125,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4 max-w-5xl mx-auto";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4 max-w-5xl mx-auto";
 
     const title = document.createElement("h1");
     title.className = "text-5xl font-bold mb-12 text-center drop-shadow-lg";
@@ -172,7 +172,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4";
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
@@ -282,7 +282,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4";
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
@@ -353,7 +353,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4";
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
@@ -500,7 +500,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4";
 
     const title = document.createElement("h1");
     title.className = "text-5xl font-bold mb-8 text-center drop-shadow-lg animate-pulse";
@@ -561,7 +561,7 @@ export class Lobby extends AView {
     this.clearBody();
 
     const main = document.createElement("main");
-    main.className = "flex flex-1 flex-col items-center justify-center w-full px-4";
+    main.className = "flex flex-1 flex-col items-center justify-start pt-16 w-full px-4";
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";

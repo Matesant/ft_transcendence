@@ -3,6 +3,7 @@ import { Tournament } from "./tournament/Tournament";
 import { Home } from "./home/Home";
 import { Login } from "./login/Login";
 import { Register } from "./register/Register";
+import { ForgotPassword } from "./forgotPassword/ForgotPassword";
 import { Dashboard } from "./dashboard/Dashboard";
 import { Players } from "./ranking/Ranking";
 import { Player } from "./player/Player";
@@ -36,6 +37,10 @@ export class Builders {
 
     public static RegisterBuilder(): AView {
         return new Register();
+    }
+
+    public static ForgotPasswordBuilder(): AView {
+        return new ForgotPassword();
     }
 
     public static TournamentBuilder(): AView {

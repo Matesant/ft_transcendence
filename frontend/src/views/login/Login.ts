@@ -12,9 +12,9 @@ export class Login extends AView {
         parent.innerHTML = '';
         parent.className = '';
 
-        // Fundo branco simples
+        // Fundo com gradiente igual ao lobby
         const bg = document.createElement('div');
-        bg.className = 'min-h-screen flex flex-col bg-white';
+        bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
         // Header com botão Voltar
         const header = PongHeader({ homeOnly: true });
@@ -22,16 +22,11 @@ export class Login extends AView {
 
         // Conteúdo central
         const main = document.createElement('main');
-        main.className = 'flex flex-1 flex-col items-center justify-center w-full px-4';
+        main.className = 'flex flex-1 flex-col items-center justify-start pt-16 w-full px-4';
 
-        // Formulário centralizado
+        // Formulário centralizado com estilo glassmorphism
         const formContainer = document.createElement('div');
-        formContainer.className = 'bg-white rounded-lg shadow-md w-full max-w-md p-8';
-
-        const cardTitle = document.createElement('h2');
-        cardTitle.className = 'text-2xl font-bold mb-6 text-center';
-        cardTitle.textContent = 'Login';
-        formContainer.appendChild(cardTitle);
+        formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
         const form = document.createElement('form');
         form.id = 'login-form';
@@ -42,10 +37,13 @@ export class Login extends AView {
         aliasDiv.className = 'mb-4';
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'username';
-        aliasLabel.className = 'block text-sm font-medium text-gray-700';
+        aliasLabel.className = 'block text-sm font-medium text-white/90 mb-2';
         aliasLabel.textContent = 'Alias';
         aliasDiv.appendChild(aliasLabel);
-        aliasDiv.appendChild(PongInput({ id: 'username', name: 'alias', type: 'text', required: true }));
+        
+        const aliasInput = PongInput({ id: 'username', name: 'alias', type: 'text', required: true });
+        aliasInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
+        aliasDiv.appendChild(aliasInput);
         form.appendChild(aliasDiv);
 
         // Password
@@ -53,40 +51,61 @@ export class Login extends AView {
         passDiv.className = 'mb-4';
         const passLabel = document.createElement('label');
         passLabel.htmlFor = 'password';
-        passLabel.className = 'block text-sm font-medium text-gray-700';
+        passLabel.className = 'block text-sm font-medium text-white/90 mb-2';
         passLabel.textContent = 'Password';
         passDiv.appendChild(passLabel);
-        passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true }));
+        
+        const passInput = PongInput({ id: 'password', name: 'password', type: 'password', required: true });
+        passInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
+        passDiv.appendChild(passInput);
         form.appendChild(passDiv);
 
         // Botão submit
         const submitBtn = PongButton({
             text: 'Login',
             variant: 'primary',
-            extraClass: 'w-full font-semibold py-2 px-4 rounded-md text-lg',
+            extraClass: 'w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25',
         });
         form.appendChild(submitBtn);
 
+        // Link "Esqueceu a senha?" centralizado abaixo do botão de login
+        const forgotPasswordDiv = document.createElement('div');
+        forgotPasswordDiv.className = 'mt-4 mb-6 text-center';
+        const forgotPasswordLink = document.createElement('a');
+        forgotPasswordLink.href = '#';
+        forgotPasswordLink.className = 'text-sm text-white/60 hover:text-white/80 cursor-pointer transition-colors duration-200';
+        forgotPasswordLink.textContent = 'Esqueceu a senha?';
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo('/forgotPassword');
+        });
+        forgotPasswordDiv.appendChild(forgotPasswordLink);
+        form.appendChild(forgotPasswordDiv);
 
-        const divider = document.createElement('div');
-        divider.className = 'flex items-center my-4';
-        divider.innerHTML = `
-            <hr class="flex-grow border-gray-300">
-            <span class="mx-2 text-gray-500 font-semibold">ou</span>
-            <hr class="flex-grow border-gray-300">
-        `;
-
-        form.appendChild(divider);
+        // Separador "OU"
+        const separatorDiv = document.createElement('div');
+        separatorDiv.className = 'flex items-center my-6';
+        const line1 = document.createElement('div');
+        line1.className = 'flex-1 border-t border-white/20';
+        const orText = document.createElement('span');
+        orText.className = 'px-4 text-sm text-white/60';
+        orText.textContent = 'OU';
+        const line2 = document.createElement('div');
+        line2.className = 'flex-1 border-t border-white/20';
+        separatorDiv.appendChild(line1);
+        separatorDiv.appendChild(orText);
+        separatorDiv.appendChild(line2);
+        form.appendChild(separatorDiv);
 
         const googleBtn = PongButton({
             text: '',
             variant: 'secondary',
-            extraClass: 'w-full font-semibold py-2 px-4 rounded-md text-lg mt-4 flex items-center justify-center gap-2',
+            extraClass: 'w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white py-4 px-6 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg flex items-center justify-center gap-3',
             onClick: () => {
                 window.location.href = apiUrl(3001, '/auth/google');
             }
         });
-
+        
         googleBtn.innerHTML = `
             <svg class="w-6 h-6 mr-2" viewBox="0 0 48 48">
                 <g>
@@ -105,15 +124,15 @@ export class Login extends AView {
 
         // Texto e botão de registro
         const registerBox = document.createElement('div');
-        registerBox.className = 'mt-6 flex flex-col items-center';
+        registerBox.className = 'mt-12 flex flex-col items-center';
         const registerText = document.createElement('span');
-        registerText.className = 'text-sm text-gray-700 mb-2';
+        registerText.className = 'text-sm text-white/80 mb-3';
         registerText.textContent = 'Não tem uma conta?';
         const registerBtn = PongButton({
             text: 'Registrar',
             variant: 'secondary',
             onClick: () => navigateTo('/register'),
-            extraClass: 'w-auto px-4 py-2 text-base font-semibold rounded'
+            extraClass: 'bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-2 text-base font-semibold rounded-lg transition-all duration-200 hover:-translate-y-1'
         });
         registerBox.appendChild(registerText);
         registerBox.appendChild(registerBtn);
@@ -158,12 +177,27 @@ export class Login extends AView {
 
                 } else {
                     const errorResponse = await response.json();
-                    main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${errorResponse.error}</h1>`;
+                    this.showError(`Login Failed: ${errorResponse.error}`);
                 }
             } catch (error) {
-                main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${error}</h1>`;
+                this.showError(`Login Failed: ${error}`);
             }
         });
+    }
+
+    private showError(message: string): void {
+        // Create a temporary error message
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 3000);
     }
 
     public twoFa(alias: string, data: {message: string, success: boolean}): void {
