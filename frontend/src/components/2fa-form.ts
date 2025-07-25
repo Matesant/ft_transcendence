@@ -1,5 +1,6 @@
 import { navigateTo } from "../router/Router";
 import { apiUrl } from "../utils/api";
+import { PongHeader } from "./ui";
 
 export class TwoFactorAuth extends HTMLElement {
   public alias: string = "alisson";
@@ -9,14 +10,18 @@ export class TwoFactorAuth extends HTMLElement {
   }
 
   connectedCallback() {
+
+    document.body.className = "bg-gradient-to-br from-indigo-500 to-purple-600 text-white h-screen";
+
     // Cria o conteúdo interno com classes Tailwind
     this.innerHTML = `
+      ${PongHeader({ homeOnly: true }).outerHTML}
       <div class="mx-auto mt-20 w-96"> <!-- centralizado horizontal, largura fixa -->
       <h1 class="text-center text-2xl pb-4">Two factor authentication</h1>
-        <div class="p-4 space-y-4 border rounded shadow">
+        <div class="p-4 space-y-4 border rounded shadow border-2 border-white/20 rounded-2xl bg-white/10 backdrop-blur-md">
           <button id="requestBtn" class="px-4 py-2 bg-blue-500 text-white rounded w-full">Send code to email</button>
-          <form id="verifyForm" class="space-y-2 border border-black rounded p-4"> <!-- borda preta, arredondada, padding -->
-            <input id="codeInput" type="text" placeholder="Type the code" class="border p-2 rounded w-full" required>
+          <form id="verifyForm" class="space-y-2 p-4"> <!-- borda preta, arredondada, padding -->
+            <input id="codeInput" type="text" placeholder="Type the code" class="border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full" required>
             <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded w-full">Check code</button>
           </form>
           <div id="status" class="text-sm"></div>
