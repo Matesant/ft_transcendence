@@ -13,7 +13,7 @@ export class Register extends AView {
 
         // Fundo branco simples
         const bg = document.createElement('div');
-        bg.className = 'min-h-screen flex flex-col bg-white';
+        bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
         // Header com botão Voltar
         const header = PongHeaderPublic({ homeOnly: true });
@@ -25,7 +25,7 @@ export class Register extends AView {
 
         // Formulário centralizado
         const formContainer = document.createElement('div');
-        formContainer.className = 'bg-white rounded-lg shadow-md w-full max-w-md p-8';
+        formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
         const cardTitle = document.createElement('h2');
         cardTitle.className = 'text-2xl font-bold mb-6 text-center';
@@ -41,10 +41,10 @@ export class Register extends AView {
         aliasDiv.className = 'mb-4';
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'username';
-        aliasLabel.className = 'block text-sm font-medium text-gray-700';
+        aliasLabel.className = 'block text-sm font-medium text-white-700';
         aliasLabel.textContent = 'Alias';
         aliasDiv.appendChild(aliasLabel);
-        aliasDiv.appendChild(PongInput({ id: 'username', name: 'alias', type: 'text', required: true }));
+        aliasDiv.appendChild(PongInput({ id: 'username', name: 'alias', type: 'text', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(aliasDiv);
 
         // Email
@@ -52,10 +52,10 @@ export class Register extends AView {
         emailDiv.className = 'mb-4';
         const emailLabel = document.createElement('label');
         emailLabel.htmlFor = 'email';
-        emailLabel.className = 'block text-sm font-medium text-gray-700';
+        emailLabel.className = 'block text-sm font-medium text-white-700';
         emailLabel.textContent = 'Email';
         emailDiv.appendChild(emailLabel);
-        emailDiv.appendChild(PongInput({ id: 'email', name: 'email', type: 'email', required: true }));
+        emailDiv.appendChild(PongInput({ id: 'email', name: 'email', type: 'email', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(emailDiv);
 
         // Password
@@ -63,10 +63,10 @@ export class Register extends AView {
         passDiv.className = 'mb-4';
         const passLabel = document.createElement('label');
         passLabel.htmlFor = 'password';
-        passLabel.className = 'block text-sm font-medium text-gray-700';
+        passLabel.className = 'block text-sm font-medium text-white-700';
         passLabel.textContent = 'Password';
         passDiv.appendChild(passLabel);
-        passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true }));
+        passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true, extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(passDiv);
 
         // Botão submit
@@ -82,9 +82,9 @@ export class Register extends AView {
         const divider = document.createElement('div');
         divider.className = 'flex items-center my-4';
         divider.innerHTML = `
-            <hr class="flex-grow border-gray-300">
-            <span class="mx-2 text-gray-500 font-semibold">ou</span>
-            <hr class="flex-grow border-gray-300">
+            <div class="flex-1 border-t border-white/20"></div>
+            <span class="mx-2 text-sm text-white/60 font-semibold">ou</span>
+            <div class="flex-1 border-t border-white/20"></div>
         `;
         form.appendChild(divider);
 
