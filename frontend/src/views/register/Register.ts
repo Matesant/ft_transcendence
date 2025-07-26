@@ -69,6 +69,12 @@ export class Register extends AView {
         passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true, extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(passDiv);
 
+        // Div para mensagem de erro de senha
+        const passwordErrorDiv = document.createElement('div');
+        passwordErrorDiv.id = 'password-error';
+        passwordErrorDiv.className = 'text-white text-center font-bold text-sm mb-2 min-h-[20px]';
+        form.appendChild(passwordErrorDiv);
+
         // Botão submit
         const submitBtn = PongButton({
             text: 'Register',
@@ -134,6 +140,14 @@ export class Register extends AView {
                 email: formData.get('email'),
                 password: formData.get('password'),
             };
+
+            // Validação de senha forte (6-12 caracteres, maiúscula, minúscula, número, especial)
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,12}$/;
+            passwordErrorDiv.textContent = '';
+            if (!strongPasswordRegex.test(String(data.password))) {
+                passwordErrorDiv.textContent = 'A senha deve ter entre 6 e 12 caracteres, incluindo maiúscula, minúscula, número e caractere especial.';
+                return;
+            }
             try {
                 const response = await fetch(apiUrl(3001, '/auth/register'), {
                     method: 'POST',
