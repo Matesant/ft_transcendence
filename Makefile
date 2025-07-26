@@ -79,6 +79,7 @@ fclean: down
 	@echo "$(RED)Full cleanup...$(RESET)"
 	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
 	docker system prune -af --volumes
+	@docker rm -f $$(docker ps -aq) 2>/dev/null || true
 	@rm -rf services/*/data/*.db
 	@$(MAKE) frontend-stop
 	@rm -f $(FRONTEND_DIR)/.frontend.log $(FRONTEND_DIR)/.tailwind.log

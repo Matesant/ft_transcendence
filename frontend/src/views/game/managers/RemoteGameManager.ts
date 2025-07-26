@@ -1,6 +1,6 @@
 import { GameManager } from "./GameManager";
-import { Ball } from "../entities/Ball";
-import { Paddle } from "../entities/Paddle";
+import { Ball } from "../gameObjects/Ball";
+import { Paddle } from "../gameObjects/Paddle";
 import { InputManager } from "./InputManager";
 import { UIManager } from "./UIManager";
 import { CONFIG } from "../config";
