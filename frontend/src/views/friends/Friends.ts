@@ -29,13 +29,11 @@ export class Friends extends AView {
         <div class="flex-1 bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl min-w-[300px]">
           <h2 class="text-2xl font-bold mb-6 text-center">Received</h2>
           <div id="received-list" class="flex flex-col gap-4 mb-4"></div>
-          <div class="text-xs text-white/60 text-center mt-6">GET User/pending</div>
         </div>
         <!-- Friends List -->
         <div class="flex-1 bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl min-w-[300px]">
           <h2 class="text-2xl font-bold mb-6 text-center">Friends</h2>
           <div id="friends-list" class="flex flex-col gap-4 mb-4"></div>
-          <div class="text-xs text-white/60 text-center mt-6">GET User/see all user friends</div>
         </div>
       </div>
       <!-- Add new friend -->
