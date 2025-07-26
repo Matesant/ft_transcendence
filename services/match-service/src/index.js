@@ -8,12 +8,18 @@ import setupRoutes from './routes/match/setup.js';
 import playRoutes from './routes/match/play.js';
 import tournamentRoutes from './routes/match/tournament.js';
 import crypto from 'node:crypto'
+import { readFileSync } from 'node:fs';
+
 
 dotenv.config()
 
 // Configure Fastify
 const fastify = Fastify({
-	logger: false
+	logger: false,
+  https: {
+    cert: readFileSync('/app/server.crt'),
+    key: readFileSync('/app/server.key')
+  }
 })
 
 fastify.addHook('onRequest', async (request, reply) => {

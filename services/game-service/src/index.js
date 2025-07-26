@@ -5,6 +5,7 @@ import websocket from '@fastify/websocket';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 
+import { readFileSync } from 'node:fs';
 import { GameRoom } from './managers/GameRoom.js';
 import { GameManager } from './managers/GameManager.js';
 import { PlayerManager } from './managers/PlayerManager.js';
@@ -14,7 +15,11 @@ dotenv.config();
 const app = fastify({ 
     logger: true,
     keepAliveTimeout: 30000,
-    connectionTimeout: 30000
+    connectionTimeout: 30000,
+    https: {
+        cert: readFileSync('/app/server.crt'),
+        key: readFileSync('/app/server.key')
+      }
 });
 
 // Register plugins

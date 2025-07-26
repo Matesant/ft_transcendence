@@ -13,12 +13,17 @@ import credentialsRoutes from './routes/auth/credentials.js'
 import sessionRoutes from './routes/auth/session.js'
 import crypto from 'node:crypto'
 import googleRoutes from './routes/auth/google.js'
+import { readFileSync } from 'node:fs';
 
 dotenv.config()
 
 // 1) Configure Fastify
 const fastify = Fastify({
-	logger: false
+	logger: false,
+  https: {
+    cert: readFileSync('/app/server.crt'),
+    key: readFileSync('/app/server.key')
+  },
 })
 
 fastify.addHook('onRequest', async (request, reply) => {
@@ -43,7 +48,7 @@ fastify.decorate("authenticate", async function (request, reply) {
 
 // 4) CORS
 await fastify.register(cors, {
-  origin: true,
+  origin: 'https://localhost:8080',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],

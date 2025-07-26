@@ -14,12 +14,18 @@ import playersRoutes from './routes/users/players.js';
 import crypto from 'node:crypto'
 import path from 'node:path'
 import fastifyStatic from '@fastify/static'
+import { readFileSync } from 'node:fs';
+
 
 dotenv.config()
 
 // Configure Fastify
 const fastify = Fastify({
-	logger: false
+	logger: false,
+  https: {
+    cert: readFileSync('/app/server.crt'),
+    key: readFileSync('/app/server.key')
+  }
 })
 
 fastify.addHook('onRequest', async (request, reply) => {
