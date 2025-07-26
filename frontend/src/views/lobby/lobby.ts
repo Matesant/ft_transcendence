@@ -5,6 +5,7 @@ import { WebSocketManager, RoomPlayer, RoomState } from "../../utils/WebSocketMa
 import { navigateTo } from "../../router/Router";
 import { setWsManager } from "../../utils/connectionStore";
 import { requireAuth, getCurrentUserDisplayName, UserProfile } from "../../utils/userUtils";
+import { getText } from "../../utils/language";
 
 export class Lobby extends AView {
   private elements: HTMLElement[] = [];
@@ -42,7 +43,7 @@ export class Lobby extends AView {
     // Obter nome de exibição do usuário
     const displayName = await getCurrentUserDisplayName();
     if (!displayName) {
-      console.error("Could not get user display name");
+      console.error(getText('userDisplayNameError'));
       navigateTo("/login");
       return;
     }
@@ -72,22 +73,22 @@ export class Lobby extends AView {
     
     // Setup event handlers
     this.wsManager.onConnected(() => {
-      console.log('Connected to game server');
+      console.log(getText('connectedToGameServer'));
       this.isConnecting = false;
     });
 
     this.wsManager.onDisconnected(() => {
-      console.log('Disconnected from game server');
+      console.log(getText('disconnectedFromGameServer'));
     });
 
     this.wsManager.onRoomCreated((data: RoomState) => {
-      console.log('Room created:', data);
+      console.log(`${getText('roomCreated')}:`, data);
       this.currentPlayers = data.players;
       this.updatePlayersDisplay();
     });
 
     this.wsManager.onRoomUpdated((data: RoomState) => {
-      console.log('Room updated:', data);
+      console.log(`${getText('roomUpdated')}:`, data);
       this.roomCode = data.roomCode;
       this.currentPlayers = data.players;
       
@@ -102,12 +103,12 @@ export class Lobby extends AView {
     });
 
     this.wsManager.onRoomError((error: string) => {
-      console.error('Room error:', error);
+      console.error(`${getText('roomError')}:`, error);
       this.showError(error);
     });
 
     this.wsManager.onGameStarting((data: any) => {
-      console.log('Game starting:', data);
+      console.log(`${getText('gameStarting')}:`, data);
       this.showGameStarting(data);
     });
 
@@ -115,7 +116,7 @@ export class Lobby extends AView {
       this.isConnecting = true;
       await this.wsManager.connect();
     } catch (error) {
-      console.error('Failed to connect to game server:', error);
+      console.error(`${getText('failedToConnect')}:`, error);
       this.showConnectionError();
     }
   }
@@ -129,7 +130,7 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-5xl font-bold mb-12 text-center drop-shadow-lg";
-    title.textContent = "🎮 Multiplayer Lobby";
+    title.textContent = `🎮 ${getText('multiplayerLobby')}`;
     main.appendChild(title);
 
     const card = document.createElement("div");
@@ -137,7 +138,7 @@ export class Lobby extends AView {
 
     const cardTitle = document.createElement("h2");
     cardTitle.className = "text-2xl font-bold mb-6";
-    cardTitle.textContent = "Choose an Option";
+    cardTitle.textContent = getText('chooseOption');
     card.appendChild(cardTitle);
 
     // Container para botões lado a lado
@@ -145,14 +146,14 @@ export class Lobby extends AView {
     buttonsContainer.className = "flex gap-4";
 
     const btnCreate = PongButton({
-      text: "🚀 Create",
+      text: `🚀 ${getText('create')}`,
       variant: "primary",
       onClick: () => this.showCreateRoom()
     });
     btnCreate.className = "flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-green-500/25";
 
     const btnJoin = PongButton({
-      text: "🔗 Join",
+      text: `🔗 ${getText('join')}`,
       variant: "secondary",
       onClick: () => this.showJoinRoom()
     });
@@ -176,6 +177,8 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
+    title.textContent = `🚀 ${getText('createRoom')}`;
+    main.appendChild(title);
 
     const card = document.createElement("div");
     card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-lg";
@@ -183,18 +186,18 @@ export class Lobby extends AView {
     if (this.isConnecting) {
       // Show connecting state
       const connectingText = document.createElement("p");
-      connectingText.textContent = "Connecting to server...";
+      connectingText.textContent = getText('connectingToServer');
       connectingText.className = "text-center text-xl mb-8";
       card.appendChild(connectingText);
     } else if (!this.wsManager?.connected) {
       // Show connection error
       const errorText = document.createElement("p");
-      errorText.textContent = "Failed to connect to server. Please try again.";
+      errorText.textContent = getText('failedToConnectTryAgain');
       errorText.className = "text-center text-xl text-red-400 mb-8";
       card.appendChild(errorText);
 
       const retryBtn = PongButton({
-        text: "Retry Connection",
+        text: getText('retryConnection'),
         variant: "primary",
         onClick: () => this.initializeWebSocket().then(() => this.showCreateRoom())
       });
@@ -219,7 +222,7 @@ export class Lobby extends AView {
     this.wsManager.createRoom(this.roomCode, this.currentUserDisplayName);
 
     const title = document.createElement("h2");
-    title.textContent = "🎮 Room Created";
+    title.textContent = `🎮 ${getText('roomCreated')}`;
     title.className = "text-3xl text-center mb-8";
     card.appendChild(title);
 
@@ -227,7 +230,7 @@ export class Lobby extends AView {
     codeSection.className = "text-center mb-8";
 
     const codeTitle = document.createElement("h3");
-    codeTitle.textContent = "Room Code";
+    codeTitle.textContent = getText('roomCode');
     codeTitle.className = "text-xl mb-4 opacity-90";
     codeSection.appendChild(codeTitle);
 
@@ -242,7 +245,7 @@ export class Lobby extends AView {
     buttonsContainer.className = "flex gap-2 justify-center";
 
     const copyBtn = PongButton({
-      text: "📋 Copy Code",
+      text: `📋 ${getText('copyCode')}`,
       variant: "secondary",
       onClick: (e) => this.onCopyCode(e)
     });
@@ -258,7 +261,7 @@ export class Lobby extends AView {
 
     const pListLabel = document.createElement("h3");
     pListLabel.className = "text-2xl mb-4 text-center";
-    pListLabel.textContent = "👥 Players in Room";
+    pListLabel.textContent = `👥 ${getText('playersInRoom')}`;
     playersSection.appendChild(pListLabel);
 
     this.playersList = document.createElement("ul");
@@ -269,7 +272,7 @@ export class Lobby extends AView {
 
     // botão Ready
     this.actionBtn = PongButton({
-      text: "🚀 Ready",
+      text: `🚀 ${getText('ready')}`,
       variant: "primary",
       onClick: () => this.onAction()
     });
@@ -286,7 +289,7 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
-    title.textContent = "🔗 Join Room";
+    title.textContent = `🔗 ${getText('joinRoom')}`;
     main.appendChild(title);
 
     const card = document.createElement("div");
@@ -294,7 +297,7 @@ export class Lobby extends AView {
 
     const description = document.createElement("p");
     description.className = "text-center opacity-80 mb-8 leading-relaxed";
-    description.textContent = "Enter the room code to connect";
+    description.textContent = getText('enterRoomCode');
     card.appendChild(description);
 
     // input de código
@@ -304,7 +307,7 @@ export class Lobby extends AView {
       id: "joinCode",
       name: "code",
       type: "text",
-      placeholder: "Enter room code",
+      placeholder: getText('enterRoomCode'),
       required: true
     });
     input.className = "w-full p-4 border-none rounded-lg bg-black/20 text-white text-base mb-4 text-center placeholder-white/60";
@@ -314,16 +317,16 @@ export class Lobby extends AView {
 
     // botão Join
     const joinBtn = PongButton({
-      text: "Join Room",
+      text: getText('joinRoom'),
       variant: "primary",
       onClick: () => {
         const code = (document.getElementById("joinCode") as HTMLInputElement).value.trim();
         if (!code) { 
-          this.showError("Please enter a room code"); 
+          this.showError(getText('pleaseEnterRoomCode')); 
           return; 
         }
         if (!this.wsManager?.connected) {
-          this.showError("Not connected to server");
+          this.showError(getText('notConnectedToServer'));
           return;
         }
         this.roomCode = code;
@@ -357,7 +360,7 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
-    title.textContent = "🔍 Searching Lobby";
+    title.textContent = `🔍 ${getText('searchingLobby')}`;
     main.appendChild(title);
 
     const card = document.createElement("div");
@@ -375,17 +378,17 @@ export class Lobby extends AView {
 
     const searchingText = document.createElement("p");
     searchingText.className = "text-xl mb-4 opacity-90";
-    searchingText.textContent = "Looking for lobby...";
+    searchingText.textContent = getText('lookingForLobby');
     card.appendChild(searchingText);
 
     const codeText = document.createElement("p");
     codeText.className = "text-base opacity-70 mb-8 bg-black/20 py-2 px-4 rounded-lg tracking-wider";
-    codeText.textContent = `Code: ${this.roomCode}`;
+    codeText.textContent = `${getText('code')}: ${this.roomCode}`;
     card.appendChild(codeText);
 
     // Cancel button
     const cancelBtn = PongButton({
-      text: "Cancel",
+      text: getText('cancel'),
       variant: "secondary",
       onClick: () => this.showJoinRoom()
     });
@@ -412,7 +415,7 @@ export class Lobby extends AView {
       const btn = event.target as HTMLButtonElement;
       const originalText = btn.textContent;
       const originalClass = btn.className;
-      btn.textContent = "✅ Copied!";
+      btn.textContent = `✅ ${getText('copied')}!`;
       btn.className = "bg-green-500/30 text-white py-2 px-4 rounded-lg cursor-pointer transition-all duration-300";
       setTimeout(() => {
         btn.textContent = originalText;
@@ -422,10 +425,10 @@ export class Lobby extends AView {
   }
 
   private onAction(): void {
-    console.log("Ready / Start pressed for room", this.roomCode);
+    console.log(`${getText('readyButtonPressed')} ${this.roomCode}`);
     
     if (!this.wsManager?.connected) {
-      this.showError("Not connected to server");
+      this.showError(getText('notConnectedToServer'));
       return;
     }
 
@@ -436,7 +439,7 @@ export class Lobby extends AView {
     this.wsManager.setReady(newReadyState);
     
     // Update button text
-    this.actionBtn.textContent = newReadyState ? "⏳ Ready!" : "🚀 Ready";
+    this.actionBtn.textContent = newReadyState ? `⏳ ${getText('readyState')}!` : `🚀 ${getText('ready')}`;
   }
 
   // Helper methods for WebSocket integration
@@ -458,11 +461,11 @@ export class Lobby extends AView {
       icon.className = "text-xl";
 
       const name = document.createElement("span");
-      name.textContent = player.id === this.wsManager?.playerId ? "You" : player.name;
+      name.textContent = player.id === this.wsManager?.playerId ? getText('you') : player.name;
       name.className = "font-bold";
 
       const status = document.createElement("span");
-      status.textContent = player.ready ? "Ready ✅" : (player.isHost ? "Host" : "Waiting");
+      status.textContent = player.ready ? `${getText('ready')} ✅` : (player.isHost ? getText('host') : getText('waiting'));
       status.className = `text-sm opacity-70 bg-black/20 py-1 px-2 rounded ${player.ready ? 'text-green-400' : 'text-white'}`;
 
       playerInfo.append(icon, name);
@@ -473,7 +476,7 @@ export class Lobby extends AView {
     // Update action button text based on current player's ready state
     if (this.actionBtn) {
       const currentPlayer = this.currentPlayers.find(p => p.id === this.wsManager?.playerId);
-      this.actionBtn.textContent = currentPlayer?.ready ? "⏳ Ready!" : "🚀 Ready";
+      this.actionBtn.textContent = currentPlayer?.ready ? `⏳ ${getText('readyState')}!` : `🚀 ${getText('ready')}`;
     }
   }
 
@@ -493,7 +496,7 @@ export class Lobby extends AView {
   }
 
   private showConnectionError(): void {
-    this.showError("Failed to connect to game server. Please check your connection.");
+    this.showError(getText('failedToConnectGameServer'));
   }
 
   private showGameStarting(data: any): void {
@@ -504,7 +507,7 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-5xl font-bold mb-8 text-center drop-shadow-lg animate-pulse";
-    title.textContent = "🎮 Game Starting!";
+    title.textContent = `🎮 ${getText('gameStarting')}!`;
     main.appendChild(title);
 
     const card = document.createElement("div");
@@ -515,12 +518,12 @@ export class Lobby extends AView {
 
     const opponentInfo = document.createElement("p");
     opponentInfo.className = "text-2xl mb-4";
-    opponentInfo.textContent = `🎯 VS ${data.opponent.name}`;
+    opponentInfo.textContent = `🎯 ${getText('versus')} ${data.opponent.name}`;
     gameInfo.appendChild(opponentInfo);
 
     const sideInfo = document.createElement("p");
     sideInfo.className = "text-xl opacity-80 mb-8";
-    sideInfo.textContent = `You are playing on the ${data.playerSide} side`;
+    sideInfo.textContent = getText('playingSideMessage').replace('{side}', data.playerSide);
     gameInfo.appendChild(sideInfo);
 
     const countdown = document.createElement("div");
@@ -538,7 +541,7 @@ export class Lobby extends AView {
       if (count > 0) {
         countdown.textContent = count.toString();
       } else {
-        countdown.textContent = "GO!";
+        countdown.textContent = getText('go');
         clearInterval(countdownInterval);
         
         // Redirect to game after a short delay
@@ -565,7 +568,7 @@ export class Lobby extends AView {
 
     const title = document.createElement("h1");
     title.className = "text-4xl font-bold mb-8 text-center drop-shadow-lg";
-    title.textContent = "🎮 Joined Room!";
+    title.textContent = `🎮 ${getText('joinedRoom')}!`;
     main.appendChild(title);
 
     const card = document.createElement("div");
@@ -573,7 +576,7 @@ export class Lobby extends AView {
 
     const successMessage = document.createElement("div");
     successMessage.className = "text-center mb-8 p-4 bg-green-500/20 rounded-lg border border-green-500/30";
-    successMessage.textContent = "✅ Successfully joined the room!";
+    successMessage.textContent = `✅ ${getText('successfullyJoinedRoom')}!`;
     card.appendChild(successMessage);
 
     // Room code display
@@ -581,7 +584,7 @@ export class Lobby extends AView {
     codeSection.className = "text-center mb-8";
 
     const codeTitle = document.createElement("h3");
-    codeTitle.textContent = "Room Code";
+    codeTitle.textContent = getText('roomCode');
     codeTitle.className = "text-xl mb-4 opacity-90";
     codeSection.appendChild(codeTitle);
 
@@ -595,7 +598,7 @@ export class Lobby extends AView {
     buttonsContainer.className = "flex gap-2 justify-center";
 
     const copyBtn = PongButton({
-      text: "📋 Copy Code",
+      text: `📋 ${getText('copyCode')}`,
       variant: "secondary",
       onClick: (e) => this.onCopyCode(e)
     });
@@ -611,7 +614,7 @@ export class Lobby extends AView {
 
     const pListLabel = document.createElement("h3");
     pListLabel.className = "text-2xl mb-4 text-center";
-    pListLabel.textContent = "👥 Players in Room";
+    pListLabel.textContent = `👥 ${getText('playersInRoom')}`;
     playersSection.appendChild(pListLabel);
 
     this.playersList = document.createElement("ul");
@@ -622,7 +625,7 @@ export class Lobby extends AView {
 
     // Ready button
     this.actionBtn = PongButton({
-      text: "🚀 Ready",
+      text: `🚀 ${getText('ready')}`,
       variant: "primary",
       onClick: () => this.onAction()
     });

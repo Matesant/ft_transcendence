@@ -4,6 +4,7 @@ import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
 import { TwoFactorAuth } from "../../components/2fa-form";
+import { getText } from "../../utils/language";
 
 export class Login extends AView {
     
@@ -39,7 +40,7 @@ export class Login extends AView {
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'username';
         aliasLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        aliasLabel.textContent = 'Alias';
+        aliasLabel.textContent = getText('username');
         aliasDiv.appendChild(aliasLabel);
         
         const aliasInput = PongInput({ id: 'username', name: 'alias', type: 'text', required: true });
@@ -53,7 +54,7 @@ export class Login extends AView {
         const passLabel = document.createElement('label');
         passLabel.htmlFor = 'password';
         passLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        passLabel.textContent = 'Password';
+        passLabel.textContent = getText('password');
         passDiv.appendChild(passLabel);
         
         const passInput = PongInput({ id: 'password', name: 'password', type: 'password', required: true });
@@ -63,8 +64,9 @@ export class Login extends AView {
 
         // Botão submit
         const submitBtn = PongButton({
-            text: 'Login',
+            text: getText('loginButton'),
             variant: 'primary',
+            type: 'submit',
             extraClass: 'w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25',
         });
         form.appendChild(submitBtn);
@@ -73,9 +75,9 @@ export class Login extends AView {
         const forgotPasswordDiv = document.createElement('div');
         forgotPasswordDiv.className = 'mt-4 mb-6 text-center';
         const forgotPasswordLink = document.createElement('a');
-        forgotPasswordLink.href = '#';
-        forgotPasswordLink.className = 'text-sm text-white/60 hover:text-white/80 cursor-pointer transition-colors duration-200';
-        forgotPasswordLink.textContent = 'Esqueceu a senha?';
+        forgotPasswordLink.textContent = getText('forgotPassword');
+        forgotPasswordLink.href = '/forgot-password';
+        forgotPasswordLink.className = 'text-blue-400 hover:text-blue-300 text-sm';
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
             navigateTo('/forgotPassword');
@@ -90,7 +92,7 @@ export class Login extends AView {
         line1.className = 'flex-1 border-t border-white/20';
         const orText = document.createElement('span');
         orText.className = 'px-4 text-sm text-white/60';
-        orText.textContent = 'OU';
+        orText.textContent = getText('or');
         const line2 = document.createElement('div');
         line2.className = 'flex-1 border-t border-white/20';
         separatorDiv.appendChild(line1);
@@ -99,7 +101,7 @@ export class Login extends AView {
         form.appendChild(separatorDiv);
 
         const googleBtn = PongButton({
-            text: '',
+            text: getText('googleLogin'),
             variant: 'secondary',
             extraClass: 'w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white py-4 px-6 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg flex items-center justify-center gap-3',
             onClick: () => {
@@ -117,7 +119,7 @@ export class Login extends AView {
                     <path fill="none" d="M0 0h48v48H0z"/>
                 </g>
             </svg>
-            <span>Entrar com Google</span>
+            <span>${getText('signInWithGoogle')}</span>
         `;
 
         form.appendChild(googleBtn);
@@ -128,9 +130,9 @@ export class Login extends AView {
         registerBox.className = 'mt-12 flex flex-col items-center';
         const registerText = document.createElement('span');
         registerText.className = 'text-sm text-white/80 mb-3';
-        registerText.textContent = 'Não tem uma conta?';
+        registerText.textContent = getText('noAccount');
         const registerBtn = PongButton({
-            text: 'Registrar',
+            text: getText('signUp'),
             variant: 'secondary',
             onClick: () => navigateTo('/register'),
             extraClass: 'bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-2 text-base font-semibold rounded-lg transition-all duration-200 hover:-translate-y-1'
@@ -138,8 +140,6 @@ export class Login extends AView {
         registerBox.appendChild(registerText);
         registerBox.appendChild(registerBtn);
         form.appendChild(registerBox);
-
-
 
         formContainer.appendChild(form);
         main.appendChild(formContainer);
@@ -168,20 +168,18 @@ export class Login extends AView {
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-
                     const result = await response.json();
                     if ('require2FA' in result) {
                         this.twoFa(data.alias, result);
                     } else {
                         navigateTo('/dashboard');
                     }
-
                 } else {
                     const errorResponse = await response.json();
-                    this.showError(`Login Failed: ${errorResponse.error}`);
+                    this.showError(`${getText('loginError')}: ${errorResponse.error}`);
                 }
             } catch (error) {
-                this.showError(`Login Failed: ${error}`);
+                this.showError(`${getText('loginError')}: ${error}`);
             }
         });
     }
@@ -202,7 +200,6 @@ export class Login extends AView {
     }
 
     public twoFa(alias: string, data: {message: string, success: boolean}): void {
-
         Array.from(document.body.children).forEach(child => {
               document.body.removeChild(child);
           });

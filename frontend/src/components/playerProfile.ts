@@ -1,7 +1,8 @@
 import { router } from "../router/Router";
 import { apiUrl } from "../utils/api";
+import { getText, getCurrentLanguage } from "../utils/language";
 
-class playerProfile extends HTMLElement {
+class PlayerProfile extends HTMLElement {
   private container!: HTMLDivElement;
 
   constructor() {
@@ -9,7 +10,7 @@ class playerProfile extends HTMLElement {
   }
 
   connectedCallback() {
-      // cria o container principal
+      // Create main container
       this.container = document.createElement("div");
       this.container.className = `
           flex justify-center items-center w-full p-4
@@ -20,7 +21,6 @@ class playerProfile extends HTMLElement {
   }
 
   async loadProfile() {
-
       var player_name = history.state;
 
       if (player_name === "") {
@@ -39,7 +39,7 @@ class playerProfile extends HTMLElement {
       } catch (err) {
           console.error(err);
           this.container.innerHTML = `
-              <div class="text-center text-red-500">Network error when loading profile.</div>
+              <div class="text-center text-red-500">${getText('errorOccurred')}: ${getText('networkError')}</div>
           `;
       }
   }
@@ -47,6 +47,15 @@ class playerProfile extends HTMLElement {
   renderProfile(data: any) {
       const profile = data.profile;
       const history: any[] = data.history || [];
+      const playerStats = data.stats || { wins: 0, losses: 0 };
+
+      const winRate = playerStats.wins + playerStats.losses > 0
+          ? ((playerStats.wins / (playerStats.wins + playerStats.losses)) * 100).toFixed(0)
+          : 0;
+
+      // Get proper locale based on selected language
+      const locale = getCurrentLanguage() === 'ptBR' ? 'pt-BR' : 
+                    (getCurrentLanguage() === 'es' ? 'es-ES' : 'en-US');
 
       const historyHtml = history.length > 0
           ? history.map(item => {
@@ -64,10 +73,10 @@ class playerProfile extends HTMLElement {
               <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
                   <div class="flex justify-between items-center mb-2">
                       <span class="font-semibold text-white">${item.opponent}</span>
-                      <div class="${itemResultStyle}">${item.result.toUpperCase()}</div>
+                      <div class="${itemResultStyle}">${getText(item.result.toLowerCase())}</div>
                   </div>
                   <div class="text-sm text-white/70">
-                      ${new Date(item.date).toLocaleString('pt-BR', { 
+                      ${new Date(item.date).toLocaleString(locale, { 
                           day: '2-digit', 
                           month: '2-digit', 
                           year: '2-digit', 
@@ -80,7 +89,7 @@ class playerProfile extends HTMLElement {
           }).join("")
           : `<div class="text-center text-white/60 py-8 px-4 bg-white/5 rounded-xl border border-white/10">
                 <div class="text-2xl mb-2">📊</div>
-                <p>Nenhum histórico disponível.</p>
+                <p>${getText('noHistoryAvailable')}</p>
              </div>`;
 
       this.container.innerHTML = `
@@ -88,7 +97,7 @@ class playerProfile extends HTMLElement {
               <!-- Avatar Section -->
               <div class="flex flex-col items-center mb-8">
                   <div class="relative">
-                      <img src="${profile.avatar}" alt="avatar" class="w-40 h-40 rounded-full object-cover border-4 border-white/20 shadow-2xl" />
+                      <img src="${profile.avatar}" alt="${getText('avatar')}" class="w-40 h-40 rounded-full object-cover border-4 border-white/20 shadow-2xl" />
                       <div class="absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-transparent"></div>
                   </div>
                   <h1 class="text-4xl font-bold text-white mt-6 drop-shadow-lg">${profile.alias}</h1>
@@ -98,10 +107,28 @@ class playerProfile extends HTMLElement {
               <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                   <h2 class="text-2xl font-semibold text-white mb-6 text-center flex items-center justify-center gap-3">
                       <span class="text-3xl">🏆</span>
-                      Match history
+                      ${getText('profileTitle')}
                   </h2>
                   <div class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
                       ${historyHtml}
+                  </div>
+              </div>
+
+              <!-- Player Stats Section -->
+              <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mt-6">
+                  <div class="grid grid-cols-3 gap-4">
+                      <div class="stat-box">
+                          <span class="stat-label">${getText('wins')}</span>
+                          <span class="stat-value">${playerStats.wins}</span>
+                      </div>
+                      <div class="stat-box">
+                          <span class="stat-label">${getText('losses')}</span>
+                          <span class="stat-value">${playerStats.losses}</span>
+                      </div>
+                      <div class="stat-box">
+                          <span class="stat-label">${getText('winRate')}</span>
+                          <span class="stat-value">${winRate}%</span>
+                      </div>
                   </div>
               </div>
           </div>
@@ -109,4 +136,4 @@ class playerProfile extends HTMLElement {
   }
 }
 
-customElements.define("player-profile", playerProfile);
+customElements.define("player-profile", PlayerProfile);

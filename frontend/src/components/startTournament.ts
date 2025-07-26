@@ -1,10 +1,11 @@
 import { router } from "../router/Router";
 import { apiUrl } from "../utils/api";
+import { getText } from "../utils/language";
 
 class startTournament extends HTMLElement {
 
     constructor() {
-      super ();
+      super();
     }
 
     connectedCallback() {
@@ -12,20 +13,20 @@ class startTournament extends HTMLElement {
             <!-- Tournament setup form with glassmorphism design -->
             <div class="w-full max-w-5xl mx-auto">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col max-h-[80vh]">
-                    <h2 class="text-3xl font-bold mb-8 text-center text-white drop-shadow-lg">🎮 Configurar Torneio</h2>
+                    <h2 class="text-3xl font-bold mb-8 text-center text-white drop-shadow-lg">🎮 ${getText('startTournament')}</h2>
                     
                     <!-- Layout principal com duas colunas -->
                     <div class="flex gap-8 flex-1">
                         <!-- Coluna esquerda - Lista de jogadores -->
                         <div class="flex-1 flex flex-col">
-                            <h3 class="text-xl font-semibold text-white mb-4">👥 Jogadores</h3>
+                            <h3 class="text-xl font-semibold text-white mb-4">👥 ${getText('players')}</h3>
                             <!-- Container com scroll para os inputs -->
                             <div class="flex-1 overflow-y-auto mb-6">
                                 <div id="inputs" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                                     <!-- Campo inicial -->
                                     <div class="flex gap-3 items-center">
-                                        <input type="text" class="flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300" placeholder="Nome do jogador" />
-                                        <button class="remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300">Remover</button>
+                                        <input type="text" class="flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300" placeholder="${getText('playerName')}" />
+                                        <button class="remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300">${getText('remove')}</button>
                                     </div>
                                 </div>
                             </div>
@@ -33,14 +34,14 @@ class startTournament extends HTMLElement {
                         
                         <!-- Coluna direita - Configurações do jogo -->
                         <div class="w-80 flex flex-col space-y-4">
-                            <h3 class="text-xl font-semibold text-white mb-2">⚙️ Configurações</h3>
+                            <h3 class="text-xl font-semibold text-white mb-2">⚙️ ${getText('settings')}</h3>
                             
                             <!-- Power-up toggle -->
                             <div class="bg-white/10 rounded-lg p-4 border border-white/20">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h4 class="text-sm font-semibold text-white">⚡ Power-ups</h4>
-                                        <p class="text-xs text-white/60">Ativar power-ups</p>
+                                        <h4 class="text-sm font-semibold text-white mb-2">🎲 ${getText('powerUpsMode')}</h4>
+                                        <p class="text-xs text-white/60">${getText('enablePowerUps')}</p>
                                     </div>
                                     <div class="relative">
                                         <input type="checkbox" id="powerupToggle" class="sr-only">
@@ -53,7 +54,7 @@ class startTournament extends HTMLElement {
 
                             <!-- Game Speed Control -->
                             <div class="bg-white/10 rounded-lg p-4 border border-white/20">
-                                <h4 class="text-sm font-semibold text-white mb-2">🎯 Velocidade</h4>
+                                <h4 class="text-sm font-semibold text-white mb-2">⚡ ${getText('gameSpeed')}</h4>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-white text-xs">0.8x</span>
                                     <div class="flex-1 relative">
@@ -69,9 +70,9 @@ class startTournament extends HTMLElement {
 
                             <!-- Table Color Control -->
                             <div class="bg-white/10 rounded-lg p-4 border border-white/20">
-                                <h4 class="text-sm font-semibold text-white mb-2">🎨 Cor da Mesa</h4>
+                                <h4 class="text-sm font-semibold text-white mb-2">🎨 ${getText('tableColor')}</h4>
                                 <button id="tableColorButton" class="w-full px-3 py-2 text-xs cursor-pointer border-none rounded text-white transition-colors duration-300 font-medium">
-                                    Cor da Mesa
+                                    ${getText('tableColor')}
                                 </button>
                             </div>
                         </div>
@@ -80,10 +81,10 @@ class startTournament extends HTMLElement {
                     <!-- Botões fixos na parte inferior -->
                     <div class="flex gap-4 justify-center mb-4 flex-shrink-0 mt-8">
                         <button id="addBtn" class="bg-blue-500/80 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-blue-400/30">
-                            ➕ Adicionar Jogador
+                            ➕ ${getText('addPlayer')}
                         </button>
                         <button id="submitBtn" class="bg-green-500/80 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-green-400/30">
-                            🚀 Iniciar Torneio
+                            🚀 ${getText('start')}
                         </button>
                     </div>
             
@@ -138,10 +139,10 @@ class startTournament extends HTMLElement {
         function updateTableColorButton() {
             const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
             if (tableTheme === "GREEN") {
-                tableColorButton.textContent = "Mudar para Azul";
+                tableColorButton.textContent = getText('switchToBlue');
                 tableColorButton.className = "px-4 py-2 text-sm cursor-pointer bg-blue-500 hover:bg-blue-600 border-none rounded text-white transition-colors duration-300 font-medium";
             } else { // BLUE
-                tableColorButton.textContent = "Mudar para Verde";
+                tableColorButton.textContent = getText('switchToGreen');
                 tableColorButton.className = "px-4 py-2 text-sm cursor-pointer bg-green-500 hover:bg-green-600 border-none rounded text-white transition-colors duration-300 font-medium";
             }
         }
@@ -179,11 +180,11 @@ class startTournament extends HTMLElement {
     
           const input = document.createElement('input');
           input.type = 'text';
-          input.placeholder = 'Nome do jogador';
+          input.placeholder = getText('playerName');
           input.className = 'flex-1 p-4 border-2 border-white/30 rounded-xl text-sm bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:border-white/50 focus:outline-none transition-all duration-300';
     
           const removeBtn = document.createElement('button');
-          removeBtn.textContent = 'Remover';
+          removeBtn.textContent = getText('remove');
           removeBtn.className = 'remove-btn text-red-400 text-sm hover:text-red-300 px-4 py-2 border border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300';
           removeBtn.addEventListener('click', () => {
             inputsContainer.removeChild(row);
@@ -210,7 +211,7 @@ class startTournament extends HTMLElement {
           });
     
           if (players.length === 0) {
-            responseBox.textContent = "Nenhum nome inserido.";
+            responseBox.textContent = getText('noPlayersError');
             return;
           }
 
@@ -238,23 +239,22 @@ class startTournament extends HTMLElement {
               credentials: 'include'
             });
     
-            if (!res.ok) throw new Error(`Erro ${res.status}`);
-            responseBox.textContent = "Jogadores enviados com sucesso!";
+            if (!res.ok) throw new Error(`${getText('error')} ${res.status}`);
+            responseBox.textContent = getText('playersSentSuccess');
             sessionStorage.setItem("round_in_progress", "true");
             history.pushState("", "", "/tournament");
             router();
           } catch (error) {
-            responseBox.textContent = "Erro ao enviar: " + error.message;
+            responseBox.textContent = `${getText('sendError')}: ${error.message}`;
           }
         });
     
         // Ativa o botão de remover do primeiro campo já existente
-        document.querySelector('.remove-btn').addEventListener('click', function () {
+        document.querySelector('.remove-btn').addEventListener('click', function() {
           const row = this.parentElement;
           inputsContainer.removeChild(row);
         });
     }
+}
   
-  }
-  
-  customElements.define("start-tournament", startTournament);
+customElements.define("start-tournament", startTournament);

@@ -1,4 +1,5 @@
 import { apiUrl } from "../utils/api";
+import { getText } from "../utils/language";
 
 class UserInfo extends HTMLElement {
     constructor() {
@@ -26,7 +27,7 @@ class UserInfo extends HTMLElement {
       const avatarContainer = this.querySelector("#user-avatar-container");
       try {
         const response = await fetch(apiUrl(3003, '/users/me'), { credentials: "include" });
-        if (!response.ok) throw new Error("Falha na request");
+        if (!response.ok) throw new Error(getText('requestFailed'));
         const data = await response.json();
         const avatar = document.createElement("img");
         avatar.src = data.profile.avatar;
@@ -35,19 +36,17 @@ class UserInfo extends HTMLElement {
         avatarContainer!.innerHTML = "";
         avatarContainer!.appendChild(avatar);
       } catch (err) {
-        avatarContainer!.textContent = "foto user";
+        avatarContainer!.textContent = getText('userPhoto');
       }
     }
   
     private async loadData() {
-
-
       try {
         const resp = await fetch(apiUrl(3001, '/auth/verify'), {
           credentials: "include",
         });
         if (!resp.ok) {
-          throw new Error(`HTTP error! status: ${resp.status}`);
+          throw new Error(`${getText('httpError')}: ${resp.status}`);
         }
         const data = await resp.json();
   
@@ -57,7 +56,6 @@ class UserInfo extends HTMLElement {
           const is2fa = data.user.is_2fa_enabled;
   
           this.innerHTML = `
-            
             <div class="flex justify-between items-center mb-10 w-full p-5 animate-slideDown">
               <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
                 <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
@@ -67,51 +65,48 @@ class UserInfo extends HTMLElement {
                   <div class="w-16 h-16 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center text-xs border-2 border-white/40 overflow-hidden transition-all duration-300 hover:scale-105 hover:border-white/60 shadow-2xl cursor-pointer" id="user-avatar-container">
                     <!-- Avatar será carregado aqui -->
                   </div>
-                  <button class="logout-btn py-2.5 px-5 text-xs border-2 border-white/30 rounded-xl bg-white/15 backdrop-blur-sm text-white cursor-pointer font-medium transition-all duration-300 hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/50 relative overflow-hidden">🚪 logout</button>
+                  <button class="logout-btn py-2.5 px-5 text-xs border-2 border-white/30 rounded-xl bg-white/15 backdrop-blur-sm text-white cursor-pointer font-medium transition-all duration-300 hover:bg-white/25 hover:-translate-y-0.5 hover:shadow-lg hover:border-white/50 relative overflow-hidden">🚪 ${getText('logout')}</button>
                 </div>
               </div>
             </div>
 
-
             <div class="mx-auto w-140 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 text-center space-y-2 mt-7">
               <div class="text-lg font-bold">${alias}</div>
               <div>${email}</div>
-              <div>2FA ${is2fa ? "enabled" : "disabled"}</div>
+              <div>2FA ${is2fa ? getText('twofaEnabled') : getText('twofaDisabled')}</div>
               ${
                 is2fa
                   ? `<disable-2fa-button data-alias="${alias}"></disable-2fa-button>`
                   : `<enable-2fa-button data-alias="${alias}"></enable-2fa-button>`
               }
 
-            <!-- Botão que abre o modal -->
-            <button id="openModalBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-              Choose avatar
-            </button>
+              <!-- Botão que abre o modal -->
+              <button id="openModalBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                ${getText('chooseAvatar')}
+              </button>
 
-            <br>
+              <br>
 
               <!-- Botões extras -->
-            <button id="changeEmailBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-              Change Email
-            </button>
-            <button id="changePasswordBtn" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
-              Change Password
-            </button>
-
+              <button id="changeEmailBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                ${getText('changeEmail')}
+              </button>
+              <button id="changePasswordBtn" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                ${getText('changePassword')}
+              </button>
 
               <upload-avatar></upload-avatar>
             </div>
 
-          <!-- Modal -->
-          <div id="avatarModal"
-               class="fixed inset-0  flex items-center justify-center hidden">
-            <div id="modalContent"
-                 class="bg-white rounded-lg p-4 shadow-lg">
-              <select-avatar></select-avatar>
+            <!-- Modal -->
+            <div id="avatarModal"
+                 class="fixed inset-0  flex items-center justify-center hidden">
+              <div id="modalContent"
+                   class="bg-white rounded-lg p-4 shadow-lg">
+                <select-avatar></select-avatar>
+              </div>
             </div>
-          </div>
           `;
-
 
           const createModal = (innerHtml: string) => {
             const overlay = document.createElement('div');
@@ -137,10 +132,10 @@ class UserInfo extends HTMLElement {
           
           changeEmailBtn.addEventListener('click', () => {
             createModal(`
-              <h2 class="text-lg font-bold mb-2">Change Email</h2>
-              <input id="newEmailInput" type="email" placeholder="New Email" class="border p-2 rounded w-full" />
-              <input id="currentPasswordEmail" type="password" placeholder="Current Password" class="border p-2 rounded w-full" />
-              <button id="submitEmailChange" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+              <h2 class="text-lg font-bold mb-2">${getText('changeEmail')}</h2>
+              <input id="newEmailInput" type="email" placeholder="${getText('email')}" class="border p-2 rounded w-full" />
+              <input id="currentPasswordEmail" type="password" placeholder="${getText('currentPassword')}" class="border p-2 rounded w-full" />
+              <button id="submitEmailChange" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">${getText('submit')}</button>
             `);
           
             // Lógica submit
@@ -159,13 +154,13 @@ class UserInfo extends HTMLElement {
                     });
 
                     if (!response.ok) {
-                      throw new Error('Failed to update email');
+                      throw new Error(getText('failedToUpdateEmail'));
                     }
 
                     const data = await response.json();
                     let status = document.createElement('div');
                     status.className = "text-green-500 mt-2";
-                    status.textContent = data.message || "Email updated successfully!";
+                    status.textContent = data.message || getText('emailChanged');
     
                     // adiciona o status abaixo de submitBtn
                     submitBtn.insertAdjacentElement('afterend', status);
@@ -173,34 +168,28 @@ class UserInfo extends HTMLElement {
                     setTimeout(() => {
                         status.remove();
                     }, 2000);
-
-                  
                   
                 } catch (error) {
-
                     let errorMessage = document.createElement('div');
                     errorMessage.className = "text-red-500 mt-2";
-                    errorMessage.textContent = "Error updating email. Please try again.";
+                    errorMessage.textContent = getText('errorUpdatingEmail');
                     
                     submitBtn.insertAdjacentElement('afterend', errorMessage);
-
 
                     setTimeout(() => {
                         errorMessage.remove();
                     }, 2000);
-                    
                 }
-
               });
             }, 0);
           });
           
           changePasswordBtn.addEventListener('click', () => {
             createModal(`
-              <h2 class="text-lg font-bold mb-2">Change Password</h2>
-              <input id="newPasswordInput" type="password" placeholder="New Password" class="border p-2 rounded w-full" />
-              <input id="currentPasswordPass" type="password" placeholder="Current Password" class="border p-2 rounded w-full" />
-              <button id="submitPassChange" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Submit</button>
+              <h2 class="text-lg font-bold mb-2">${getText('changePassword')}</h2>
+              <input id="newPasswordInput" type="password" placeholder="${getText('newPassword')}" class="border p-2 rounded w-full" />
+              <input id="currentPasswordPass" type="password" placeholder="${getText('currentPassword')}" class="border p-2 rounded w-full" />
+              <button id="submitPassChange" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">${getText('submit')}</button>
             `);
           
             // Lógica submit
@@ -210,9 +199,7 @@ class UserInfo extends HTMLElement {
                 const newPassword = (document.getElementById('newPasswordInput') as HTMLInputElement).value;
                 const currentPassword = (document.getElementById('currentPasswordPass') as HTMLInputElement).value;
 
-
                   try {
-                    
                     let response = await fetch(apiUrl(3001, '/auth/update-credentials'), {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
@@ -221,13 +208,13 @@ class UserInfo extends HTMLElement {
                     });
 
                     if (!response.ok) {
-                      throw new Error('Failed to update password');
+                      throw new Error(getText('failedToUpdatePassword'));
                     }
 
                     const data = await response.json();
                     let status = document.createElement('div');
                     status.className = "text-green-500 mt-2";
-                    status.textContent = data.message || "Password updated successfully!";
+                    status.textContent = data.message || getText('passwordChanged');
                     submitBtn.insertAdjacentElement('afterend', status);
 
                     setTimeout(() => {
@@ -235,68 +222,63 @@ class UserInfo extends HTMLElement {
                     }, 2000);
 
                   } catch (error) {
-
                       let errorMessage = document.createElement('div');
                       errorMessage.className = "text-red-500 mt-2";
-                      errorMessage.textContent = "Error updating password. Please try again.";
+                      errorMessage.textContent = getText('errorUpdatingPassword');
                       
                       submitBtn.insertAdjacentElement('afterend', errorMessage);
 
                       setTimeout(() => {
                           errorMessage.remove();
                       }, 2000);
-                    
                   }
               });
             }, 0);
           });
           
-
           this.setupNavigation();
           
-        // Logout
-        const logoutBtn = this.querySelector('.logout-btn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', async (e: Event) => {
-            e.preventDefault();
-            try {
-              await fetch(apiUrl(3001, '/auth/logout'), {
-                method: 'POST',
-                credentials: 'include'
-              });
-              sessionStorage.clear();
-              history.pushState("", "", "/login");
-              window.dispatchEvent(new PopStateEvent('popstate'));
-            } catch (error) {
-              history.pushState("", "", "/login");
-              window.dispatchEvent(new PopStateEvent('popstate'));
+          // Logout
+          const logoutBtn = this.querySelector('.logout-btn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e: Event) => {
+              e.preventDefault();
+              try {
+                await fetch(apiUrl(3001, '/auth/logout'), {
+                  method: 'POST',
+                  credentials: 'include'
+                });
+                sessionStorage.clear();
+                history.pushState("", "", "/login");
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              } catch (error) {
+                history.pushState("", "", "/login");
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            });
+          }
+
+          this.loadUserAvatar();
+
+          // lógica do modal
+          const modal = this.querySelector("#avatarModal") as HTMLDivElement;
+          const modalContent = this.querySelector("#modalContent") as HTMLDivElement;
+          const openBtn = this.querySelector("#openModalBtn") as HTMLButtonElement;
+
+          openBtn.addEventListener("click", () => {
+            modal.classList.remove("hidden");
+          });
+
+          // Fecha ao clicar fora do conteúdo
+          modal.addEventListener("click", (e) => {
+            if (!modalContent.contains(e.target as Node)) {
+              modal.classList.add("hidden");
             }
           });
-        }
-
-        this.loadUserAvatar();
-
-        // lógica do modal
-        const modal = this.querySelector("#avatarModal") as HTMLDivElement;
-        const modalContent = this.querySelector("#modalContent") as HTMLDivElement;
-        const openBtn = this.querySelector("#openModalBtn") as HTMLButtonElement;
-
-        openBtn.addEventListener("click", () => {
-          modal.classList.remove("hidden");
-        });
-
-        // Fecha ao clicar fora do conteúdo
-        modal.addEventListener("click", (e) => {
-          if (!modalContent.contains(e.target as Node)) {
-            modal.classList.add("hidden");
-          }
-        });
-
-
         } else {
           this.innerHTML = `
             <div class="mx-auto w-96 border border-black rounded p-4 text-center">
-              Usuário não autenticado
+              ${getText('userNotAuthenticated')}
             </div>
           `;
         }
@@ -304,7 +286,7 @@ class UserInfo extends HTMLElement {
         console.error(err);
         this.innerHTML = `
           <div class="mx-auto w-96 border border-black rounded p-4 text-center text-red-500">
-            Erro ao carregar dados
+            ${getText('errorLoadingData')}
           </div>
         `;
       }
@@ -312,4 +294,3 @@ class UserInfo extends HTMLElement {
   }
   
   customElements.define("settings-info", UserInfo);
-  

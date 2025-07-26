@@ -1,6 +1,7 @@
 import { AView } from "../AView";
 import { Game } from "../game/Game";
 import { getWsManager } from "../../utils/connectionStore";
+import { getText } from "../../utils/language";  // Add this import
 
 export class Online extends AView {
   private game!: Game;
@@ -8,7 +9,7 @@ export class Online extends AView {
   public render(parent: HTMLElement = document.body): void {
     const wsManager = getWsManager();
     if (!wsManager || !wsManager.socket) {
-      parent.innerHTML = '<p>Connection not available.</p>';
+      parent.innerHTML = `<p>${getText('notConnectedToServer')}</p>`;
       return;
     }
 

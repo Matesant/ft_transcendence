@@ -137,3 +137,6 @@ export class Game extends AView {
 // Create and start the game
 // const game = new Game();
 // game.mainLoop();
+
+const player1Name = this.playerSide === 'left' ? this.playerName : this.opponent?.name || getText('player2');
+const player2Name = this.playerSide === 'right' ? this.playerName : this.opponent?.name || getText('player1');

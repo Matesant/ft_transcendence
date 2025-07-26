@@ -3,6 +3,7 @@ import { PongHeaderPublic }  from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
 import { apiUrl } from "../../utils/api";
+import { getText } from "../../utils/language";
 
 export class Register extends AView {
 
@@ -27,10 +28,10 @@ export class Register extends AView {
         const formContainer = document.createElement('div');
         formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
-        const cardTitle = document.createElement('h2');
-        cardTitle.className = 'text-2xl font-bold mb-6 text-center';
-        cardTitle.textContent = 'Register';
-        formContainer.appendChild(cardTitle);
+        const title = document.createElement('h1');
+        title.textContent = getText('registerTitle');
+        title.className = 'text-4xl font-bold text-center mb-8';
+        formContainer.appendChild(title);
 
         const form = document.createElement('form');
         form.id = 'register-form';
@@ -42,9 +43,17 @@ export class Register extends AView {
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'username';
         aliasLabel.className = 'block text-sm font-medium text-white-700';
-        aliasLabel.textContent = 'Alias';
+        aliasLabel.textContent = getText('username');
         aliasDiv.appendChild(aliasLabel);
-        aliasDiv.appendChild(PongInput({ id: 'username', name: 'alias', type: 'text', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
+        const usernameInput = PongInput({ 
+            placeholder: getText('username'),
+            id: 'username', 
+            name: 'alias', 
+            type: 'text', 
+            required: true , 
+            extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'
+        });
+        aliasDiv.appendChild(usernameInput);
         form.appendChild(aliasDiv);
 
         // Email
@@ -53,9 +62,17 @@ export class Register extends AView {
         const emailLabel = document.createElement('label');
         emailLabel.htmlFor = 'email';
         emailLabel.className = 'block text-sm font-medium text-white-700';
-        emailLabel.textContent = 'Email';
+        emailLabel.textContent = getText('email');
         emailDiv.appendChild(emailLabel);
-        emailDiv.appendChild(PongInput({ id: 'email', name: 'email', type: 'email', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
+        const emailInput = PongInput({ 
+            placeholder: getText('email'),
+            id: 'email', 
+            name: 'email', 
+            type: 'email', 
+            required: true , 
+            extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'
+        });
+        emailDiv.appendChild(emailInput);
         form.appendChild(emailDiv);
 
         // Password
@@ -64,9 +81,17 @@ export class Register extends AView {
         const passLabel = document.createElement('label');
         passLabel.htmlFor = 'password';
         passLabel.className = 'block text-sm font-medium text-white-700';
-        passLabel.textContent = 'Password';
+        passLabel.textContent = getText('password');
         passDiv.appendChild(passLabel);
-        passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true, extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
+        const passwordInput = PongInput({ 
+            placeholder: getText('password'),
+            id: 'password', 
+            name: 'password', 
+            type: 'password', 
+            required: true, 
+            extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'
+        });
+        passDiv.appendChild(passwordInput);
         form.appendChild(passDiv);
 
         // Div para mensagem de erro de senha
@@ -76,25 +101,21 @@ export class Register extends AView {
         form.appendChild(passwordErrorDiv);
 
         // Botão submit
-        const submitBtn = PongButton({
-            text: 'Register',
+        const registerButton = PongButton({ 
+            text: getText('registerButton'),
             variant: 'primary',
             extraClass: 'w-full font-semibold py-2 px-4 rounded-md text-lg',
         });
-        form.appendChild(submitBtn);
-
-
+        form.appendChild(registerButton);
 
         const divider = document.createElement('div');
         divider.className = 'flex items-center my-4';
         divider.innerHTML = `
             <div class="flex-1 border-t border-white/20"></div>
-            <span class="mx-2 text-sm text-white/60 font-semibold">ou</span>
+            <span class="mx-2 text-sm text-white/60 font-semibold">${getText('or')}</span>
             <div class="flex-1 border-t border-white/20"></div>
         `;
         form.appendChild(divider);
-
-
 
         const googleBtn = PongButton({
             text: '',
@@ -115,7 +136,7 @@ export class Register extends AView {
                     <path fill="none" d="M0 0h48v48H0z"/>
                 </g>
             </svg>
-            <span>Continuar com o Google</span>
+            <span>${getText('signInWithGoogle')}</span>
         `;
 
         form.appendChild(googleBtn);
@@ -145,7 +166,7 @@ export class Register extends AView {
             const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,12}$/;
             passwordErrorDiv.textContent = '';
             if (!strongPasswordRegex.test(String(data.password))) {
-                passwordErrorDiv.textContent = 'A senha deve ter entre 6 e 12 caracteres, incluindo maiúscula, minúscula, número e caractere especial.';
+                passwordErrorDiv.textContent = getText('passwordValidationError');
                 return;
             }
             try {
@@ -173,17 +194,17 @@ export class Register extends AView {
                             navigateTo('/dashboard');
                         } else {
                             const loginError = await loginResponse.json();
-                            main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${loginError.error}</h1>`;
+                            main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>${getText('loginError')}: ${loginError.error}</h1>`;
                         }
                     } catch (loginError) {
-                        main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${loginError}</h1>`;
+                        main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>${getText('loginError')}: ${loginError}</h1>`;
                     }
                 } else {
                     const errorResponse = await response.json();
-                    main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Registration Failed: ${errorResponse.error}</h1>`;
+                    main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>${getText('registerError')}: ${errorResponse.error}</h1>`;
                 }
             } catch (error) {
-                main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Registration Failed: ${error}</h1>`;
+                main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>${getText('registerError')}: ${error}</h1>`;
             }
         });
     } 
@@ -193,5 +214,4 @@ export class Register extends AView {
               document.body.removeChild(child);
           });
     }
-
 }
