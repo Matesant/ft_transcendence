@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt'
 
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
 export default async function registerRoutes(fastify, opts) {
   fastify.post('/register', async (request, reply) => {
     const { alias, password, email } = request.body
@@ -11,14 +13,15 @@ export default async function registerRoutes(fastify, opts) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     try {
+
       await fastify.db.run(
         'INSERT INTO players (alias, email, password) VALUES (?, ?, ?)',
         [alias, email, hashedPassword]
       )
-      await fetch('http://user-service:3003/users/sync', {
+      await fetch('https://user-service:3003/users/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alias })
+        body: JSON.stringify({ alias }),
       })
       return { success: true, alias }
     } catch (err) {

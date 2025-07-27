@@ -1,5 +1,6 @@
 // services/match-service/src/routes/match/play.js
 import { badRequest, notFound } from '../../utils/errors.js';
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
 //#TODO validar o ganhador da partida pelo jogador perdedor(se fizermos websocket)
 
@@ -177,7 +178,7 @@ export default async function (fastify, opts) {
 			const opponent = (match.player1 === winner) ? match.player2 : match.player1
 
 			try {
-				await fetch('http://user-service:3003/users/history', {
+				await fetch('https://user-service:3003/users/history', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
@@ -189,7 +190,7 @@ export default async function (fastify, opts) {
 				})
 
 				if (match.status !== 'wo' && opponent) {
-					await fetch('http://user-service:3003/users/history', {
+					await fetch('https://user-service:3003/users/history', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
