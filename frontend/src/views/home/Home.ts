@@ -1,6 +1,7 @@
 import { AView } from "../AView";
 import { PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
+import { PongFooter } from "../../components/ui/PongFooter";
 
 export class Home extends AView {
   private elements: HTMLElement[] = [];
@@ -272,9 +273,7 @@ export class Home extends AView {
     });
 
     // Footer
-    const footer = document.createElement('footer');
-    footer.className = 'w-full text-center text-white/60 py-6 px-4';
-    footer.innerHTML = '&copy; 2025 ft_transcendence. Made with <span class="text-red-400">&lt;3</span> at 42 School.';
+    const footer = PongFooter();
 
     // Montar página
     container.appendChild(header);
