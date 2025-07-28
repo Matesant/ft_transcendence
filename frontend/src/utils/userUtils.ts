@@ -102,8 +102,6 @@ export async function getCurrentUserDisplayName(): Promise<string | null> {
       return null;
     }
     
-    console.log("Profile received:", profile);
-    
     // Verifica se temos pelo menos o alias
     if (!profile.alias) {
       console.error("Profile has no alias");
