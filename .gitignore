@@ -38,3 +38,5 @@ frontend/public/style.css
 /services/*-service/uploads/
 notes
 tmp
+**/server.key
+**/server.crt
