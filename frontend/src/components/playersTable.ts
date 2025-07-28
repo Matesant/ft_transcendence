@@ -29,7 +29,7 @@ class playersTable extends HTMLElement {
                             <div class="flex items-center gap-3">
                                 ${rankBadge}
                                 <div class="flex items-center gap-2">
-                                    <img src="${avatarUrl}" alt="${player.display_name || player.alias}" class="w-8 h-8 rounded-full object-cover border-2 border-white/30" onerror="this.src='http://localhost:3003/uploads/default.jpeg'">
+                                    <img src="${avatarUrl}" alt="${player.display_name || player.alias}" class="w-8 h-8 rounded-full object-cover border-2 border-white/30" onerror="this.src='https://localhost:3003/uploads/default.jpeg'">
                                     <div>
                                         <h3 class="font-bold text-base text-white">${player.display_name || player.alias}</h3>
                                         <p class="text-xs text-white/70">@${player.alias}</p>

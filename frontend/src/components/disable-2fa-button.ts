@@ -15,7 +15,7 @@ class DisablefaBtn extends HTMLElement {
       if (button) {
         button.addEventListener('click', async () => {
           try {
-            const response = await fetch('http://localhost:3001/auth/2fa/disable', {
+            const response = await fetch('https://localhost:3001/auth/2fa/disable', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
