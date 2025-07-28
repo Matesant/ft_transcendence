@@ -17,14 +17,14 @@ export default async function loginRoutes(fastify, opts) {
       return reply.status(401).send({ error: 'Invalid alias or password' })
     }
 
-    if (player.is_2fa_enabled) {
-      return { require2FA: true, message: '2FA required' }
-    }
-
     const match = await bcrypt.compare(password, player.password)
 
     if (!match) {
       return reply.status(401).send({ error: 'Invalid alias or password' })
+    }
+
+    if (player.is_2fa_enabled) {
+      return { require2FA: true, message: '2FA required' }
     }
 
     const token = fastify.jwt.sign({ alias: player.alias, id: player.id })
