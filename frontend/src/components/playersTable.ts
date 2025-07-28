@@ -21,7 +21,7 @@ class playersTable extends HTMLElement {
                 const totalGames = player.wins + player.losses;
                 const rankBadge = this.getRankBadge(index + 1);
                 const winrateColor = this.getWinrateColor(player.winrate);
-                const avatarUrl = player.avatar ? `http://localhost:3003/${player.avatar}` : 'http://localhost:3003/uploads/default.jpeg';
+                const avatarUrl = player.avatar ? `https://localhost:3003/${player.avatar}` : 'https://localhost:3003/uploads/default.jpeg';
                 
                 return `
                     <div class="ranking-player bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 cursor-pointer" data-alias="${player.alias}">
