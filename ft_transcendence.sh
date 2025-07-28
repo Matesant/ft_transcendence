@@ -34,12 +34,13 @@ setup()
 
 clear()
 {
+    printf "%bCleaning up...%b\n" "$BLUE" "$RESET"
     rm -f .env ./services/server.{key,crt} \
         ./services/user-service/server.{key,crt} \
         ./services/match-service/server.{key,crt} \
         ./services/game-service/server.{key,crt} \
         ./services/auth-service/server.{key,crt}
-        ./services/{user,match,game,auth}-service/data/*
+    printf "%bCleanup done!%b\n" "$BLUE" "$RESET"
 }
 
 case $1 in
