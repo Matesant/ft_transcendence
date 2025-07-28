@@ -1,7 +1,5 @@
 const path = require("path");
-const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
     entry: './src/app.ts', //path to the main .ts file
@@ -38,7 +36,6 @@ module.exports = {
             inject: true,
             template: 'public/index.html',
         }),
-        new BundleAnalyzerPlugin()
     ],
     devtool : 'inline-source-map',
     mode: "development",
