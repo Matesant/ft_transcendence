@@ -40,3 +40,4 @@ notes
 tmp
 **/server.key
 **/server.crt
+**/bundle.js
