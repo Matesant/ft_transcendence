@@ -1,6 +1,6 @@
-FROM nginx
+FROM nginx:alpine
 
 WORKDIR /app
 COPY ./start.sh .
 COPY ./nginx.conf /etc/nginx/conf.d/
-RUN apt-get update && apt-get install -y nodejs npm && chmod +x ./start.sh
+RUN apk add --no-cache nodejs npm && chmod +x ./start.sh

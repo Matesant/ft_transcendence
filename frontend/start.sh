@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 while true; do
   if [[ -f "package.json" && -d "src" ]]; then
@@ -9,7 +9,7 @@ while true; do
     fi
     exec nginx -g "daemon off;"
   else
-    echo "Aguardando arquivo package.json e pasta src..."
+    echo "Waiting file package.json and src folder..."
     sleep 1
   fi
 done
