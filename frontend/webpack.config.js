@@ -1,6 +1,5 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const webpack = require("webpack");
 
 module.exports = {
     entry: './src/app.ts', //path to the main .ts file
@@ -36,9 +35,6 @@ module.exports = {
         new HtmlWebpackPlugin({
             inject: true,
             template: 'public/index.html',
-        }),
-        new webpack.DefinePlugin({
-            'process.env.IP': JSON.stringify(process.env.IP)
         }),
     ],
     devtool : 'inline-source-map',
