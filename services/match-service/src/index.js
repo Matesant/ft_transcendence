@@ -59,10 +59,12 @@ fastify.setErrorHandler((error, request, reply) => {
   })
 })
 
-// #TODO: Replace `origin: true` with specific URL before delivery
 await fastify.register(cors, {
-  origin: true,
-  credentials: true
+  origin: `https://${process.env.IP || 'localhost'}:8080`,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
+  exposedHeaders: ['Set-Cookie']
 })
 
 await fastify.register(setupRoutes, { prefix: '/match' });

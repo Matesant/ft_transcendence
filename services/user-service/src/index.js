@@ -48,8 +48,11 @@ fastify.decorate("authenticate", async function (request, reply) {
 })
 
 await fastify.register(cors, {
-  origin: true, credentials: true,
-  methods: ['OPTIONS', 'PATCH']
+  origin: `https://${process.env.IP || 'localhost'}:8080`,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
+  exposedHeaders: ['Set-Cookie']
 })
 await fastify.register(jwt, { secret: process.env.JWT_SECRET })
 await fastify.register(cookie, { secret: process.env.COOKIE_SECRET })
