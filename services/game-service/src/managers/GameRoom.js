@@ -1,21 +1,19 @@
 import { EventEmitter } from 'events';
 
-// Constants aligned with frontend configuration so that
-// server-side physics matches local gameplay.
-const FIELD_HALF_WIDTH = 6;        // FIELD.WIDTH / 2 from frontend
-const SCORE_BOUNDARY = 8.5;        // CONFIG.SCORE.BOUNDARY
-const PADDLE_Z_LEFT = -8.25;       // CONFIG.PADDLE.POSITION.LEFT.z
-const PADDLE_Z_RIGHT = 8.25;       // CONFIG.PADDLE.POSITION.RIGHT.z
+const FIELD_HALF_WIDTH = 6;
+const SCORE_BOUNDARY = 8.5;
+const PADDLE_Z_LEFT = -8.25;
+const PADDLE_Z_RIGHT = 8.25;
 const PADDLE_COLLISION = {
     LEFT_MIN_Z: -8.45,
     LEFT_MAX_Z: -8.05,
     RIGHT_MIN_Z: 8.05,
     RIGHT_MAX_Z: 8.45
 };
-const PADDLE_MOVE_LIMIT = 5.4;     // CONFIG.PADDLE.POSITION_LIMIT
-const BALL_INITIAL_SPEED = 0.1;    // CONFIG.BALL.INITIAL_SPEED
-const BALL_NORMAL_SPEED = 0.15;    // CONFIG.BALL.NORMAL_SPEED
-const PADDLE_HALF_WIDTH = 0.65;    // CONFIG.PADDLE.DIMENSIONS.x / 2
+const PADDLE_MOVE_LIMIT = 5.4;
+const BALL_INITIAL_SPEED = 0.1;
+const BALL_NORMAL_SPEED = 0.15;
+const PADDLE_HALF_WIDTH = 0.65;
 
 export class GameRoom extends EventEmitter {
     constructor(id, player1, player2) {
@@ -23,10 +21,9 @@ export class GameRoom extends EventEmitter {
         this.id = id;
         this.player1 = player1;
         this.player2 = player2;
-        this.state = 'waiting'; // waiting, playing, paused, finished
+        this.state = 'waiting';
         this.lastActivity = Date.now();
         
-        // Game state
         this.gameState = {
             ball: {
                 x: 0,
@@ -46,20 +43,16 @@ export class GameRoom extends EventEmitter {
             speedMultiplier: 1.0
         };
         
-        // Input buffers for lag compensation
-        this.inputBuffer = new Map(); // playerId -> [inputs]
+        this.inputBuffer = new Map();
         this.gameLoop = null;
-        this.tickRate = 60; // 60 FPS
+        this.tickRate = 60;
         this.tick = 0;
         
-        // Network optimization
         this.lastStateSync = 0;
-        this.stateSyncInterval = 16; // ~60 FPS (16ms)
+        this.stateSyncInterval = 16;
 
-        // Track first paddle collision to accelerate the ball
         this.firstCollision = true;
         
-        // Prevent multiple ball release timers
         this.ballReleaseTimer = null;
     }
 
@@ -69,28 +62,23 @@ export class GameRoom extends EventEmitter {
         this.state = 'playing';
         this.lastActivity = Date.now();
         
-        // Initialize game state with ball stopped
         this.resetGame();
         this.gameState.ball.velocityX = 0;
         this.gameState.ball.velocityZ = 0;
         
-        // Notify players that game is starting
         this.broadcastToPlayers({
             type: 'game_start',
             gameState: this.gameState,
             gameId: this.id
         });
         
-        // Start game loop immediately
         this.startGameLoop();
         
-        // Clear any existing ball release timer
         if (this.ballReleaseTimer) {
             clearTimeout(this.ballReleaseTimer);
             this.ballReleaseTimer = null;
         }
         
-        // Release ball after 3 seconds
         this.ballReleaseTimer = setTimeout(() => {
             this.releaseBall();
             this.ballReleaseTimer = null;
@@ -113,16 +101,12 @@ export class GameRoom extends EventEmitter {
         
         this.lastActivity = Date.now();
         
-        // Process inputs
         this.processInputs();
         
-        // Update physics
         this.updatePhysics();
         
-        // Check win condition
         this.checkWinCondition();
         
-        // Sync state to clients (not every tick to save bandwidth)
         if (Date.now() - this.lastStateSync > this.stateSyncInterval) {
             this.syncGameState();
             this.lastStateSync = Date.now();
@@ -130,14 +114,12 @@ export class GameRoom extends EventEmitter {
     }
 
     processInputs() {
-        // Process player 1 inputs (left paddle)
         const p1Inputs = this.inputBuffer.get(this.player1.id) || [];
         for (const input of p1Inputs) {
             this.applyInput(this.player1.id, input);
         }
         this.inputBuffer.set(this.player1.id, []);
         
-        // Process player 2 inputs (right paddle)
         const p2Inputs = this.inputBuffer.get(this.player2.id) || [];
         for (const input of p2Inputs) {
             this.applyInput(this.player2.id, input);
@@ -150,7 +132,7 @@ export class GameRoom extends EventEmitter {
         const paddle = isPlayer1 ? this.gameState.paddles.left : this.gameState.paddles.right;
         
         const moveSpeed = 0.2 * this.gameState.speedMultiplier;
-        const maxX = PADDLE_MOVE_LIMIT; // Match frontend paddle boundary
+        const maxX = PADDLE_MOVE_LIMIT;
         
         switch (input.action) {
             case 'move_left':
@@ -163,33 +145,27 @@ export class GameRoom extends EventEmitter {
     }
 
     updatePhysics() {
-        // Update ball position
         this.gameState.ball.x += this.gameState.ball.velocityX;
         this.gameState.ball.z += this.gameState.ball.velocityZ;
         
-        // Ball collision with walls
         if (this.gameState.ball.x <= -FIELD_HALF_WIDTH || this.gameState.ball.x >= FIELD_HALF_WIDTH) {
             this.gameState.ball.velocityX *= -1;
             this.gameState.ball.x = Math.max(-(FIELD_HALF_WIDTH - 0.1), Math.min(FIELD_HALF_WIDTH - 0.1, this.gameState.ball.x));
         }
         
-        // Ball collision with paddles
         this.checkPaddleCollisions();
         
-        // Ball scoring
         if (this.gameState.ball.z <= -SCORE_BOUNDARY) {
-            // Player 2 scores
             this.gameState.score.player2++;
-            this.resetBall(1); // Ball goes toward player 1
+            this.resetBall(1);
             this.broadcastToPlayers({
                 type: 'score',
                 scorer: this.player2.id,
                 score: this.gameState.score
             });
         } else if (this.gameState.ball.z >= SCORE_BOUNDARY) {
-            // Player 1 scores
             this.gameState.score.player1++;
-            this.resetBall(-1); // Ball goes toward player 2
+            this.resetBall(-1);
             this.broadcastToPlayers({
                 type: 'score',
                 scorer: this.player1.id,
@@ -203,19 +179,15 @@ export class GameRoom extends EventEmitter {
         const leftPaddle = this.gameState.paddles.left;
         const rightPaddle = this.gameState.paddles.right;
         
-        // Left paddle collision
         if (ball.z <= PADDLE_COLLISION.LEFT_MAX_Z && ball.z >= PADDLE_COLLISION.LEFT_MIN_Z &&
             Math.abs(ball.x - leftPaddle.x) < PADDLE_HALF_WIDTH) {
-            // Ensure ball goes up
             ball.velocityZ = Math.abs(ball.velocityZ);
             this.handleFirstCollision(ball);
             this.addSpin(ball, leftPaddle);
         }
 
-        // Right paddle collision
         if (ball.z >= PADDLE_COLLISION.RIGHT_MIN_Z && ball.z <= PADDLE_COLLISION.RIGHT_MAX_Z &&
             Math.abs(ball.x - rightPaddle.x) < PADDLE_HALF_WIDTH) {
-            // Ensure ball goes down
             ball.velocityZ = -Math.abs(ball.velocityZ);
             this.handleFirstCollision(ball);
             this.addSpin(ball, rightPaddle);
@@ -235,9 +207,8 @@ export class GameRoom extends EventEmitter {
 
     addSpin(ball, paddle) {
         const hitFactor = (ball.x - paddle.x) / 0.8;
-        ball.velocityX += hitFactor * 0.1; // Match CONFIG.BALL.SPIN_FACTOR
+        ball.velocityX += hitFactor * 0.1;
 
-        // Ensure minimum speed
         const speed = Math.sqrt(ball.velocityX * ball.velocityX + ball.velocityZ * ball.velocityZ);
         if (speed < 0.05) {
             const factor = 0.05 / speed;
@@ -251,17 +222,15 @@ export class GameRoom extends EventEmitter {
         this.gameState.ball = {
             x: 0,
             z: 0,
-            velocityX: 0, // Start stopped
-            velocityZ: 0  // Start stopped
+            velocityX: 0,
+            velocityZ: 0
         };
         
-        // Clear any existing ball release timer
         if (this.ballReleaseTimer) {
             clearTimeout(this.ballReleaseTimer);
             this.ballReleaseTimer = null;
         }
         
-        // Release ball after 3 seconds
         this.ballReleaseTimer = setTimeout(() => {
             if (this.state === 'playing') {
                 this.gameState.ball.velocityX = (Math.random() - 0.5) * BALL_INITIAL_SPEED;
@@ -309,7 +278,6 @@ export class GameRoom extends EventEmitter {
         this.state = 'finished';
         clearInterval(this.gameLoop);
         
-        // Clear any pending ball release timer
         if (this.ballReleaseTimer) {
             clearTimeout(this.ballReleaseTimer);
             this.ballReleaseTimer = null;
@@ -338,7 +306,6 @@ export class GameRoom extends EventEmitter {
     handlePlayerInput(playerId, input) {
         if (this.state !== 'playing') return;
         
-        // Add input to buffer with timestamp for lag compensation
         const inputs = this.inputBuffer.get(playerId) || [];
         inputs.push({
             ...input,
@@ -354,7 +321,6 @@ export class GameRoom extends EventEmitter {
         const disconnectedPlayer = playerId === this.player1.id ? this.player1 : this.player2;
         const remainingPlayer = playerId === this.player1.id ? this.player2 : this.player1;
         
-        // Notify remaining player
         if (remainingPlayer.connection) {
             remainingPlayer.connection.socket.send(JSON.stringify({
                 type: 'opponent_disconnected',
@@ -362,7 +328,6 @@ export class GameRoom extends EventEmitter {
             }));
         }
         
-        // End game with remaining player as winner
         this.endGame(remainingPlayer.id);
     }
 
@@ -388,7 +353,6 @@ export class GameRoom extends EventEmitter {
         if (this.state === 'playing') {
             this.state = 'paused';
             
-            // Clear any pending ball release timer when pausing
             if (this.ballReleaseTimer) {
                 clearTimeout(this.ballReleaseTimer);
                 this.ballReleaseTimer = null;
@@ -412,7 +376,6 @@ export class GameRoom extends EventEmitter {
     releaseBall() {
         if (this.state !== 'playing') return;
         
-        // Set random initial velocity
         this.gameState.ball.velocityX = (Math.random() - 0.5) * BALL_INITIAL_SPEED;
         this.gameState.ball.velocityZ = (Math.random() > 0.5 ? 1 : -1) * BALL_INITIAL_SPEED * this.gameState.speedMultiplier;
         

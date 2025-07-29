@@ -94,7 +94,6 @@ export default async function (fastify, opts) {
 			}
 
 			// 3.6. Criar partidas da próxima rodada automaticamente
-			console.log(`Auto-advancing tournament to round ${nextRound}...`);
 			const newMatches = [];
 
 			// Emparelhar vencedores de dois em dois

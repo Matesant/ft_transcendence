@@ -9,15 +9,12 @@ export class Home extends AView {
   public render(parent: HTMLElement = document.body): void {
     parent.innerHTML = '';
 
-    // Container principal com o mesmo estilo do lobby
     const container = document.createElement('div');
     container.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-    // Header
     const header = document.createElement('header');
     header.className = 'w-full flex justify-between items-center px-8 py-6';
 
-    // Logo/título com mesmo estilo
     const logo = document.createElement('div');
     logo.className = 'flex items-center cursor-pointer transition-all duration-300 hover:scale-105';
     logo.innerHTML = `
@@ -26,15 +23,12 @@ export class Home extends AView {
 
     header.appendChild(logo);
 
-    // Conteúdo central
     const main = document.createElement('main');
     main.className = 'flex flex-1 flex-col items-center justify-center w-full px-4 max-w-6xl mx-auto';
 
-    // Container para as duas caixas separadas
     const cardsContainer = document.createElement('div');
     cardsContainer.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8 w-full';
 
-    // Card esquerdo - PLAY NOW
     const leftCard = document.createElement('div');
     leftCard.className = 'bg-white/10 backdrop-blur-lg rounded-2xl p-12 text-center border border-white/20 shadow-2xl';
     
@@ -42,12 +36,10 @@ export class Home extends AView {
     cardTitle.className = 'text-5xl font-bold mb-6 text-white drop-shadow-lg';
     cardTitle.textContent = '🏓 ft_transcendence';
     
-    // Descrição
     const desc = document.createElement('p');
     desc.className = 'text-lg text-white/80 mb-8 leading-relaxed';
     desc.textContent = 'The classic Pong, reimagined for the 21st century.';
     
-    // Botão PLAY NOW
     const playNowBtn = PongButton({
       text: '🚀 PLAY NOW',
       variant: 'primary',
@@ -55,7 +47,6 @@ export class Home extends AView {
     });
     playNowBtn.className = 'w-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:from-green-500 hover:via-green-600 hover:to-green-700 text-white py-6 px-12 text-2xl rounded-xl font-bold cursor-pointer transition-all duration-300 hover:-translate-y-3 shadow-2xl hover:shadow-green-500/50 max-w-sm mx-auto animate-pulse hover:animate-none border-2 border-green-300/50 hover:border-green-200 relative overflow-hidden';
     
-    // Adicionar efeito de brilho interno
     playNowBtn.style.cssText += `
       box-shadow: 0 0 30px rgba(34, 197, 94, 0.6), 
                   0 0 60px rgba(34, 197, 94, 0.4), 
@@ -68,7 +59,6 @@ export class Home extends AView {
     leftCard.appendChild(desc);
     leftCard.appendChild(playNowBtn);
     
-    // Card direito - Como Jogar
     const rightCard = document.createElement('div');
     rightCard.className = 'bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl';
     
@@ -100,16 +90,13 @@ export class Home extends AView {
     rightCard.appendChild(howToPlayTitle);
     rightCard.appendChild(tipsList);
     
-    // Montar as caixas
     cardsContainer.appendChild(leftCard);
     cardsContainer.appendChild(rightCard);
     main.appendChild(cardsContainer);
     
-    // Seção de Features - 3 caixas embaixo
     const featuresContainer = document.createElement('div');
     featuresContainer.className = 'grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-8';
     
-    // Feature 1 - 3D
     const feature3D = document.createElement('div');
     feature3D.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     feature3D.innerHTML = `
@@ -118,7 +105,6 @@ export class Home extends AView {
       <p class="text-white/80 text-sm leading-relaxed">Gráficos modernos com efeitos visuais impressionantes e física realista</p>
     `;
     
-    // Feature 2 - Torneios e Online
     const featureTournaments = document.createElement('div');
     featureTournaments.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     featureTournaments.innerHTML = `
@@ -127,7 +113,6 @@ export class Home extends AView {
       <p class="text-white/80 text-sm leading-relaxed">Compete em torneios épicos ou desafie jogadores do mundo todo</p>
     `;
     
-    // Feature 3 - Perfil Personalizado
     const featureProfile = document.createElement('div');
     featureProfile.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     featureProfile.innerHTML = `
@@ -141,7 +126,6 @@ export class Home extends AView {
     featuresContainer.appendChild(featureProfile);
     main.appendChild(featuresContainer);
     
-    // Seção de Criadores - 5 pessoas
     const creatorsSection = document.createElement('div');
     creatorsSection.className = 'w-full mt-16 mb-8';
     
@@ -218,7 +202,6 @@ export class Home extends AView {
     creatorsSection.appendChild(creatorsContainer);
     main.appendChild(creatorsSection);
     
-    // Adicionar animação CSS personalizada e scroll invisível
     const style = document.createElement('style');
     style.textContent = `
       /* Scroll invisível para toda a página */
@@ -260,7 +243,6 @@ export class Home extends AView {
     `;
     document.head.appendChild(style);
     
-    // Adicionar efeito shimmer no hover
     playNowBtn.addEventListener('mouseenter', () => {
       playNowBtn.style.backgroundImage = 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%), linear-gradient(to right, #22c55e, #16a34a, #15803d)';
       playNowBtn.style.backgroundSize = '1000px 100%, 100% 100%';
@@ -272,10 +254,8 @@ export class Home extends AView {
       playNowBtn.style.animation = 'glow 3s ease-in-out infinite';
     });
 
-    // Footer
     const footer = PongFooter();
 
-    // Montar página
     container.appendChild(header);
     container.appendChild(main);
     container.appendChild(footer);

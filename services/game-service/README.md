@@ -243,7 +243,6 @@ networkManager.joinQueue();
 
 // Handle events
 networkManager.onMatchFound((data) => {
-  console.log('Match found!', data);
 });
 
 networkManager.onGameState((state) => {

@@ -54,13 +54,10 @@ export class Ball extends GameObject {
             const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
             this._lastTime = currentTime;
             
-            // Move ball based on deltaTime for frame-rate independent movement
             const movement = this._velocity.scale(deltaTime);
             this._mesh.position.addInPlace(movement);
             
-            // Debug: Log ball position and velocity occasionally
-            if (Math.random() < 0.001) { // Log rarely to avoid spam
-                console.log(`Ball position: (${this._mesh.position.x.toFixed(2)}, ${this._mesh.position.z.toFixed(2)}), velocity: (${this._velocity.x.toFixed(3)}, ${this._velocity.z.toFixed(3)}), speed: ${this._velocity.length().toFixed(3)}, deltaTime: ${deltaTime.toFixed(2)}`);
+            if (Math.random() < 0.001) {
             }
         }
     }
@@ -76,7 +73,6 @@ export class Ball extends GameObject {
         this._active = true;
         this._lastTime = Date.now();
         
-        // Use provided direction or random if not specified
         let zDirection;
         if (directionZ !== undefined) {
             zDirection = directionZ;
@@ -104,28 +100,19 @@ export class Ball extends GameObject {
     }
 
     public reverseX(): void {
-        // Reverse the x direction
         this._velocity.x *= -1;
         
-        // Calculate the current ball speed
         const speed = this._velocity.length();
         
-        // Check if the ball is moving too vertically (small x component)
         const xRatio = Math.abs(this._velocity.x) / speed;
         
-        // If the x-component is too small (less than 20% of total velocity)
         if (xRatio < 0.2) {
-            // Add a minimum horizontal component to prevent vertical-only bouncing
-            // Maintain the same overall speed but ensure a minimum x-component
-            const minXComponent = speed * 0.3; // At least 30% of speed should be horizontal
+            const minXComponent = speed * 0.3; 
             
-            // Determine the direction
             const xDirection = this._velocity.x >= 0 ? 1 : -1;
             
-            // Set x velocity to the minimum value while preserving direction
             this._velocity.x = minXComponent * xDirection;
             
-            // Recalculate z velocity to maintain the same overall speed
             const newZMagnitude = Math.sqrt(speed * speed - this._velocity.x * this._velocity.x);
             const zDirection = this._velocity.z >= 0 ? 1 : -1;
             this._velocity.z = newZMagnitude * zDirection;
@@ -133,7 +120,6 @@ export class Ball extends GameObject {
     }
 
     public setSpeedMultiplier(multiplier: number): void {
-        // Scale the current velocity by the multiplier
         this._velocity = this._velocity.scale(multiplier);
     }
 }

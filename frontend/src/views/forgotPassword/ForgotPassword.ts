@@ -15,23 +15,18 @@ export class ForgotPassword extends AView {
         parent.innerHTML = '';
         parent.className = '';
 
-        // Fundo com gradiente igual ao lobby
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-        // Header com botão Voltar
         const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
-        // Conteúdo central
         const main = document.createElement('main');
         main.className = 'flex flex-1 flex-col items-center justify-start pt-16 w-full px-4';
 
-        // Formulário centralizado com estilo glassmorphism
         const formContainer = document.createElement('div');
         formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
-        // Título
         const title = document.createElement('h2');
         title.className = 'text-2xl font-bold text-center text-white mb-2';
         title.textContent = this.currentStep === 'request' ? 'Esqueceu sua senha?' : 'Redefinir Senha';
@@ -59,18 +54,15 @@ export class ForgotPassword extends AView {
         main.appendChild(formContainer);
         bg.appendChild(main);
 
-        // Footer
         const footer = PongFooter();
         bg.appendChild(footer);
 
         parent.appendChild(bg);
         this.elements.push(bg);
 
-        // Handler de submit
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             
-            // Prevenir múltiplas submissões
             if (this.isLoading) return;
             
             if (this.currentStep === 'request') {
@@ -82,7 +74,6 @@ export class ForgotPassword extends AView {
     }
 
     private renderRequestStep(form: HTMLFormElement): void {
-        // Alias
         const aliasDiv = document.createElement('div');
         aliasDiv.className = 'mb-6';
         const aliasLabel = document.createElement('label');
@@ -97,7 +88,6 @@ export class ForgotPassword extends AView {
         aliasDiv.appendChild(aliasInput);
         form.appendChild(aliasDiv);
 
-        // Botão submit
         const submitBtn = PongButton({
             text: this.isLoading ? '' : 'Enviar Código',
             variant: 'primary',
@@ -115,7 +105,6 @@ export class ForgotPassword extends AView {
 
         form.appendChild(submitBtn);
 
-        // Link voltar para login
         const backToLoginDiv = document.createElement('div');
         backToLoginDiv.className = 'text-center';
         const backToLoginLink = document.createElement('a');
@@ -131,7 +120,6 @@ export class ForgotPassword extends AView {
     }
 
     private renderResetStep(form: HTMLFormElement): void {
-        // Mostrar o alias (não editável)
         const aliasInfoDiv = document.createElement('div');
         aliasInfoDiv.className = 'mb-4 p-3 bg-black/20 rounded-lg';
         const aliasInfoLabel = document.createElement('span');
@@ -140,7 +128,6 @@ export class ForgotPassword extends AView {
         aliasInfoDiv.appendChild(aliasInfoLabel);
         form.appendChild(aliasInfoDiv);
 
-        // Código de verificação
         const codeDiv = document.createElement('div');
         codeDiv.className = 'mb-4';
         const codeLabel = document.createElement('label');
@@ -155,7 +142,6 @@ export class ForgotPassword extends AView {
         codeDiv.appendChild(codeInput);
         form.appendChild(codeDiv);
 
-        // Nova senha
         const passwordDiv = document.createElement('div');
         passwordDiv.className = 'mb-4';
         const passwordLabel = document.createElement('label');
@@ -170,7 +156,6 @@ export class ForgotPassword extends AView {
         passwordDiv.appendChild(passwordInput);
         form.appendChild(passwordDiv);
 
-        // Confirmar senha
         const confirmPasswordDiv = document.createElement('div');
         confirmPasswordDiv.className = 'mb-6';
         const confirmPasswordLabel = document.createElement('label');
@@ -185,7 +170,6 @@ export class ForgotPassword extends AView {
         confirmPasswordDiv.appendChild(confirmPasswordInput);
         form.appendChild(confirmPasswordDiv);
 
-        // Botão submit
         const submitBtn = PongButton({
             text: this.isLoading ? '' : 'Redefinir Senha',
             variant: 'primary',
@@ -203,7 +187,6 @@ export class ForgotPassword extends AView {
 
         form.appendChild(submitBtn);
 
-        // Link voltar para primeira etapa
         const backToRequestDiv = document.createElement('div');
         backToRequestDiv.className = 'text-center';
         const backToRequestLink = document.createElement('a');
@@ -226,7 +209,6 @@ export class ForgotPassword extends AView {
             alias: String(formData.get('alias'))
         };
         
-        // Ativar loading
         this.isLoading = true;
         this.render();
         
@@ -269,7 +251,6 @@ export class ForgotPassword extends AView {
             return;
         }
 
-        // Ativar loading
         this.isLoading = true;
         this.render();
 

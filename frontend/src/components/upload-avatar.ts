@@ -74,7 +74,6 @@ class UploadAvatar extends HTMLElement {
   
         const data = await resp.json();
         if (data.success) {
-          // this.statusDiv.className = "text-green-950";
           this.showStatus(`${data.message}!`);
         } else {
           this.statusDiv.className = "text-red-500";

@@ -10,7 +10,6 @@ export class InputManager {
         window.addEventListener("keydown", (event) => {
             const key = event.key.toLowerCase();
             
-            // If key wasn't already pressed, mark it as just pressed
             if (!this._pressedKeys[key]) {
                 this._justPressedKeys[key] = true;
             }
@@ -24,7 +23,6 @@ export class InputManager {
     }
     
     public update(): void {
-        // Clear just pressed keys at the end of each frame
         this._justPressedKeys = {};
     }
     

@@ -13,19 +13,15 @@ export class Login extends AView {
         parent.innerHTML = '';
         parent.className = '';
 
-        // Fundo com gradiente igual ao lobby
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-        // Header com botão Voltar
         const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
-        // Conteúdo central
         const main = document.createElement('main');
         main.className = 'flex flex-1 flex-col items-center justify-start pt-16 w-full px-4';
 
-        // Formulário centralizado com estilo glassmorphism
         const formContainer = document.createElement('div');
         formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
@@ -33,7 +29,6 @@ export class Login extends AView {
         form.id = 'login-form';
         form.className = 'w-full';
 
-        // Alias
         const aliasDiv = document.createElement('div');
         aliasDiv.className = 'mb-4';
         const aliasLabel = document.createElement('label');
@@ -47,7 +42,6 @@ export class Login extends AView {
         aliasDiv.appendChild(aliasInput);
         form.appendChild(aliasDiv);
 
-        // Password
         const passDiv = document.createElement('div');
         passDiv.className = 'mb-4';
         const passLabel = document.createElement('label');
@@ -61,7 +55,6 @@ export class Login extends AView {
         passDiv.appendChild(passInput);
         form.appendChild(passDiv);
 
-        // Botão submit
         const submitBtn = PongButton({
             text: 'Login',
             variant: 'primary',
@@ -69,7 +62,6 @@ export class Login extends AView {
         });
         form.appendChild(submitBtn);
 
-        // Link "Esqueceu a senha?" centralizado abaixo do botão de login
         const forgotPasswordDiv = document.createElement('div');
         forgotPasswordDiv.className = 'mt-4 mb-6 text-center';
         const forgotPasswordLink = document.createElement('a');
@@ -83,7 +75,6 @@ export class Login extends AView {
         forgotPasswordDiv.appendChild(forgotPasswordLink);
         form.appendChild(forgotPasswordDiv);
 
-        // Separador "OU"
         const separatorDiv = document.createElement('div');
         separatorDiv.className = 'flex items-center my-6';
         const line1 = document.createElement('div');
@@ -123,7 +114,6 @@ export class Login extends AView {
         form.appendChild(googleBtn);
 
 
-        // Texto e botão de registro
         const registerBox = document.createElement('div');
         registerBox.className = 'mt-12 flex flex-col items-center';
         const registerText = document.createElement('span');
@@ -145,14 +135,12 @@ export class Login extends AView {
         main.appendChild(formContainer);
         bg.appendChild(main);
 
-        // Footer
         const footer = PongFooter();
         bg.appendChild(footer);
 
         parent.appendChild(bg);
         this.elements.push(bg);
 
-        // Handler de submit
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(form as HTMLFormElement);
@@ -187,13 +175,11 @@ export class Login extends AView {
     }
 
     private showError(message: string): void {
-        // Create a temporary error message
         const errorDiv = document.createElement("div");
         errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
         errorDiv.textContent = message;
         document.body.appendChild(errorDiv);
 
-        // Remove after 3 seconds
         setTimeout(() => {
             if (errorDiv.parentNode) {
                 errorDiv.parentNode.removeChild(errorDiv);

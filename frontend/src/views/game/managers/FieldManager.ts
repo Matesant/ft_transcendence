@@ -26,7 +26,6 @@ export class FieldManager {
     }
 
     private _createPlayingField(): void {
-        // Create ground
         this._ground = MeshBuilder.CreateGround(
             "ground", 
             { width: CONFIG.FIELD.WIDTH, height: CONFIG.FIELD.HEIGHT }, 
@@ -36,10 +35,8 @@ export class FieldManager {
         groundMaterial.diffuseColor = CONFIG.TABLE_THEMES[this._tableTheme].FIELD_COLOR;
         this._ground.material = groundMaterial;
         
-        // Create center lines
         this._createCenterLines();
         
-        // Set initial scene background
         this._scene.clearColor = CONFIG.TABLE_THEMES[this._tableTheme].BACKGROUND_COLOR;
     }
 
@@ -74,11 +71,9 @@ export class FieldManager {
     }
 
     private _updateTableTheme(): void {
-        // Update ground color
         const groundMaterial = this._ground.material as StandardMaterial;
         groundMaterial.diffuseColor = CONFIG.TABLE_THEMES[this._tableTheme].FIELD_COLOR;
         
-        // Update scene background color
         this._scene.clearColor = CONFIG.TABLE_THEMES[this._tableTheme].BACKGROUND_COLOR;
     }
 }

@@ -35,19 +35,15 @@ await app.register(jwt, {
 
 await app.register(websocket);
 
-// Initialize managers
 const gameManager = new GameManager();
 const playerManager = new PlayerManager();
 
-// Room management for private lobbies
-const roomManager = new Map(); // roomCode -> { players: [], host: playerId, createdAt: timestamp }
+const roomManager = new Map();
 
-// Health check
 app.get('/health', async (request, reply) => {
     return { status: 'ok', service: 'game-service', timestamp: new Date().toISOString() };
 });
 
-// Game stats endpoint
 app.get('/games/stats', async (request, reply) => {
     return {
         totalGames: gameManager.getTotalGames(),
@@ -57,7 +53,6 @@ app.get('/games/stats', async (request, reply) => {
     };
 });
 
-// WebSocket connection for real-time gameplay
 app.register(async function (fastify) {
     fastify.get('/ws', { websocket: true }, (connection, req) => {
         console.log('New WebSocket connection established');
@@ -110,10 +105,8 @@ app.register(async function (fastify) {
         connection.socket.on('close', () => {
             console.log('WebSocket connection closed');
             
-            // Clean up player from regular queue
             playerManager.removePlayer(connection);
             
-            // Clean up from room if in one
             if (connection.roomCode && connection.playerId) {
                 handleLeaveRoom(connection, {
                     playerId: connection.playerId,
@@ -128,7 +121,6 @@ app.register(async function (fastify) {
     });
 });
 
-// Handler functions
 async function handleJoinQueue(connection, data) {
     try {
         const player = {
@@ -140,32 +132,27 @@ async function handleJoinQueue(connection, data) {
         
         playerManager.addPlayer(player);
         
-        // Try to find a match
         const opponent = playerManager.findOpponent(player.id);
         
         if (opponent) {
-            // Create a new game room
             const gameRoom = gameManager.createGame(player, opponent);
             
-            // Notify both players that a match was found
             player.connection.socket.send(JSON.stringify({
                 type: 'match_found',
                 gameId: gameRoom.id,
                 opponent: { id: opponent.id, name: opponent.name },
-                playerSide: 'left' // First player is always left
+                playerSide: 'left' 
             }));
             
             opponent.connection.socket.send(JSON.stringify({
                 type: 'match_found',
                 gameId: gameRoom.id,
                 opponent: { id: player.id, name: player.name },
-                playerSide: 'right' // Second player is always right
+                playerSide: 'right' 
             }));
             
-            // Start the game
             gameRoom.startGame();
         } else {
-            // Add to queue
             connection.socket.send(JSON.stringify({
                 type: 'queue_joined',
                 message: 'Searching for opponent...',
@@ -196,12 +183,10 @@ async function handleGameInput(connection, data) {
     }
 }
 
-// Room management handlers
 async function handleCreateRoom(connection, data) {
     try {
         const { playerId, playerName, roomCode } = data;
         
-        // Check if room already exists
         if (roomManager.has(roomCode)) {
             connection.socket.send(JSON.stringify({
                 type: 'room_error',
@@ -210,7 +195,6 @@ async function handleCreateRoom(connection, data) {
             return;
         }
         
-        // Create new room
         const room = {
             players: [{
                 id: playerId,
@@ -221,12 +205,11 @@ async function handleCreateRoom(connection, data) {
             }],
             host: playerId,
             createdAt: Date.now(),
-            state: 'waiting' // waiting, ready, playing
+            state: 'waiting'
         };
         
         roomManager.set(roomCode, room);
         
-        // Store room code in connection for cleanup
         connection.roomCode = roomCode;
         connection.playerId = playerId;
         
@@ -264,7 +247,6 @@ async function handleJoinRoom(connection, data) {
             return;
         }
         
-        // Check if room is full (max 2 players for now)
         if (room.players.length >= 2) {
             connection.socket.send(JSON.stringify({
                 type: 'room_error',
@@ -273,7 +255,6 @@ async function handleJoinRoom(connection, data) {
             return;
         }
         
-        // Check if player already in room
         if (room.players.find(p => p.id === playerId)) {
             connection.socket.send(JSON.stringify({
                 type: 'room_error',
@@ -282,7 +263,6 @@ async function handleJoinRoom(connection, data) {
             return;
         }
         
-        // Add player to room
         const newPlayer = {
             id: playerId,
             name: playerName,
@@ -293,11 +273,9 @@ async function handleJoinRoom(connection, data) {
         
         room.players.push(newPlayer);
         
-        // Store room code in connection for cleanup
         connection.roomCode = roomCode;
         connection.playerId = playerId;
         
-        // Notify all players in room
         const playersInfo = room.players.map(p => ({
             id: p.id,
             name: p.name,
@@ -330,21 +308,17 @@ async function handleLeaveRoom(connection, data) {
         const room = roomManager.get(roomCode);
         if (!room) return;
         
-        // Remove player from room
         room.players = room.players.filter(p => p.id !== playerId);
         
         if (room.players.length === 0) {
-            // Delete empty room
             roomManager.delete(roomCode);
             console.log(`Room ${roomCode} deleted - no players left`);
         } else {
-            // If host left, assign new host
             if (room.host === playerId && room.players.length > 0) {
                 room.host = room.players[0].id;
                 room.players[0].isHost = true;
             }
             
-            // Notify remaining players
             const playersInfo = room.players.map(p => ({
                 id: p.id,
                 name: p.name,
@@ -361,7 +335,6 @@ async function handleLeaveRoom(connection, data) {
             });
         }
         
-        // Clean connection data
         delete connection.roomCode;
         delete connection.playerId;
         
@@ -378,13 +351,11 @@ async function handleRoomReady(connection, data) {
         const room = roomManager.get(roomCode);
         if (!room) return;
         
-        // Update player ready status
         const player = room.players.find(p => p.id === playerId);
         if (player) {
             player.ready = ready;
         }
         
-        // Notify all players in room
         const playersInfo = room.players.map(p => ({
             id: p.id,
             name: p.name,
@@ -400,19 +371,15 @@ async function handleRoomReady(connection, data) {
             }));
         });
         
-        // Check if all players are ready and room has 2 players
         if (room.players.length === 2 && room.players.every(p => p.ready)) {
-            // Start game
             const player1 = room.players[0];
             const player2 = room.players[1];
             
-            // Create game room
             const gameRoom = gameManager.createGame(
                 { id: player1.id, name: player1.name, connection: player1.connection },
                 { id: player2.id, name: player2.name, connection: player2.connection }
             );
             
-            // Notify players that game is starting
             player1.connection.socket.send(JSON.stringify({
                 type: 'game_starting',
                 gameId: gameRoom.id,
@@ -427,10 +394,8 @@ async function handleRoomReady(connection, data) {
                 opponent: { id: player1.id, name: player1.name }
             }));
             
-            // Start the game
             gameRoom.startGame();
             
-            // Remove room from lobby system
             roomManager.delete(roomCode);
             
             console.log(`Game started for room ${roomCode}`);

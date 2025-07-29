@@ -21,7 +21,6 @@ export class Game extends AView {
         onGameStarted?: () => void,
         options?: { socket?: WebSocket; skipMenu?: boolean; playerSide?: 'left' | 'right'; opponent?: { id: string; name: string }; gameId?: string }
     ) {
-        // Canvas setup
         super();
         this._gameMode = gameMode;
         this._onGameStarted = onGameStarted;
@@ -31,12 +30,10 @@ export class Game extends AView {
         this._canvas.id = CONFIG.CANVAS_ID;
         document.body.appendChild(this._canvas);
 
-        // Engine and scene setup
         this._engine = new Engine(this._canvas, true);
         this._scene = new Scene(this._engine);
         this._scene.clearColor = CONFIG.SCENE.CLEAR_COLOR;
         
-        // Camera setup
         const camera = new ArcRotateCamera(
             "Camera", 
             Math.PI + Tools.ToRadians(CONFIG.SCENE_ROTATION_DEGREES),
@@ -47,7 +44,6 @@ export class Game extends AView {
         );
         camera.setTarget(Vector3.Zero());
         
-        // Ambient light
         const ambientLight = new HemisphericLight(
             "ambientLight", 
             CONFIG.AMBIENT_LIGHT.DIRECTION,
@@ -56,11 +52,9 @@ export class Game extends AView {
         ambientLight.intensity = CONFIG.AMBIENT_LIGHT.INTENSITY;
         ambientLight.diffuse = CONFIG.AMBIENT_LIGHT.DIFFUSE;
         
-        // Add glow effect
         const glowLayer = new GlowLayer("glowLayer", this._scene);
         glowLayer.intensity = CONFIG.GLOW.INTENSITY;
         
-        // Initialize appropriate game manager based on mode
         if (this._gameMode === 'remote') {
             if (!playerId || !playerName) {
                 throw new Error('Player ID and name are required for remote game mode');
@@ -68,7 +62,6 @@ export class Game extends AView {
             this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted, options);
         } else {
             this._gameManager = new GameManager(this._scene);
-            // For local games, call the callback immediately since the game starts right away
             if (this._onGameStarted) {
                 this._onGameStarted();
             }
@@ -84,7 +77,6 @@ export class Game extends AView {
             }
         });
         
-        // Handle window resize
         window.addEventListener("resize", () => {
             this._canvas.width = window.innerWidth;
             this._canvas.height = window.innerHeight;
@@ -100,24 +92,19 @@ export class Game extends AView {
     }
 
     public dispose(): void {
-        // Stop the render loop
         this._engine.stopRenderLoop();
 
-        // Disconnect network manager if in remote mode
         if (this._gameMode === 'remote' && 'disconnect' in this._gameManager) {
             (this._gameManager as RemoteGameManager).disconnect();
         }
 
-        // Dispose of the Babylon.js engine and scene
         this._scene.dispose();
         this._engine.dispose();
 
-        // Remove the canvas element from the DOM
         if (this._canvas.parentNode) {
             this._canvas.parentNode.removeChild(this._canvas);
         }
 
-        // Clean up other resources if necessary
         this._gameManager = null!;
 
         Array.from(document.body.children).forEach(child => {
@@ -133,7 +120,3 @@ export class Game extends AView {
         return this._gameMode;
     }
 }
-
-// Create and start the game
-// const game = new Game();
-// game.mainLoop();

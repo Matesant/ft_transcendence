@@ -51,10 +51,8 @@ export class Friends extends AView {
     this.setupNavigation(friendsContainer);
     this.loadUserAvatar(friendsContainer);
 
-    // Carregar dados e renderizar listas
     await this.loadAndRenderLists(friendsContainer);
 
-    // Adicionar evento para adicionar novo amigo
     const addBtn = friendsContainer.querySelector("#add-friend-btn")! as HTMLButtonElement;
     const addInput = friendsContainer.querySelector("#add-friend-input")! as HTMLInputElement;
     const addMsg = friendsContainer.querySelector("#add-friend-message")! as HTMLElement;
@@ -85,7 +83,6 @@ export class Friends extends AView {
         this.fetchPendingReceived()
       ]);
     } catch (e) {
-      // Em caso de erro, limpa listas
       this.friends = [];
       this.pendingReceived = [];
     }
@@ -221,7 +218,6 @@ export class Friends extends AView {
     });
   }
 
-  // Header helpers (iguais ao Dashboard)
   private async loadUserAvatar(container: HTMLElement): Promise<void> {
     const avatarContainer = container.querySelector("#user-avatar-container");
     try {
@@ -240,7 +236,6 @@ export class Friends extends AView {
   }
 
   private setupNavigation(container: HTMLElement): void {
-    // Navegação para dashboard
     const dashboardBtn = container.querySelector('[data-route="/dashboard"]');
     if (dashboardBtn) {
       dashboardBtn.addEventListener('click', (e: Event) => {
@@ -249,7 +244,6 @@ export class Friends extends AView {
         router();
       });
     }
-    // Logout
     const logoutBtn = container.querySelector('.logout-btn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', async (e: Event) => {
@@ -268,7 +262,6 @@ export class Friends extends AView {
         }
       });
     }
-    // Avatar para settings
     const avatarContainer = container.querySelector('#user-avatar-container');
     if (avatarContainer) {
       avatarContainer.addEventListener('click', (e: Event) => {

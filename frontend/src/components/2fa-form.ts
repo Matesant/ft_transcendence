@@ -13,7 +13,6 @@ export class TwoFactorAuth extends HTMLElement {
 
     document.body.className = "bg-gradient-to-br from-indigo-500 to-purple-600 text-white h-screen";
 
-    // Cria o conteúdo interno com classes Tailwind
     this.innerHTML = `
       <div class="mx-auto mt-20 w-96"> <!-- centralizado horizontal, largura fixa -->
       <h1 class="text-center text-2xl pb-4">Two factor authentication</h1>
@@ -36,7 +35,6 @@ export class TwoFactorAuth extends HTMLElement {
     const codeInput = this.querySelector<HTMLInputElement>("#codeInput")!;
     const status = this.querySelector<HTMLDivElement>("#status")!;
 
-    // Enviar pedido de código
     requestBtn.addEventListener("click", async () => {
       status.textContent = "Enviando código...";
       try {
@@ -56,7 +54,6 @@ export class TwoFactorAuth extends HTMLElement {
       }
     });
 
-    // Ouvir submit do form
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = codeInput.value.trim();

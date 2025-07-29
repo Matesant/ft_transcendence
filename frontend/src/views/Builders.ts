@@ -16,7 +16,6 @@ import { twoFa } from "./2fa/2fa";
 
 export class Builders {
     public static GameBuilder(): AView {
-        // Return a wrapper that shows the game mode selector
         return new Game();
     }
 
@@ -49,7 +48,7 @@ export class Builders {
     }
 
     public static TournamentBuilder(): AView {
-        return new Tournament(); // Assuming Tournament is similar to Game for now
+        return new Tournament();
     }
 
     public static DashboardBuilder(): AView {

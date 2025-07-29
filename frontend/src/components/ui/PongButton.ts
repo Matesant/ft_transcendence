@@ -1,7 +1,3 @@
-/**
- * PongButton - Botão estilizado com variantes
- * Props: text, variant, onClick, type, disabled, extraClass
- */
 export type PongButtonVariant = 'primary' | 'secondary' | 'danger';
 
 export interface PongButtonProps {

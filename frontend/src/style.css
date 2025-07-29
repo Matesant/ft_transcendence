@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Custom animations for Dashboard */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -31,7 +30,6 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
-/* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -50,7 +48,6 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);

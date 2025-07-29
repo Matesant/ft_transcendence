@@ -2,8 +2,8 @@ import { GameRoom } from './GameRoom.js';
 
 export class GameManager {
     constructor() {
-        this.games = new Map(); // gameId -> GameRoom
-        this.playerToGame = new Map(); // playerId -> gameId
+        this.games = new Map(); 
+        this.playerToGame = new Map();
         this.gameCounter = 0;
     }
 
@@ -19,7 +19,6 @@ export class GameManager {
         
         console.log(`Created game ${gameId} with players ${player1.name} vs ${player2.name}`);
         
-        // Set up game event listeners
         gameRoom.on('game_end', (result) => {
             this.handleGameEnd(gameId, result);
         });
@@ -45,11 +44,9 @@ export class GameManager {
         if (game) {
             console.log(`Game ${gameId} ended. Winner: ${result.winner}`);
             
-            // Remove players from mapping
             this.playerToGame.delete(game.player1.id);
             this.playerToGame.delete(game.player2.id);
             
-            // Remove game
             this.games.delete(gameId);
         }
     }
@@ -70,10 +67,9 @@ export class GameManager {
         return this.games.size;
     }
 
-    // Clean up inactive games (called periodically)
     cleanupInactiveGames() {
         const now = Date.now();
-        const GAME_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+        const GAME_TIMEOUT = 10 * 60 * 1000; 
         
         for (const [gameId, game] of this.games) {
             if (now - game.lastActivity > GAME_TIMEOUT) {
@@ -84,7 +80,5 @@ export class GameManager {
     }
 }
 
-// Clean up inactive games every 5 minutes
 setInterval(() => {
-    // This will be called from the main manager instance
 }, 5 * 60 * 1000);

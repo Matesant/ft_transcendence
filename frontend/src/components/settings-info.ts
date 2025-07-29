@@ -10,13 +10,11 @@ class UserInfo extends HTMLElement {
     }
 
     private setupNavigation(): void {
-      // Navegação para dashboard
       const dashboardBtn = this.querySelector('[data-route="/dashboard"]');
       if (dashboardBtn) {
         dashboardBtn.addEventListener('click', (e: Event) => {
           e.preventDefault();
           history.pushState("", "", "/dashboard");
-          // Chame seu router aqui, se necessário
           window.dispatchEvent(new PopStateEvent('popstate'));
         });
       }
@@ -124,7 +122,6 @@ class UserInfo extends HTMLElement {
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
           
-            // Fecha clicando fora
             overlay.addEventListener('click', (e) => {
               if (e.target === overlay) {
                 document.body.removeChild(overlay);
@@ -143,7 +140,6 @@ class UserInfo extends HTMLElement {
               <button id="submitEmailChange" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
             `);
           
-            // Lógica submit
             setTimeout(() => {
               const submitBtn = document.getElementById('submitEmailChange') as HTMLButtonElement;
               submitBtn.addEventListener('click', async () => {
@@ -167,7 +163,6 @@ class UserInfo extends HTMLElement {
                     status.className = "text-green-500 mt-2";
                     status.textContent = data.message || "Email updated successfully!";
     
-                    // adiciona o status abaixo de submitBtn
                     submitBtn.insertAdjacentElement('afterend', status);
 
                     setTimeout(() => {
@@ -203,7 +198,6 @@ class UserInfo extends HTMLElement {
               <button id="submitPassChange" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Submit</button>
             `);
           
-            // Lógica submit
             setTimeout(() => {
                 const submitBtn = document.getElementById('submitPassChange') as HTMLButtonElement;
                 submitBtn.addEventListener('click', async () => {
@@ -254,7 +248,6 @@ class UserInfo extends HTMLElement {
 
           this.setupNavigation();
           
-        // Logout
         const logoutBtn = this.querySelector('.logout-btn');
         if (logoutBtn) {
           logoutBtn.addEventListener('click', async (e: Event) => {
@@ -276,7 +269,6 @@ class UserInfo extends HTMLElement {
 
         this.loadUserAvatar();
 
-        // lógica do modal
         const modal = this.querySelector("#avatarModal") as HTMLDivElement;
         const modalContent = this.querySelector("#modalContent") as HTMLDivElement;
         const openBtn = this.querySelector("#openModalBtn") as HTMLButtonElement;
@@ -285,7 +277,6 @@ class UserInfo extends HTMLElement {
           modal.classList.remove("hidden");
         });
 
-        // Fecha ao clicar fora do conteúdo
         modal.addEventListener("click", (e) => {
           if (!modalContent.contains(e.target as Node)) {
             modal.classList.add("hidden");

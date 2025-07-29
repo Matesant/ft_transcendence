@@ -8,8 +8,7 @@ class playersTable extends HTMLElement {
             const response = await fetch(apiUrl(3003, '/players'), {credentials: "include"});
             if (!response.ok) throw new Error("HTTP error");
             const players = await response.json();
-  
-            // Sort players by winrate descending, then by wins descending
+
             const sortedPlayers = players.sort((a: any, b: any) => {
                 if (b.winrate !== a.winrate) {
                     return b.winrate - a.winrate;
@@ -59,7 +58,7 @@ class playersTable extends HTMLElement {
                     </div>
                 `;
             }).join("");
-  
+
             return `
                 <div class="w-full">
                     <div class="text-center mb-6">
@@ -101,12 +100,11 @@ class playersTable extends HTMLElement {
         if (winrate >= 40) return 'text-orange-400';
         return 'text-red-400';
     }
-  
+
     public async render(): Promise<void> {
         const rankingContent = await this.getPlayersHtml();
         this.innerHTML = rankingContent;
 
-        // Add click event listeners to player cards
         const playerCards = this.querySelectorAll('.ranking-player');
         playerCards.forEach((card) => {
             card.addEventListener('click', () => {
@@ -122,7 +120,7 @@ class playersTable extends HTMLElement {
   constructor() {
     super();
     this.render();
-  }
+}
 
 }
 

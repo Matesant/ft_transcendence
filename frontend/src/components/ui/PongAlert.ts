@@ -1,7 +1,3 @@
-/**
- * PongAlert - Alerta para feedback de usuário
- * Props: message, variant, extraClass
- */
 export type PongAlertVariant = 'success' | 'error' | 'info';
 
 export interface PongAlertProps {

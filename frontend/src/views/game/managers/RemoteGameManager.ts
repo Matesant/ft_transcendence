@@ -25,26 +25,21 @@ export class RemoteGameManager {
     private _existingSocket?: WebSocket;
     private _skipMenu: boolean = false;
     
-    // UI Elements
     private _menuUI: HTMLDivElement;
     private _gameUI: HTMLDivElement;
     private _statusUI: HTMLDivElement;
     
-    // Game state
     private _myPaddle: Paddle | null = null;
     private _opponentPaddle: Paddle | null = null;
     private _playerSide: 'left' | 'right' | null = null;
     private _opponentInfo: { id: string; name: string } | null = null;
     
-    // Network interpolation for smooth gameplay
     private _interpolationBuffer: any[] = [];
     private _lastServerState: any = null;
     private _serverStateTime: number = 0;
     
-    // Status timer management
     private _statusTimer: NodeJS.Timeout | null = null;
     
-    // User info (would normally come from auth service)
     private _playerId: string;
     private _playerName: string;
     private _onGameStarted?: () => void;
@@ -76,23 +71,18 @@ export class RemoteGameManager {
         this._gameStateManager = new GameStateManager();
         this._networkManager = new NetworkManager();
 
-        // Initialize game objects
         this._ball = new Ball(scene);
         this._leftPaddle = new Paddle(scene, PaddleType.LEFT);
         this._rightPaddle = new Paddle(scene, PaddleType.RIGHT);
         new Wall(scene, WallType.TOP);
         new Wall(scene, WallType.BOTTOM);
 
-        // Create playing field
         this._fieldManager = new FieldManager(scene);
 
-        // Setup UI
         this._createUI();
 
-        // Setup network event handlers
         this._setupNetworkHandlers();
 
-        // Initialize player info if provided (lobby integration)
         if (this._playerSide && this._opponentInfo) {
             this._handleMatchFound({ playerSide: this._playerSide, opponent: this._opponentInfo });
         }
@@ -107,7 +97,6 @@ export class RemoteGameManager {
                 }
             });
         } else {
-            // Show menu initially
             this._showMenu();
         }
     }
@@ -145,8 +134,7 @@ export class RemoteGameManager {
         });
         
         backButton.addEventListener("click", () => {
-            // This would switch back to local game mode
-            window.location.reload(); // Simple way for now
+            window.location.reload();
         });
         
         this._menuUI.appendChild(title);
@@ -224,7 +212,6 @@ export class RemoteGameManager {
         this._playerSide = data.playerSide;
         this._opponentInfo = data.opponent;
         
-        // Set up paddle references
         if (this._playerSide === 'left') {
             this._myPaddle = this._leftPaddle;
             this._opponentPaddle = this._rightPaddle;
@@ -242,37 +229,30 @@ export class RemoteGameManager {
         this._hideMenu();
         this._showGame();
         
-        // Notify that the game has actually started
         if (this._onGameStarted) {
             this._onGameStarted();
         }
         
-        // Initialize score manager with player names
         this._scoreManager.setPlayerNames(
             this._playerSide === 'left' ? this._playerName : this._opponentInfo!.name,
             this._playerSide === 'right' ? this._playerName : this._opponentInfo!.name
         );
         
-        console.log("Game started!");
     }
 
     private _handleGameState(state: any): void {
-        // Store server state for interpolation
         this._lastServerState = state;
         this._serverStateTime = Date.now();
         
-        // Update game objects immediately (we can add interpolation later)
         this._updateGameObjectsFromServer(state);
     }
 
     private _updateGameObjectsFromServer(state: any): void {
-        // Update ball position
         if (this._ball && state.ball) {
             this._ball.mesh.position.x = state.ball.x;
             this._ball.mesh.position.z = state.ball.z;
         }
         
-        // Update paddle positions
         if (this._leftPaddle && state.paddles?.left) {
             this._leftPaddle.mesh.position.x = state.paddles.left.x;
         }
@@ -281,15 +261,12 @@ export class RemoteGameManager {
             this._rightPaddle.mesh.position.x = state.paddles.right.x;
         }
         
-        // Update score
         if (state.score) {
             this._scoreManager.setScore(state.score.player1, state.score.player2);
         }
     }
 
     private _handleScore(data: any): void {
-        console.log("Score!", data);
-        // Score is updated via game state, but we could add effects here
     }
 
     private _handleGameEnd(data: any): void {
@@ -298,35 +275,28 @@ export class RemoteGameManager {
         const isWinner = data.winner.id === this._playerId;
         this._showGameOverScreen(isWinner, data.finalScore);
 
-        // Send match history to user-service
         this._submitMatchHistory(data);
     }
 
     private _showGameOverScreen(isWinner: boolean, finalScore: any): void {
-        // Clear existing content
         this._statusUI.innerHTML = '';
         
-        // Create game over container
         const container = document.createElement('div');
         container.className = 'text-center p-8';
         
-        // Title
         const title = document.createElement('h1');
         title.textContent = isWinner ? '🎉 You Win! 🎉' : 'You Lose!';
         title.className = `text-4xl mb-5 ${isWinner ? 'text-green-500' : 'text-red-500'}`;
         container.appendChild(title);
         
-        // Score
         const scoreText = document.createElement('div');
         scoreText.textContent = `Final Score: ${finalScore.player1} - ${finalScore.player2}`;
         scoreText.className = 'text-2xl mb-8 text-white';
         container.appendChild(scoreText);
         
-        // Buttons container
         const buttonsContainer = document.createElement('div');
         buttonsContainer.className = 'flex gap-4 justify-center';
         
-        // Back to lobby button
         const lobbyButton = document.createElement('button');
         lobbyButton.textContent = '🏠 Voltar para o Lobby';
         lobbyButton.className = 'px-6 py-3 text-base cursor-pointer bg-blue-500 border-none rounded-lg text-white font-bold hover:bg-blue-600 transition-colors duration-300';
@@ -340,7 +310,6 @@ export class RemoteGameManager {
         buttonsContainer.appendChild(lobbyButton);
         container.appendChild(buttonsContainer);
         
-        // Update status UI styles for game over screen
         this._statusUI.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001] border-4 block ${
             isWinner ? 'border-green-500' : 'border-red-500'
         }`;
@@ -359,7 +328,6 @@ export class RemoteGameManager {
             const isWinner = gameEndData.winner.id === this._playerId;
             const opponentName = this._opponentInfo?.name || 'Unknown';
 
-            // Submit history for current user
             await fetch(apiUrl(3003, '/users/history'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -372,7 +340,6 @@ export class RemoteGameManager {
                 })
             });
 
-            console.log('Match history submitted successfully');
         } catch (error) {
             console.error('Failed to submit match history:', error);
         }
@@ -382,35 +349,28 @@ export class RemoteGameManager {
         this._gameStateManager.setState(GameState.GAME_OVER);
         this._showDisconnectionScreen(data.message);
         
-        // Submit match history for disconnection win
         this._submitDisconnectionHistory();
     }
 
     private _showDisconnectionScreen(disconnectionMessage: string): void {
-        // Clear existing content
         this._statusUI.innerHTML = '';
         
-        // Create disconnection container
         const container = document.createElement('div');
         container.className = 'text-center p-8';
         
-        // Title
         const title = document.createElement('h1');
         title.textContent = '🎉 You Win by Default! 🎉';
         title.className = 'text-4xl mb-5 text-orange-500';
         container.appendChild(title);
         
-        // Disconnection message
         const message = document.createElement('div');
         message.textContent = disconnectionMessage;
         message.className = 'text-xl mb-8 text-white';
         container.appendChild(message);
         
-        // Buttons container
         const buttonsContainer = document.createElement('div');
         buttonsContainer.className = 'flex gap-4 justify-center';
         
-        // Back to lobby button
         const lobbyButton = document.createElement('button');
         lobbyButton.textContent = '🏠 Voltar para o Lobby';
         lobbyButton.className = 'px-6 py-3 text-base cursor-pointer bg-blue-500 border-none rounded-lg text-white font-bold hover:bg-blue-600 transition-colors duration-300';
@@ -424,7 +384,6 @@ export class RemoteGameManager {
         buttonsContainer.appendChild(lobbyButton);
         container.appendChild(buttonsContainer);
         
-        // Update status UI styles for disconnection screen
         this._statusUI.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 rounded-2xl max-w-lg z-[1001] border-4 border-orange-500 block';
         
         this._statusUI.appendChild(container);
@@ -440,7 +399,6 @@ export class RemoteGameManager {
 
             const opponentName = this._opponentInfo?.name || 'Unknown';
 
-            // Submit history for current user (win by opponent disconnection)
             await fetch(apiUrl(3003, '/users/history'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -453,7 +411,6 @@ export class RemoteGameManager {
                 })
             });
 
-            console.log('Disconnection match history submitted successfully');
         } catch (error) {
             console.error('Failed to submit disconnection match history:', error);
         }
@@ -484,10 +441,8 @@ export class RemoteGameManager {
         this._statusUI.classList.remove('hidden');
         this._statusUI.classList.add('block');
         
-        // Reset styles and add base classes
         this._statusUI.className = "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white p-5 rounded-lg text-center text-lg block z-[1001]";
         
-        // Add color based on type
         switch (type) {
             case "success":
                 this._statusUI.classList.add('bg-green-500/90');
@@ -502,7 +457,6 @@ export class RemoteGameManager {
                 this._statusUI.classList.add('bg-black/80');
         }
         
-        // Clear any existing status timer to prevent multiple timers
         if (this._statusTimer) {
             clearTimeout(this._statusTimer);
             this._statusTimer = null;
@@ -530,7 +484,6 @@ export class RemoteGameManager {
     private _handleInput(): void {
         if (!this._networkManager.connected || !this._myPaddle) return;
         
-        // Send input to server
         if (this._inputManager.isKeyPressed("arrowleft")) {
             this._networkManager.sendInput("move_left");
         }
@@ -540,7 +493,6 @@ export class RemoteGameManager {
     }
 
     public disconnect(): void {
-        // Clear any pending status timer
         if (this._statusTimer) {
             clearTimeout(this._statusTimer);
             this._statusTimer = null;

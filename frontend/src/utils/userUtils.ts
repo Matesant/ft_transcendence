@@ -17,10 +17,6 @@ export interface AuthUser {
   is_2fa_enabled: number;
 }
 
-/**
- * Verifica se o usuário está autenticado
- * @returns Promise<AuthUser | null>
- */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
     const response = await fetch(apiUrl(3001, "/auth/verify"), {
@@ -44,10 +40,6 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
-/**
- * Obtém o perfil completo do usuário atual
- * @returns Promise<UserProfile | null>
- */
 export async function getCurrentUserProfile(): Promise<UserProfile | null> {
   try {
     const response = await fetch(apiUrl(3003, "/users/me"), {
@@ -60,7 +52,6 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
 
     const data = await response.json();
     
-    // A nova API retorna { profile: {...}, history: [...] }
     return data.profile || null;
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -68,10 +59,6 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
   }
 }
 
-/**
- * Verifica autenticação e redireciona para login se necessário
- * @returns Promise<AuthUser | null> - retorna o usuário se autenticado, null caso contrário
- */
 export async function requireAuth(): Promise<AuthUser | null> {
   const user = await getCurrentUser();
   if (!user) {
@@ -81,19 +68,10 @@ export async function requireAuth(): Promise<AuthUser | null> {
   return user;
 }
 
-/**
- * Obtém o nome de exibição do usuário (display_name ou alias como fallback)
- * @param profile - Perfil do usuário
- * @returns string - Nome para exibição
- */
 export function getDisplayName(profile: UserProfile): string {
   return profile.display_name && profile.display_name.trim() ? profile.display_name : profile.alias;
 }
 
-/**
- * Obtém o nome do usuário atual para usar no lobby
- * @returns Promise<string | null>
- */
 export async function getCurrentUserDisplayName(): Promise<string | null> {
   try {
     const profile = await getCurrentUserProfile();
@@ -102,15 +80,12 @@ export async function getCurrentUserDisplayName(): Promise<string | null> {
       return null;
     }
     
-    // Verifica se temos pelo menos o alias
     if (!profile.alias) {
       console.error("Profile has no alias");
       return null;
     }
     
-    // Usa display_name se existir e não for nulo/vazio, caso contrário usa alias
     const displayName = profile.display_name && profile.display_name.trim() ? profile.display_name : profile.alias;
-    console.log("Display name resolved to:", displayName);
     
     return displayName;
   } catch (error) {

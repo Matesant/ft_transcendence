@@ -11,19 +11,15 @@ export class Register extends AView {
     public render(parent: HTMLElement = document.body): void {
         parent.innerHTML = '';
 
-        // Fundo branco simples
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-        // Header com botão Voltar
         const header = PongHeaderPublic({ homeOnly: true });
         bg.appendChild(header);
 
-        // Conteúdo central
         const main = document.createElement('main');
         main.className = 'flex flex-1 flex-col items-center justify-center w-full px-4';
 
-        // Formulário centralizado
         const formContainer = document.createElement('div');
         formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
 
@@ -36,7 +32,6 @@ export class Register extends AView {
         form.id = 'register-form';
         form.className = 'w-full';
 
-        // Alias
         const aliasDiv = document.createElement('div');
         aliasDiv.className = 'mb-4';
         const aliasLabel = document.createElement('label');
@@ -47,7 +42,6 @@ export class Register extends AView {
         aliasDiv.appendChild(PongInput({ id: 'username', name: 'alias', type: 'text', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(aliasDiv);
 
-        // Email
         const emailDiv = document.createElement('div');
         emailDiv.className = 'mb-4';
         const emailLabel = document.createElement('label');
@@ -58,7 +52,6 @@ export class Register extends AView {
         emailDiv.appendChild(PongInput({ id: 'email', name: 'email', type: 'email', required: true , extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(emailDiv);
 
-        // Password
         const passDiv = document.createElement('div');
         passDiv.className = 'mb-4';
         const passLabel = document.createElement('label');
@@ -69,13 +62,11 @@ export class Register extends AView {
         passDiv.appendChild(PongInput({ id: 'password', name: 'password', type: 'password', required: true, extraClass: 'border-none rounded-lg bg-black/20 text-white text-base focus:outline-none focus:ring-2 focus:ring-white/30 p-2 rounded w-full'}));
         form.appendChild(passDiv);
 
-        // Div para mensagem de erro de senha
         const passwordErrorDiv = document.createElement('div');
         passwordErrorDiv.id = 'password-error';
         passwordErrorDiv.className = 'text-white text-center font-bold text-sm mb-2 min-h-[20px]';
         form.appendChild(passwordErrorDiv);
 
-        // Botão submit
         const submitBtn = PongButton({
             text: 'Register',
             variant: 'primary',
@@ -124,14 +115,12 @@ export class Register extends AView {
         main.appendChild(formContainer);
         bg.appendChild(main);
 
-        // Footer
         const footer = PongFooter();
         bg.appendChild(footer);
 
         parent.appendChild(bg);
         this.elements.push(bg);
 
-        // Handler de submit
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(form as HTMLFormElement);
@@ -141,7 +130,6 @@ export class Register extends AView {
                 password: formData.get('password'),
             };
 
-            // Validação de senha forte (6-12 caracteres, maiúscula, minúscula, número, especial)
             const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,12}$/;
             passwordErrorDiv.textContent = '';
             if (!strongPasswordRegex.test(String(data.password))) {
@@ -157,7 +145,6 @@ export class Register extends AView {
                 });
                 if (response.ok) {
                     const result = await response.json();
-                    // Login automático após registro
                     const loginData = {
                         alias: data.alias,
                         password: data.password

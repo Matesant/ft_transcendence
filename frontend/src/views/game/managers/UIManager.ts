@@ -37,7 +37,6 @@ export class UIManager {
         this._createGameOverUI();
         this._createLanguageSelector();
         
-        // Load initial theme from sessionStorage
         const initialTableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
         this._tableTheme = initialTableTheme as 'GREEN' | 'BLUE';
     }
@@ -56,13 +55,10 @@ export class UIManager {
         const menuBtn = document.getElementById("menuButton") as HTMLButtonElement;
 
         if (tournamentComplete) {
-            // Tournament Complete layout - only show champion
             if (gameOverText) {
-                // Hide the "Tournament Complete" text
                 gameOverText.style.display = "none";
             }
             if (winnerText) {
-                // Make champion display larger and more prominent
                 winnerText.innerHTML = `🏆 ${STRINGS[this._lang].championLabel}: <span class="text-yellow-400">${champion}</span> 🏆`;
                 winnerText.className = "text-white text-6xl mb-8 font-bold";
                 winnerText.style.textShadow = "0 0 30px #ffd700, 0 0 20px #fff";
@@ -74,11 +70,9 @@ export class UIManager {
                 playAgainBtn.disabled = true;
             }
             if (menuBtn) {
-                // Reset all previous styles and classes
                 menuBtn.className = "";
                 menuBtn.style.cssText = "";
                 
-                // Apply new tournament complete styles with absolute positioning
                 menuBtn.className = "px-8 py-4 text-2xl cursor-pointer bg-blue-500 border-none rounded-xl text-white w-60 text-center hover:bg-blue-600 transition-colors shadow-2xl";
                 menuBtn.textContent = STRINGS[this._lang].mainMenu;
                 menuBtn.style.position = "absolute";
@@ -88,7 +82,6 @@ export class UIManager {
                 menuBtn.style.display = "block";
             }
         } else {
-            // Normal game over
             if (gameOverText) {
                 gameOverText.textContent = STRINGS[this._lang].gameOver;
                 gameOverText.className = "text-white text-5xl m-0 mb-2.5";
@@ -97,11 +90,10 @@ export class UIManager {
             if (winnerText) {
                 winnerText.textContent = `${winner} ${STRINGS[this._lang].wins}`;
                 winnerText.className = "text-white text-2xl m-0 mb-5";
-                winnerText.style.cssText = ""; // Reset any previous styles
+                winnerText.style.cssText = ""; 
             }
 
             if (currentMatch) {
-                // Next match in tournament - show match info
                 if (winnerText) {
                     winnerText.innerHTML = `🎯 ${winner} ${STRINGS[this._lang].wins}`;
                     winnerText.className = "text-green-400 text-3xl mb-6 text-center font-bold";
@@ -122,7 +114,7 @@ export class UIManager {
                     gameOverText.style.width = "100%";
                 }
                 if (playAgainBtn) {
-                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.style.cssText = ""; 
                     playAgainBtn.className = "px-10 py-5 text-2xl cursor-pointer bg-green-500 border-none rounded-xl text-white w-56 text-center hover:bg-green-600 transition-colors shadow-lg mb-4 font-bold";
                     playAgainBtn.textContent = "Continuar";
                     playAgainBtn.style.display = "block";
@@ -133,7 +125,7 @@ export class UIManager {
                     playAgainBtn.disabled = false;
                 }
                 if (menuBtn) {
-                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.style.cssText = "";
                     menuBtn.className = "px-6 py-3 text-lg cursor-pointer bg-red-500 border-none rounded-lg text-white w-40 text-center hover:bg-red-600 transition-colors shadow-md";
                     menuBtn.textContent = STRINGS[this._lang].mainMenu;
                     menuBtn.style.display = "block";
@@ -143,16 +135,15 @@ export class UIManager {
                     menuBtn.style.transform = "translateX(-50%)";
                 }
             } else {
-                // Practice mode
                 if (playAgainBtn) {
-                    playAgainBtn.style.cssText = ""; // Reset styles
+                    playAgainBtn.style.cssText = ""; 
                     playAgainBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-green-500 border-none rounded text-white mb-2.5 w-44 text-center hover:bg-green-600 transition-colors";
                     playAgainBtn.textContent = STRINGS[this._lang].playAgain;
                     playAgainBtn.style.display = "block";
                     playAgainBtn.disabled = false;
                 }
                 if (menuBtn) {
-                    menuBtn.style.cssText = ""; // Reset styles
+                    menuBtn.style.cssText = "";
                     menuBtn.className = "px-5 py-2.5 text-xl cursor-pointer bg-red-500 border-none rounded text-white w-44 text-center hover:bg-red-600 transition-colors";
                     menuBtn.textContent = STRINGS[this._lang].mainMenu;
                     menuBtn.style.display = "block";

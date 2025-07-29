@@ -30,19 +30,16 @@ export class Paddle extends GameObject {
             this._scene
         );
         
-        // Position paddles at left/right of field
         const paddlePosition = this._type === PaddleType.LEFT 
             ? CONFIG.PADDLE.POSITION.LEFT.clone() 
             : CONFIG.PADDLE.POSITION.RIGHT.clone();
         this._mesh.position = paddlePosition;
         
-        // Create materials with appropriate colors
         const material = new StandardMaterial(
             this._type === PaddleType.LEFT ? "leftPaddleMaterial" : "rightPaddleMaterial", 
             this._scene
         );
         
-        // Blue for left paddle, red for right paddle
         material.emissiveColor = this._type === PaddleType.LEFT 
             ? CONFIG.PADDLE.COLOR.LEFT 
             : CONFIG.PADDLE.COLOR.RIGHT;
@@ -51,7 +48,6 @@ export class Paddle extends GameObject {
     }
 
     public update(): void {
-        // Movement is handled by InputManager
     }
 
     public moveLeft(): void {
@@ -97,7 +93,6 @@ export class Paddle extends GameObject {
     }
 
     public resize(scaleFactor: number): void {
-        // Resize the paddle mesh width
         this._mesh.scaling.x = scaleFactor;
     }
 }

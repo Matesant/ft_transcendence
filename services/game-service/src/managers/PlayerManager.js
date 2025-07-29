@@ -1,8 +1,8 @@
 export class PlayerManager {
     constructor() {
-        this.players = new Map(); // playerId -> player object
-        this.queue = new Map(); // playerId -> player object
-        this.connections = new Map(); // connection -> playerId
+        this.players = new Map(); 
+        this.queue = new Map(); 
+        this.connections = new Map();
     }
 
     addPlayer(player) {
@@ -37,7 +37,6 @@ export class PlayerManager {
     }
 
     findOpponent(playerId) {
-        // Find the first player in queue that is not the current player
         for (const [id, player] of this.queue) {
             if (id !== playerId) {
                 this.removePlayerFromQueue(id);

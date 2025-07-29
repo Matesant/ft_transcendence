@@ -22,18 +22,15 @@ class tournamentRounds extends HTMLElement {
         }
 
         this.innerHTML = `
-            <!-- Tournament rounds with glassmorphism design -->
             <div class="w-full max-w-5xl mx-auto">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-4 border border-white/20 shadow-2xl flex flex-col max-h-[85vh]">
 
-                    <!-- Container com scroll para as rodadas -->
                     <div class="flex-1 overflow-y-auto mb-4">
                         <div id="tournamentRounds" class="space-y-4 pr-2 custom-scrollbar">
                             <!-- As rodadas serão inseridas aqui via JavaScript -->
                         </div>
                     </div>
                     
-                    <!-- Botões fixos na parte inferior -->
                     <div id="button-container" class="flex gap-4 justify-center flex-shrink-0">
                         <button id="iniciar-partida" class="bg-green-500/80 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm border border-green-400/30">
                             🎮 Iniciar Partida
@@ -47,13 +44,11 @@ class tournamentRounds extends HTMLElement {
         `;
 
     document.getElementById('novo-torneio')?.addEventListener('click', async () => {
-        // Clear session storage to force showing setup page
         sessionStorage.removeItem("round_in_progress");
         sessionStorage.removeItem("powerupsEnabled");
         sessionStorage.removeItem("gameSpeed");
         sessionStorage.removeItem("tableTheme");
         
-        // Navigate to tournament page with new parameter to force setup
         history.pushState("", "", "/tournament?new=true");
         router();
       });
@@ -88,7 +83,6 @@ class tournamentRounds extends HTMLElement {
                 const matchElement = document.createElement('div');
                 matchElement.className = 'p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1';
                 
-                // Status da partida
                 const statusElement = document.createElement('div');
                 let statusClass = 'inline-block px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm border ';
                 
@@ -100,7 +94,7 @@ class tournamentRounds extends HTMLElement {
                         statusClass += 'bg-blue-400/20 text-blue-200 border-blue-400/30';
                         break;
                     case 'completed':
-                    case 'wo': // walkover
+                    case 'wo':
                         statusClass += 'bg-green-400/20 text-green-200 border-green-400/30';
                         break;
                     default:
@@ -110,13 +104,10 @@ class tournamentRounds extends HTMLElement {
                 statusElement.className = statusClass;
                 statusElement.textContent = match.status.toUpperCase();
                 
-                // Jogadores
                 const playersElement = document.createElement('div');
                 playersElement.className = 'flex items-center justify-center my-4 text-lg';
                 
-                // Tratar WO (walkover) de forma especial
                 if (match.status === 'wo') {
-                    // Para WO, mostra apenas o vencedor
                     const winnerName = match.winner || match.player1 || 'Jogador';
                     playersElement.innerHTML = `
                         <div class="text-center">
@@ -127,7 +118,6 @@ class tournamentRounds extends HTMLElement {
                         </div>
                     `;
                 } else {
-                    // Para partidas normais, mostra ambos os jogadores
                     const player1Name = match.player1 || 'Player 1';
                     const player2Name = match.player2 || 'Player 2';
                     
@@ -138,7 +128,6 @@ class tournamentRounds extends HTMLElement {
                     `;
                 }
                 
-                // Vencedor (se houver e não for WO)
                 let winnerElement = null;
                 if (match.winner && match.status !== 'wo') {
                     winnerElement = document.createElement('div');
@@ -151,7 +140,6 @@ class tournamentRounds extends HTMLElement {
                     `;
                 }
                 
-                // Montar o elemento da partida
                 matchElement.appendChild(statusElement);
                 matchElement.appendChild(playersElement);
                 if (winnerElement) matchElement.appendChild(winnerElement);
@@ -176,7 +164,6 @@ class tournamentRounds extends HTMLElement {
         }
 
         if ('champion' in requestData) {
-            // Create champion display
             let championHeader = document.createElement('div');
             championHeader.className = 'text-center mb-6 mt-8';
             championHeader.innerHTML = `
@@ -188,7 +175,6 @@ class tournamentRounds extends HTMLElement {
             let button = document.getElementById('button-container');
             button.insertAdjacentElement('beforebegin', championHeader);
 
-            // Hide/disable the "Iniciar Partida" button when tournament is complete
             const iniciarPartidaBtn = document.getElementById('iniciar-partida');
             if (iniciarPartidaBtn) {
                 iniciarPartidaBtn.style.display = 'none';
@@ -196,7 +182,6 @@ class tournamentRounds extends HTMLElement {
                 (iniciarPartidaBtn as HTMLButtonElement).disabled = true;
             }
 
-            // Change "Novo Torneio" button text but keep functionality
             const novoTorneioBtn = document.getElementById('novo-torneio');
             if (novoTorneioBtn) {
                 novoTorneioBtn.innerHTML = '🔄 Novo Torneio';
@@ -208,7 +193,6 @@ class tournamentRounds extends HTMLElement {
     }
 
     private async _showGameStarting(): Promise<void> {
-        // Get next match data to show player info
         let nextMatchData: any = null;
         
         try {
@@ -218,7 +202,6 @@ class tournamentRounds extends HTMLElement {
             console.error('Erro ao buscar próxima partida:', error);
         }
 
-        // Clear current content
         this.innerHTML = `
             <div class="w-full max-w-5xl mx-auto flex flex-1 flex-col items-center justify-center">
                 <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-12 border border-white/20 shadow-2xl text-center max-w-lg w-full">
@@ -236,7 +219,7 @@ class tournamentRounds extends HTMLElement {
         const countdownElement = document.getElementById('countdown') as HTMLDivElement;
         
         let count = 3;
-        countdownElement.textContent = count.toString(); // Mostrar o 3 imediatamente
+        countdownElement.textContent = count.toString();
         
         const countdownInterval = setInterval(() => {
             count--;
@@ -246,7 +229,6 @@ class tournamentRounds extends HTMLElement {
                 countdownElement.textContent = "GO!";
                 clearInterval(countdownInterval);
                 
-                // Redirect to game after a short delay
                 setTimeout(() => {
                     history.pushState("", "", "/game");
                     router();

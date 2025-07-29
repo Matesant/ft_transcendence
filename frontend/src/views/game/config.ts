@@ -1,7 +1,6 @@
 import { Vector3, Color4, Color3 } from "@babylonjs/core";
 
 export const CONFIG = {
-    // Scene configuration
     SCENE_ROTATION_DEGREES: 90,
     CANVAS_ID: "gameCanvas",
     CAMERA: {
@@ -21,14 +20,12 @@ export const CONFIG = {
         INTENSITY: 0.7
     },
     
-    // Playing field
     FIELD: {
         WIDTH: 12,
         HEIGHT: 17,
         COLOR: new Color3(0.15, 0.35, 0.15)
     },
     
-    // Center lines
     CENTER_LINE: {
         VERTICAL: {
             DIMENSIONS: new Vector3(0.05, 0.01, 17),
@@ -42,7 +39,6 @@ export const CONFIG = {
         ALPHA: 0.7
     },
     
-    // Walls
     WALL: {
         DIMENSIONS: new Vector3(0.1, 0.3, 17),
         POSITION: {
@@ -52,7 +48,6 @@ export const CONFIG = {
         COLOR: new Color3(1, 1, 1)
     },
     
-    // Paddles
     PADDLE: {
         DIMENSIONS: new Vector3(1.3, 0.3, 0.35),
         POSITION: {
@@ -80,7 +75,6 @@ export const CONFIG = {
         }
     },
     
-    // Ball
     BALL: {
         DIAMETER: 0.4,
         POSITION: new Vector3(0, 0.2, 0),
@@ -90,7 +84,6 @@ export const CONFIG = {
         SPIN_FACTOR: 0.1
     },
     
-    // Scoring
     SCORE: {
         BOUNDARY: {
             LEFT: -8.5,
@@ -104,17 +97,6 @@ export const CONFIG = {
         }
     },
 
-    // AI settings
-    AI: {
-        DIFFICULTY_LEVELS: {
-            EASY: 0.4,
-            MEDIUM: 0.7,
-            HARD: 0.9  
-        },
-        DEFAULT_DIFFICULTY: 0.7
-    },
-    
-    // Power-ups configuration
     POWER_UPS: {
         TYPES: {
             LARGER_PADDLE: "larger_paddle",
@@ -123,24 +105,23 @@ export const CONFIG = {
             MULTI_BALL: "multi_ball"
         },
         DURATION: {
-            DEFAULT: 5000, // Default duration in milliseconds
-            LARGER_PADDLE: 10000 // 10 seconds for larger paddle
+            DEFAULT: 5000, 
+            LARGER_PADDLE: 10000
         },
         SPAWN_INTERVAL: {
-            MIN: 5000,  // Minimum time between spawns (ms)
-            MAX: 15000  // Maximum time between spawns (ms)
+            MIN: 5000,
+            MAX: 15000
         },
         DIMENSIONS: new Vector3(0.6, 0.1, 0.6),
         COLORS: {
-            LARGER_PADDLE: new Color3(0.2, 0.8, 0.2),     // Green
-            SMALLER_OPPONENT: new Color3(0.8, 0.2, 0.2),  // Red
-            FAST_BALL: new Color3(1, 0.6, 0.2),           // Orange
-            MULTI_BALL: new Color3(0.8, 0.2, 0.8)         // Purple
+            LARGER_PADDLE: new Color3(0.2, 0.8, 0.2),     
+            SMALLER_OPPONENT: new Color3(0.8, 0.2, 0.2), 
+            FAST_BALL: new Color3(1, 0.6, 0.2),          
+            MULTI_BALL: new Color3(0.8, 0.2, 0.8)
         },
         ROTATION_SPEED: 0.01
     },
 
-    // Speed configuration
     SPEED: {
         MULTIPLIER: {
             MIN: 0.8,
@@ -150,15 +131,14 @@ export const CONFIG = {
         }
     },
 
-    // Table themes
     TABLE_THEMES: {
         GREEN: {
             FIELD_COLOR: new Color3(0.15, 0.35, 0.15),
             BACKGROUND_COLOR: new Color4(0.1, 0.1, 0.15, 1)
         },
         BLUE: {
-            FIELD_COLOR: new Color3(0.1, 0.3, 0.6),  // Tennis table blue
-            BACKGROUND_COLOR: new Color4(0.05, 0.05, 0.05, 1)  // Black background
+            FIELD_COLOR: new Color3(0.1, 0.3, 0.6),
+            BACKGROUND_COLOR: new Color4(0.05, 0.05, 0.05, 1) 
         }
     }
 };

@@ -5,7 +5,6 @@ import { apiUrl } from "../../utils/api";
 export class Dashboard extends AView {
 
   public render(parent: HTMLElement = document.body): void {
-    // Create main dashboard container using only Tailwind classes
     const dashboardContainer = document.createElement('div');
     dashboardContainer.className = 'w-full min-h-screen p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans';
     dashboardContainer.innerHTML = `
@@ -53,13 +52,10 @@ export class Dashboard extends AView {
       </div>
     `;
 
-    // Append content
     parent.appendChild(dashboardContainer);
 
-    // Add event listeners to navigation buttons
     this.setupNavigation(dashboardContainer);
     
-    // Load user avatar
     this.loadUserAvatar(dashboardContainer);
   }
 
@@ -72,17 +68,14 @@ export class Dashboard extends AView {
       if (!response.ok) throw new Error("Falha na request");
       const data = await response.json();
 
-      // Cria o avatar
       const avatar = document.createElement("img");
       avatar.src = data.profile.avatar;
       avatar.alt = data.profile.alias;
       avatar.className = "w-full h-full object-cover";
 
-      // Limpa o container e adiciona a imagem
       avatarContainer!.innerHTML = "";
       avatarContainer!.appendChild(avatar);
 
-      // Atualiza as estatísticas com apenas vitórias, derrotas e win rate usando Tailwind
       if (statsContainer) {
         const totalGames = data.profile.wins + data.profile.losses;
         const winRate = totalGames > 0 ? Math.round((data.profile.wins / totalGames) * 100) : 0;
@@ -109,7 +102,6 @@ export class Dashboard extends AView {
       }
 
     } catch (err) {
-      // Em caso de erro, mantém o texto padrão
       avatarContainer!.textContent = "foto user";
       if (statsContainer) {
         statsContainer.innerHTML = "<p class='text-white/80'>Não foi possível carregar as estatísticas</p>";
@@ -118,12 +110,10 @@ export class Dashboard extends AView {
   }
 
   private setupNavigation(container: HTMLElement): void {
-    // Add click listeners to buttons with data-route attribute
     const navigationButtons = container.querySelectorAll('button[data-route]');
     navigationButtons.forEach(button => {
       button.addEventListener('click', (e: Event) => {
         e.preventDefault();
-        // Use currentTarget to get the button element instead of the clicked element (emoji)
         const route = (e.currentTarget as HTMLElement).getAttribute('data-route');
         if (route) {
           history.pushState("", "", route);
@@ -132,53 +122,45 @@ export class Dashboard extends AView {
       });
     });
 
-    // Handle logout button separately
     const logoutBtn = container.querySelector('.logout-btn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', async (e: Event) => {
         e.preventDefault();
         
         try {
-          // Call logout API endpoint
           const response = await fetch(apiUrl(3001, '/auth/logout'), {
             method: 'POST',
             credentials: 'include'
           });
           
           if (response.ok) {
-            // Clear any session storage if needed
             sessionStorage.clear();
-            // Redirect to login
             history.pushState("", "", "/login");
             router();
           } else {
             console.error('Logout failed');
-            // Even if logout fails on server, redirect to login
             history.pushState("", "", "/login");
             router();
           }
         } catch (error) {
           console.error('Logout error:', error);
-          // Redirect to login even on error
           history.pushState("", "", "/login");
           router();
         }
       });
     }
 
-    // Handle avatar click to redirect to player profile
     const avatarContainer = container.querySelector('#user-avatar-container');
     if (avatarContainer) {
       avatarContainer.addEventListener('click', (e: Event) => {
         e.preventDefault();
-        history.pushState("", "", "/settings"); // Redireciona para /player
+        history.pushState("", "", "/settings");
         router();
       });
     }
   }
 
   public dispose(): void {
-    // Remove dashboard container by finding it
     const dashboardContainer = document.querySelector('div.w-full.min-h-screen.bg-gradient-to-br');
     if (dashboardContainer && dashboardContainer.parentNode) {
       dashboardContainer.parentNode.removeChild(dashboardContainer);

@@ -118,28 +118,22 @@ export class GameManager {
         this._gameStateManager.startGame(enablePowerUps);
         this._uiManager.hideGameOver();
 
-        // Apply speed multiplier to paddles
         this._leftPaddle.setSpeedMultiplier(this._speedMultiplier);
         this._rightPaddle.setSpeedMultiplier(this._speedMultiplier);
 
-        // Try to load a new match (if available)
         await this._matchManager.loadCurrentMatch();
         const { player1, player2 } = this._matchManager.getPlayerNames();
         this._scoreManager.setPlayerNames(player1, player2);
 
-        // Start the ball with delay for initial game start
-        // Check if this is the first game start (score is 0-0)
         const score = this._scoreManager.score;
         const isFirstStart = score.player1 === 0 && score.player2 === 0;
         
         if (isFirstStart) {
-            // First game start - wait 5 seconds
             setTimeout(() => {
                 this._ball.start();
                 this._applySpeedMultiplierToBall(this._ball);
             }, 2000);
         } else {
-            // Regular restart - start immediately
             this._ball.start();
             this._applySpeedMultiplierToBall(this._ball);
         }
@@ -147,7 +141,6 @@ export class GameManager {
         this._firstCollision = true;
         this._collisionManager.setFirstCollision(true);
 
-        // Activate power-up spawning only if power-ups mode is enabled
         if (enablePowerUps) {
             this._powerUpManager.activate();
         } else {
@@ -185,11 +178,9 @@ export class GameManager {
         this._collisionManager.setFirstCollision(true);
         this._collisionManager.clearBallReleaseTimer();
         
-        // Reset paddles
         this._leftPaddle.reset();
         this._rightPaddle.reset();
         
-        // Reset power-ups
         this._powerUpManager.reset();
         this._powerUpManager.deactivate();
     }
@@ -200,8 +191,6 @@ export class GameManager {
     }
 
     private _onScore(): void {
-        // This method is called when a score happens
-        // Can be used for additional score-related logic if needed
     }
 
     private _onSpeedChange(speed: number): void {
@@ -220,24 +209,20 @@ export class GameManager {
     }
 
     private _loadSettingsFromStorage(): void {
-        // Load game speed
         const gameSpeed = parseFloat(sessionStorage.getItem("gameSpeed") || "1.0");
         this._speedMultiplier = gameSpeed;
         
-        // Load table theme
         const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
         this._fieldManager.setTableTheme(tableTheme as 'GREEN' | 'BLUE');
     }
     
     public update(): void {
-        // Only update game logic if in PLAYING state
         if (this._gameStateManager.isPlaying()) {
             this._handleInput();
             this._updateGameObjects();
             this._powerUpManager.update();
             this._collisionManager.checkCollisions();
             
-            // Check for game over condition
             const score = this._scoreManager.score;
             const { player1, player2 } = this._matchManager.getPlayerNames();
             if (score.player1 >= 2) {
@@ -249,7 +234,6 @@ export class GameManager {
     }
     
     private _handleInput(): void {
-        // Handle paddle movement
         if (this._inputManager.isKeyPressed("a")) {
             this._rightPaddle.moveLeft();
         }
@@ -266,13 +250,11 @@ export class GameManager {
     }
     
     private _updateGameObjects(): void {
-        // Update all balls from the power-up manager instead of just the main ball
         const balls = this._powerUpManager.balls;
         for (const ball of balls) {
             ball.update();
         }
         
-        // Continue updating paddles
         this._leftPaddle.update();
         this._rightPaddle.update();
     }
@@ -281,8 +263,6 @@ export class GameManager {
         const wsManager = getWsManager();
         if (wsManager) {
             wsManager.onGameEnd((data) => {
-                console.log('🎮 Received game_end from backend:', data);
-                // Call the same showGameOver method that local mode uses
                 this._showGameOver(data.winner.name);
             });
         }

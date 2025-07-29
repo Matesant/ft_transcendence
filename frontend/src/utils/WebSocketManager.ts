@@ -17,7 +17,6 @@ export class WebSocketManager {
     private _playerName: string = '';
     private _currentRoomCode: string = '';
     
-    // Event handlers
     private _onRoomCreated: ((data: RoomState) => void) | null = null;
     private _onRoomUpdated: ((data: RoomState) => void) | null = null;
     private _onRoomError: ((error: string) => void) | null = null;
@@ -27,7 +26,6 @@ export class WebSocketManager {
     private _onDisconnected: (() => void) | null = null;
 
     constructor() {
-        // Generate a simple player ID for demo purposes
         this._playerId = 'player_' + Math.random().toString(36).substr(2, 9);
         this._playerName = 'Player'; // Will be updated when user provides name
     }
@@ -40,17 +38,14 @@ export class WebSocketManager {
             }
 
             try {
-                // Detect the current host and use it for WebSocket connection
                 const host = window.location.hostname;
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const wsUrl = `${protocol}//${host}:3004/ws`;
                 
-                console.log(`Connecting to game service at: ${wsUrl}`);
                 this._socket = new WebSocket(wsUrl);
                 
                 this._socket.addEventListener('open', () => {
                     this._connected = true;
-                    console.log('WebSocket connected');
                     this._onConnected?.();
                     resolve();
                 });
@@ -66,7 +61,6 @@ export class WebSocketManager {
                 
                 this._socket.addEventListener('close', () => {
                     this._connected = false;
-                    console.log('WebSocket disconnected');
                     this._onDisconnected?.();
                 });
                 
@@ -158,7 +152,6 @@ export class WebSocketManager {
     }
 
     private _handleMessage(data: any): void {
-        console.log('Received message:', data);
 
         switch (data.type) {
             case 'room_created':
@@ -174,15 +167,12 @@ export class WebSocketManager {
                 this._onGameStarting?.(data);
                 break;
             case 'game_end':
-                console.log('🎮 Game ended, winner:', data.winner);
                 this._onGameEnd?.(data);
                 break;
             default:
-                console.log('Unknown message type:', data.type);
         }
     }
 
-    // Event listener setters
     public onRoomCreated(callback: (data: RoomState) => void): void {
         this._onRoomCreated = callback;
     }
@@ -211,7 +201,6 @@ export class WebSocketManager {
         this._onDisconnected = callback;
     }
 
-    // Getters
     public get connected(): boolean {
         return this._connected;
     }

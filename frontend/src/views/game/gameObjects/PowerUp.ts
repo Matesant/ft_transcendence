@@ -15,7 +15,6 @@ export class PowerUp extends GameObject {
     }
     
     private _initMesh(position: Vector3): void {
-        // Create a box for the power-up
         this._mesh = MeshBuilder.CreateBox(
             `powerUp_${this._type}`,
             {
@@ -28,10 +27,8 @@ export class PowerUp extends GameObject {
         
         this._mesh.position = position;
         
-        // Create material based on power-up type
         const material = new StandardMaterial(`powerUpMaterial_${this._type}`, this._scene);
         
-        // Fix the color mapping based on type
         switch(this._type) {
             case CONFIG.POWER_UPS.TYPES.LARGER_PADDLE:
                 material.emissiveColor = CONFIG.POWER_UPS.COLORS.LARGER_PADDLE;
@@ -59,7 +56,6 @@ export class PowerUp extends GameObject {
             const deltaTime = Math.min((currentTime - this._lastTime) / 16.67, 2.0);
             this._lastTime = currentTime;
             
-            // Rotate the power-up for visual effect
             this._mesh.rotation.y += CONFIG.POWER_UPS.ROTATION_SPEED * deltaTime;
         }
     }

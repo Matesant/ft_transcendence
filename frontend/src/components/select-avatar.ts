@@ -57,12 +57,10 @@ class selectAvatar extends HTMLElement {
     }
   
     private selectAvatar(url: string, imgEl: HTMLImageElement) {
-      // Remove seleção anterior
       Array.from(this.container.children).forEach((child) =>
         (child as HTMLImageElement).classList.remove("ring", "ring-4", "ring-blue-500")
       );
   
-      // Adiciona destaque ao selecionado
       imgEl.classList.add("ring", "ring-4", "ring-blue-500");
       this.selectedPath = url;
     }
@@ -73,7 +71,6 @@ class selectAvatar extends HTMLElement {
         return;
       }
 
-      // Extrai apenas o path relativo
       const avatar = this.selectedPath.replace(apiUrl(3003, "/uploads/"), "");
 
       try {

@@ -1,7 +1,3 @@
-/**
- * PongInput - Campo de input estilizado
- * Props: type, placeholder, value, id, name, required, disabled, onInput, extraClass
- */
 export interface PongInputProps {
   type?: string;
   placeholder?: string;

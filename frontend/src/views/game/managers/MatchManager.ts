@@ -27,24 +27,19 @@ export class MatchManager {
             if (response.ok) {
                 const data = await response.json();
                 
-                // Check if tournament is complete
                 if (data.tournamentComplete) {
-                    console.log('Tournament is complete, using practice mode');
                     this._currentMatch = null;
                     this._player1Name = "Player 1";
                     this._player2Name = "Player 2";
                     return;
                 }
                 
-                // Normal match loading logic
                 if (data.match) {
                     this._currentMatch = data.match;
                     this._player1Name = data.match.player1;
                     this._player2Name = data.match.player2;
                     
-                    console.log(`Match loaded: ${this._player1Name} vs ${this._player2Name}`);
                 } else {
-                    console.log('No matches available');
                     this._player1Name = "Player 1";
                     this._player2Name = "Player 2";
                 }
@@ -76,7 +71,6 @@ export class MatchManager {
             
             if (response.ok) {
                 const result = await response.json();
-                console.log('Match result submitted successfully:', result);
                 
                 this._currentMatch = null;
                 await this.loadCurrentMatch();

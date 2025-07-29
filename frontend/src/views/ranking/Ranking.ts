@@ -13,17 +13,14 @@ export class Players extends AView
         parent.appendChild(this.container);
         this.elements.push(this.container);
 
-        // header
         const headerContainer = document.createElement("div");
         headerContainer.className = "w-full";
         headerContainer.appendChild(PongHeader({ homeOnly: false }));
         this.container.appendChild(headerContainer);
 
-        // main content
         const main = document.createElement("main");
         main.className = "flex flex-1 flex-col items-center w-full px-4 max-w-5xl mx-auto pt-8";
 
-        // card container for players table
         const card = document.createElement("div");
         card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full";
 
@@ -33,7 +30,6 @@ export class Players extends AView
         main.appendChild(card);
         this.container.appendChild(main);
 
-        // footer
         this.container.appendChild(PongFooter());
     }
 

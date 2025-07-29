@@ -1,7 +1,3 @@
-/**
- * PongCard - Container visual para seções
- * Usa classes utilitárias do Tailwind e pode receber children
- */
 export function PongCard(children: HTMLElement[] | HTMLElement | string, extraClass = ""): HTMLDivElement {
   const card = document.createElement("div");
   card.className = `bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-300 p-6 ${extraClass}`;

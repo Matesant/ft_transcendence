@@ -1,7 +1,3 @@
-/**
- * PongSpinner - Spinner de carregamento
- * Props: size, extraClass
- */
 export interface PongSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   extraClass?: string;

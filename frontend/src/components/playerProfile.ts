@@ -9,7 +9,6 @@ class playerProfile extends HTMLElement {
   }
 
   connectedCallback() {
-      // cria o container principal
       this.container = document.createElement("div");
       this.container.className = `
           flex justify-center items-center w-full p-4

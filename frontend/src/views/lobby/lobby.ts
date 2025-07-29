@@ -10,13 +10,11 @@ export class Lobby extends AView {
   private elements: HTMLElement[] = [];
   private container!: HTMLDivElement;
 
-  // elementos usados na sala
   private playersList!: HTMLUListElement;
   private roomCodeEl!: HTMLSpanElement;
   private actionBtn!: HTMLButtonElement;
   private roomCode: string = "";
   
-  // WebSocket manager
   private wsManager!: WebSocketManager;
   private keepConnection: boolean = false;
   private isHost: boolean = false;
@@ -24,22 +22,18 @@ export class Lobby extends AView {
   private isSearching: boolean = false;
   private currentPlayers: RoomPlayer[] = [];
   
-  // User information
   private currentUserDisplayName: string = "";
 
   public render(parent: HTMLElement = document.body): void {
-    // Initialize the lobby asynchronously
     this.initializeLobby(parent);
   }
 
   private async initializeLobby(parent: HTMLElement): Promise<void> {
-    // Verificar autenticação primeiro
     const user = await requireAuth();
     if (!user) {
-      return; // requireAuth já redireciona para /login
+      return;
     }
 
-    // Obter nome de exibição do usuário
     const displayName = await getCurrentUserDisplayName();
     if (!displayName) {
       console.error("Could not get user display name");
@@ -54,49 +48,39 @@ export class Lobby extends AView {
     parent.appendChild(this.container);
     this.elements.push(this.container);
 
-    // header
     const headerContainer = document.createElement("div");
     headerContainer.className = "w-full";
     headerContainer.appendChild(PongHeader({ homeOnly: false }));
     this.container.appendChild(headerContainer);
 
-    // Initialize WebSocket manager
     this.initializeWebSocket();
 
-    // mostra o menu de seleção inicial
     this.showSelection();
   }
 
   private async initializeWebSocket(): Promise<void> {
     this.wsManager = new WebSocketManager();
     
-    // Setup event handlers
     this.wsManager.onConnected(() => {
-      console.log('Connected to game server');
       this.isConnecting = false;
     });
 
     this.wsManager.onDisconnected(() => {
-      console.log('Disconnected from game server');
     });
 
     this.wsManager.onRoomCreated((data: RoomState) => {
-      console.log('Room created:', data);
       this.currentPlayers = data.players;
       this.updatePlayersDisplay();
     });
 
     this.wsManager.onRoomUpdated((data: RoomState) => {
-      console.log('Room updated:', data);
       this.roomCode = data.roomCode;
       this.currentPlayers = data.players;
       
-      // Se é um jogador que acabou de entrar (não é host e está procurando), mostrar a tela de joined
       if (!this.isHost && this.isSearching) {
         this.isSearching = false;
         this.showJoinedRoom(data);
       } else {
-        // Caso contrário, apenas atualizar a lista de jogadores (para host ou jogadores já na sala)
         this.updatePlayersDisplay();
       }
     });
@@ -107,7 +91,6 @@ export class Lobby extends AView {
     });
 
     this.wsManager.onGameStarting((data: any) => {
-      console.log('Game starting:', data);
       this.showGameStarting(data);
     });
 
@@ -120,7 +103,6 @@ export class Lobby extends AView {
     }
   }
 
-  /** passo 1: cria os botões Create / Join */
   private showSelection() {
     this.clearBody();
 
@@ -140,7 +122,6 @@ export class Lobby extends AView {
     cardTitle.textContent = "Choose an Option";
     card.appendChild(cardTitle);
 
-    // Container para botões lado a lado
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "flex gap-4";
 
@@ -163,11 +144,9 @@ export class Lobby extends AView {
     main.appendChild(card);
     this.container.appendChild(main);
 
-    // footer
     this.container.appendChild(PongFooter());
   }
 
-  /** passo 2a: flow de criação de sala */
   private showCreateRoom() {
     this.clearBody();
 
@@ -181,13 +160,11 @@ export class Lobby extends AView {
     card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-lg";
 
     if (this.isConnecting) {
-      // Show connecting state
       const connectingText = document.createElement("p");
       connectingText.textContent = "Connecting to server...";
       connectingText.className = "text-center text-xl mb-8";
       card.appendChild(connectingText);
     } else if (!this.wsManager?.connected) {
-      // Show connection error
       const errorText = document.createElement("p");
       errorText.textContent = "Failed to connect to server. Please try again.";
       errorText.className = "text-center text-xl text-red-400 mb-8";
@@ -201,7 +178,6 @@ export class Lobby extends AView {
       retryBtn.className = "w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200";
       card.appendChild(retryBtn);
     } else {
-      // Connected - create room
       this.setupRoomCreation(card);
     }
 
@@ -211,11 +187,9 @@ export class Lobby extends AView {
   }
 
   private setupRoomCreation(card: HTMLElement): void {
-    // gera e exibe o código
     this.roomCode = generateRoomCode();
     this.isHost = true;
     
-    // Create room on server using the user's display name
     this.wsManager.createRoom(this.roomCode, this.currentUserDisplayName);
 
     const title = document.createElement("h2");
@@ -237,7 +211,6 @@ export class Lobby extends AView {
     this.roomCodeEl.textContent = this.roomCode;
     codeSection.appendChild(this.roomCodeEl);
 
-    // botões de copiar
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "flex gap-2 justify-center";
 
@@ -252,7 +225,6 @@ export class Lobby extends AView {
     codeSection.appendChild(buttonsContainer);
     card.appendChild(codeSection);
 
-    // lista de jogadores
     const playersSection = document.createElement("div");
     playersSection.className = "mb-8";
 
@@ -267,7 +239,6 @@ export class Lobby extends AView {
     playersSection.appendChild(this.playersList);
     card.appendChild(playersSection);
 
-    // botão Ready
     this.actionBtn = PongButton({
       text: "🚀 Ready",
       variant: "primary",
@@ -277,7 +248,6 @@ export class Lobby extends AView {
     card.appendChild(this.actionBtn);
   }
 
-  /** passo 2b: flow de entrar numa sala existente */
   private showJoinRoom() {
     this.clearBody();
 
@@ -297,7 +267,6 @@ export class Lobby extends AView {
     description.textContent = "Enter the room code to connect";
     card.appendChild(description);
 
-    // input de código
     const inputDiv = document.createElement("div");
     inputDiv.className = "mb-4";
     const input = PongInput({
@@ -312,7 +281,6 @@ export class Lobby extends AView {
     inputDiv.appendChild(input);
     card.appendChild(inputDiv);
 
-    // botão Join
     const joinBtn = PongButton({
       text: "Join Room",
       variant: "primary",
@@ -336,7 +304,6 @@ export class Lobby extends AView {
     joinBtn.className = "w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25";
     card.appendChild(joinBtn);
 
-    // Enter key support
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         joinBtn.click();
@@ -348,7 +315,6 @@ export class Lobby extends AView {
     this.container.appendChild(PongFooter());
   }
 
-  /** passo 2c: tela de procurando lobby */
   private showSearchingLobby() {
     this.clearBody();
 
@@ -363,7 +329,6 @@ export class Lobby extends AView {
     const card = document.createElement("div");
     card.className = "bg-white/10 backdrop-blur-lg rounded-2xl p-12 border border-white/20 w-full max-w-md text-center";
 
-    // Loading animation
     const loadingContainer = document.createElement("div");
     loadingContainer.className = "mb-8";
 
@@ -383,7 +348,6 @@ export class Lobby extends AView {
     codeText.textContent = `Code: ${this.roomCode}`;
     card.appendChild(codeText);
 
-    // Cancel button
     const cancelBtn = PongButton({
       text: "Cancel",
       variant: "secondary",
@@ -396,10 +360,8 @@ export class Lobby extends AView {
     this.container.appendChild(main);
     this.container.appendChild(PongFooter());
 
-    // The WebSocket event handlers will handle the actual room join response
   }
 
-  /** limpa somente o corpo, mantendo header/footer */
   private clearBody() {
     const children = Array.from(this.container.children);
     for (let i = 1; i < children.length - 1; i++) {
@@ -422,28 +384,23 @@ export class Lobby extends AView {
   }
 
   private onAction(): void {
-    console.log("Ready / Start pressed for room", this.roomCode);
     
     if (!this.wsManager?.connected) {
       this.showError("Not connected to server");
       return;
     }
 
-    // Toggle ready state
     const currentPlayer = this.currentPlayers.find(p => p.id === this.wsManager.playerId);
     const newReadyState = !currentPlayer?.ready;
     
     this.wsManager.setReady(newReadyState);
     
-    // Update button text
     this.actionBtn.textContent = newReadyState ? "⏳ Ready!" : "🚀 Ready";
   }
 
-  // Helper methods for WebSocket integration
   private updatePlayersDisplay(): void {
     if (!this.playersList || !this.currentPlayers) return;
 
-    // Clear current list
     this.playersList.innerHTML = '';
 
     this.currentPlayers.forEach(player => {
@@ -470,7 +427,6 @@ export class Lobby extends AView {
       this.playersList.appendChild(li);
     });
 
-    // Update action button text based on current player's ready state
     if (this.actionBtn) {
       const currentPlayer = this.currentPlayers.find(p => p.id === this.wsManager?.playerId);
       this.actionBtn.textContent = currentPlayer?.ready ? "⏳ Ready!" : "🚀 Ready";
@@ -478,13 +434,11 @@ export class Lobby extends AView {
   }
 
   private showError(message: string): void {
-    // Create a temporary error message
     const errorDiv = document.createElement("div");
     errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
     errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
 
-    // Remove after 3 seconds
     setTimeout(() => {
       if (errorDiv.parentNode) {
         errorDiv.parentNode.removeChild(errorDiv);
@@ -541,7 +495,6 @@ export class Lobby extends AView {
         countdown.textContent = "GO!";
         clearInterval(countdownInterval);
         
-        // Redirect to game after a short delay
         setTimeout(() => {
           setWsManager(this.wsManager);
           sessionStorage.setItem('roomCode', this.roomCode);
@@ -556,7 +509,6 @@ export class Lobby extends AView {
     }, 1000);
   }
 
-  /** Tela para quando o jogador entra em uma sala existente */
   private showJoinedRoom(data: RoomState) {
     this.clearBody();
 
@@ -576,7 +528,6 @@ export class Lobby extends AView {
     successMessage.textContent = "✅ Successfully joined the room!";
     card.appendChild(successMessage);
 
-    // Room code display
     const codeSection = document.createElement("div");
     codeSection.className = "text-center mb-8";
 
@@ -590,7 +541,6 @@ export class Lobby extends AView {
     this.roomCodeEl.textContent = this.roomCode;
     codeSection.appendChild(this.roomCodeEl);
 
-    // Copy buttons
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "flex gap-2 justify-center";
 
@@ -605,7 +555,6 @@ export class Lobby extends AView {
     codeSection.appendChild(buttonsContainer);
     card.appendChild(codeSection);
 
-    // Players list
     const playersSection = document.createElement("div");
     playersSection.className = "mb-8";
 
@@ -620,7 +569,6 @@ export class Lobby extends AView {
     playersSection.appendChild(this.playersList);
     card.appendChild(playersSection);
 
-    // Ready button
     this.actionBtn = PongButton({
       text: "🚀 Ready",
       variant: "primary",
@@ -633,12 +581,10 @@ export class Lobby extends AView {
     this.container.appendChild(main);
     this.container.appendChild(PongFooter());
 
-    // Update players display with initial data
     this.updatePlayersDisplay();
   }
 
   public dispose(): void {
-    // Disconnect from WebSocket
     if (this.wsManager && !this.keepConnection) {
       this.wsManager.leaveRoom();
       this.wsManager.disconnect();

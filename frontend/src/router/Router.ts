@@ -37,7 +37,6 @@ async function isAuthenticated(): Promise<boolean> {
   
       return data.authenticated === true;
     } catch (error) {
-      console.log("Redirect to login:", error);
       return false;
     }
   }

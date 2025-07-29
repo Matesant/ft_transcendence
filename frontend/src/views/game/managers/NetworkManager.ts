@@ -24,7 +24,6 @@ export class NetworkManager {
     private _reconnectTimeout: NodeJS.Timeout | null = null;
 
     constructor() {
-        // Bind methods to preserve 'this' context
         this._handleMessage = this._handleMessage.bind(this);
         this._handleOpen = this._handleOpen.bind(this);
         this._handleClose = this._handleClose.bind(this);
@@ -58,14 +57,12 @@ export class NetworkManager {
                         }, { once: true });
                     }
                 } else {
-                    // Detect the current host and use it for WebSocket connection
                     const host = window.location.hostname;
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                     const wsUrl = process.env.NODE_ENV === 'production'
                         ? 'wss://your-domain.com/ws'
                         : `${protocol}//${host}:3004/ws`;
 
-                    console.log(`Connecting to game service at: ${wsUrl}`);
                     this._socket = new WebSocket(wsUrl);
 
                     this._socket.addEventListener('open', () => {
@@ -118,7 +115,6 @@ export class NetworkManager {
     public sendInput(action: string): void {
         if (!this._connected || !this._playerId || !this._gameId) return;
 
-        // Throttle input to reduce network traffic
         const now = Date.now();
         if (now - this._lastInputSent < this._inputThrottle) return;
 
@@ -134,7 +130,6 @@ export class NetworkManager {
         this._lastInputSent = now;
     }
 
-    // Event handler setters
     public onMatchFound(callback: (data: any) => void): void {
         this._onMatchFound = callback;
     }
@@ -163,7 +158,6 @@ export class NetworkManager {
         this._onError = callback;
     }
 
-    // Getters
     public get connected(): boolean {
         return this._connected;
     }
@@ -184,7 +178,6 @@ export class NetworkManager {
         this._gameId = gameId;
     }
 
-    // Private methods
     private _send(data: any): void {
         if (this._socket && this._connected) {
             this._socket.send(JSON.stringify(data));
@@ -192,18 +185,15 @@ export class NetworkManager {
     }
 
     private _handleOpen(): void {
-        console.log('WebSocket connected');
         this._connected = true;
         this._reconnectAttempts = 0;
         
-        // Start ping/pong for connection health
         this._startPingPong();
     }
 
     private _handleMessage(event: MessageEvent): void {
         try {
             const data = JSON.parse(event.data);
-            console.log('Received:', data);
 
             switch (data.type) {
                 case 'match_found':
@@ -250,15 +240,12 @@ export class NetworkManager {
                     break;
 
                 case 'queue_joined':
-                    console.log('Joined queue:', data.message);
                     break;
 
                 case 'queue_left':
-                    console.log('Left queue:', data.message);
                     break;
 
                 case 'pong':
-                    // Handle ping/pong for connection health
                     break;
 
                 case 'error':
@@ -269,7 +256,6 @@ export class NetworkManager {
                     break;
 
                 default:
-                    console.log('Unknown message type:', data.type);
             }
         } catch (error) {
             console.error('Error parsing message:', error);
@@ -277,11 +263,9 @@ export class NetworkManager {
     }
 
     private _handleClose(event: CloseEvent): void {
-        console.log('WebSocket disconnected:', event.code, event.reason);
         this._connected = false;
         this._cleanup();
         
-        // Try to reconnect if not intentionally closed
         if (event.code !== 1000 && this._reconnectAttempts < this._maxReconnectAttempts) {
             this._attemptReconnect();
         }
@@ -306,14 +290,13 @@ export class NetworkManager {
                     timestamp: Date.now()
                 });
             }
-        }, 30000); // Ping every 30 seconds
+        }, 30000);
     }
 
     private _attemptReconnect(): void {
         this._reconnectAttempts++;
         const delay = Math.min(1000 * Math.pow(2, this._reconnectAttempts), 10000);
         
-        console.log(`Attempting to reconnect (${this._reconnectAttempts}/${this._maxReconnectAttempts}) in ${delay}ms`);
         
         this._reconnectTimeout = setTimeout(() => {
             if (this._playerId && this._playerName) {

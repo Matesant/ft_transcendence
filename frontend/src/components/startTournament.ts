@@ -101,7 +101,6 @@ class startTournament extends HTMLElement {
         const speedValue = document.getElementById('speedValue');
         const tableColorButton = document.getElementById('tableColorButton');
         
-        // Initialize with default value if not set
         if (sessionStorage.getItem("powerupsEnabled") === null) {
             sessionStorage.setItem("powerupsEnabled", "false");
         }
@@ -112,24 +111,20 @@ class startTournament extends HTMLElement {
             sessionStorage.setItem("tableTheme", "GREEN");
         }
         
-        // Set values from sessionStorage
         powerupToggle.checked = sessionStorage.getItem("powerupsEnabled") === "true";
         speedSlider.value = sessionStorage.getItem("gameSpeed") || "1.0";
         speedValue.textContent = `${parseFloat(speedSlider.value).toFixed(1)}x`;
         
         const currentTableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
         
-        // Get toggle elements
         const toggleSwitch = document.getElementById('toggleSwitch');
         const toggleThumb = document.getElementById('toggleThumb');
         
         function updateToggleState() {
             if (powerupToggle.checked) {
-                // Activated state - blue background, thumb moves right
                 toggleSwitch.className = 'w-12 h-6 bg-blue-500 rounded-full cursor-pointer transition-colors duration-300 relative';
                 toggleThumb.className = 'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-6';
             } else {
-                // Deactivated state - gray background, thumb on left
                 toggleSwitch.className = 'w-12 h-6 bg-gray-600 rounded-full cursor-pointer transition-colors duration-300 relative';
                 toggleThumb.className = 'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform translate-x-0';
             }
@@ -140,17 +135,15 @@ class startTournament extends HTMLElement {
             if (tableTheme === "GREEN") {
                 tableColorButton.textContent = "Mudar para Azul";
                 tableColorButton.className = "px-4 py-2 text-sm cursor-pointer bg-blue-500 hover:bg-blue-600 border-none rounded text-white transition-colors duration-300 font-medium";
-            } else { // BLUE
+            } else {
                 tableColorButton.textContent = "Mudar para Verde";
                 tableColorButton.className = "px-4 py-2 text-sm cursor-pointer bg-green-500 hover:bg-green-600 border-none rounded text-white transition-colors duration-300 font-medium";
             }
         }
         
-        // Set initial states
         updateToggleState();
         updateTableColorButton();
         
-        // Add click handlers
         toggleSwitch.addEventListener('click', () => {
             powerupToggle.checked = !powerupToggle.checked;
             updateToggleState();
@@ -158,14 +151,12 @@ class startTournament extends HTMLElement {
         
         powerupToggle.addEventListener('change', updateToggleState);
         
-        // Speed slider event listener
         speedSlider.addEventListener('input', () => {
             const speed = parseFloat(speedSlider.value);
             speedValue.textContent = `${speed.toFixed(1)}x`;
             sessionStorage.setItem("gameSpeed", speed.toString());
         });
         
-        // Table color button event listener
         tableColorButton.addEventListener('click', () => {
             const currentTheme = sessionStorage.getItem("tableTheme") || "GREEN";
             const newTheme = currentTheme === "GREEN" ? "BLUE" : "GREEN";
@@ -218,7 +209,6 @@ class startTournament extends HTMLElement {
           const gameSpeed = parseFloat(speedSlider.value);
           const tableTheme = sessionStorage.getItem("tableTheme") || "GREEN";
           
-          // Salvar configurações no sessionStorage
           sessionStorage.setItem("powerupsEnabled", powerupsEnabled.toString());
           sessionStorage.setItem("gameSpeed", gameSpeed.toString());
           sessionStorage.setItem("tableTheme", tableTheme);
@@ -248,7 +238,6 @@ class startTournament extends HTMLElement {
           }
         });
     
-        // Ativa o botão de remover do primeiro campo já existente
         document.querySelector('.remove-btn').addEventListener('click', function () {
           const row = this.parentElement;
           inputsContainer.removeChild(row);

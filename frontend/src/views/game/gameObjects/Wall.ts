@@ -35,6 +35,5 @@ export class Wall extends GameObject {
     }
 
     public update(): void {
-        // Walls don't need updating
     }
 }
