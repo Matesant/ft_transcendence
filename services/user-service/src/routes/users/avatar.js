@@ -79,7 +79,7 @@ export default async function (fastify, opts) {
             return reply.code(500).send({ error: 'Cannot read uploads directory' });
     }
     const images = files.filter(f => /\.(jpe?g|png)$/i.test(f));
-    const urls = images.map(f => `https://localhost:3003/uploads/${f}`);
+    const urls = images.map(f => `https://${process.env.IP || 'localhost:3003'}/uploads/${f}`);
     return { avatars: urls };
 	});
 }

@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 class Enable2faBtn extends HTMLElement {
     constructor() {
       super();
@@ -15,7 +16,7 @@ class Enable2faBtn extends HTMLElement {
       if (button) {
         button.addEventListener('click', async () => {
           try {
-            const response = await fetch('https://localhost:3001/auth/2fa/enable', {
+              const response = await fetch(apiUrl(3001, '/auth/2fa/enable'), {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
