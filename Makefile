@@ -44,24 +44,22 @@ logs:
 # Install frontend dependencies
 frontend-install:
 	@echo "$(CYAN)Installing frontend dependencies...$(RESET)"
-	@cd $(FRONTEND_DIR) && npm install
+	@docker run --rm -v "$(shell pwd)/$(FRONTEND_DIR):/app" -w /app node:18 npm install
 	@echo "$(GREEN)✅ Frontend dependencies installed!$(RESET)"
 
 # Start frontend development
 frontend-dev:
 	@echo "$(CYAN)Starting frontend development...$(RESET)"
 	@$(MAKE) kill-frontend
-	@cd $(FRONTEND_DIR) && nohup npx tailwindcss -i src/style.css -o public/style.css --watch > .tailwind.log 2>&1 & echo $$! > .tailwind.pid
-	@sleep 2
-	@cd $(FRONTEND_DIR) && nohup npm run start > .frontend.log 2>&1 & echo $$! > .frontend.pid
+	@docker run --rm -v "$(shell pwd)/$(FRONTEND_DIR):/app" -w /app -d --name tailwind_watch node:18 npx tailwindcss -i src/style.css -o public/style.css --watch
+	@docker run --rm -v "$(shell pwd)/$(FRONTEND_DIR):/app" -w /app -d --name frontend_dev -p 8080:8080 node:18 npm run start
 	@echo "$(GREEN)✅ Frontend development started!$(RESET)"
 	@echo "$(GREEN)🌐 Frontend available at: http://localhost:8080$(RESET)"
 
 # Stop frontend processes
 frontend-stop:
 	@echo "$(YELLOW)Stopping frontend processes...$(RESET)"
-	@if [ -f $(FRONTEND_DIR)/.tailwind.pid ]; then kill `cat $(FRONTEND_DIR)/.tailwind.pid` 2>/dev/null || true; rm -f $(FRONTEND_DIR)/.tailwind.pid; fi
-	@if [ -f $(FRONTEND_DIR)/.frontend.pid ]; then kill `cat $(FRONTEND_DIR)/.frontend.pid` 2>/dev/null || true; rm -f $(FRONTEND_DIR)/.frontend.pid; fi
+	@docker stop tailwind_watch frontend_dev 2>/dev/null || true
 	@echo "$(GREEN)✅ Frontend processes stopped!$(RESET)"
 
 # Kill processes on ports

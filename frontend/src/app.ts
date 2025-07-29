@@ -20,6 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add language selector
     const langSelector = createLanguageSelector();
     document.body.appendChild(langSelector);
+    
+    // Remove any duplicate language selectors that might be created by the game
+    const gameLanguageSelector = document.getElementById("languageSelector");
+    if (gameLanguageSelector) {
+        gameLanguageSelector.remove();
+    }
+});
+
+// Add a listener to clean up duplicate selectors on any route change
+document.addEventListener('routeChange', () => {
+    // Keep only one language selector - the global one
+    const allSelectors = document.querySelectorAll('[id^="languageSelector"]');
+    if (allSelectors.length > 1) {
+        for (let i = 1; i < allSelectors.length; i++) {
+            allSelectors[i].remove();
+        }
+    }
 });
 
 window.addEventListener("DOMContentLoaded", router);

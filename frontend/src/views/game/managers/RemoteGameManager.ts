@@ -5,6 +5,7 @@ import { InputManager } from "./InputManager";
 import { UIManager } from "./UIManager";
 import { CONFIG } from "../config";
 import { getText } from "../../../utils/language";
+import { Scene } from "@babylonjs/core"; // Add this import
 
 export class RemoteGameManager extends GameManager {
     private socket: WebSocket;
@@ -16,26 +17,74 @@ export class RemoteGameManager extends GameManager {
     private statusElement: HTMLElement;
     private connecting: boolean = true;
     private gameStarted: boolean = false;
+    
+    // Add the missing properties
+    public canvas: HTMLCanvasElement;
+    public input: InputManager;
+    public ui: UIManager;
+    public leftPaddle: any;
+    public rightPaddle: any;
+    public ball: any;
+    public leftScore: number = 0;
+    public rightScore: number = 0;
+    public isRunning: boolean = false;
+    
+    // Add missing constants
+    private readonly PADDLE_MARGIN = 20;
+    private readonly PADDLE_HEIGHT = 80;
+    private readonly PADDLE_WIDTH = 15;
+
+    // Add missing methods
+    public start(): void {
+        this.isRunning = true;
+    }
+    
+    public stop(): void {
+        this.isRunning = false;
+    }
+    
+    // Add disconnect method
+    public disconnect(): void {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.close();
+        }
+    }
 
     constructor(
-        canvas: HTMLCanvasElement, 
-        input: InputManager, 
-        ui: UIManager, 
-        socket: WebSocket,
-        playerId: string,
-        playerName: string,
-        playerSide?: 'left' | 'right',
-        opponent?: { id: string, name: string },
-        gameId?: string
+        scene: Scene, 
+        playerId: string, 
+        playerName: string, 
+        onGameStarted?: () => void, 
+        options?: { 
+            socket?: WebSocket; 
+            skipMenu?: boolean; 
+            playerSide?: 'left' | 'right'; 
+            opponent?: { id: string; name: string }; 
+            gameId?: string 
+        }
     ) {
-        super(canvas, input, ui);
-        this.socket = socket;
+        super(scene);
         this.playerId = playerId;
         this.playerName = playerName;
-        this.playerSide = playerSide;
-        this.opponent = opponent;
-        this.gameId = gameId || '';
-
+        this.playerSide = options?.playerSide;
+        this.opponent = options?.opponent;
+        this.gameId = options?.gameId || '';
+        this.socket = options?.socket || new WebSocket(`ws://${window.location.hostname}:3004`);
+        
+        // Create canvas reference
+        const canvas = document.getElementById(CONFIG.CANVAS_ID) as HTMLCanvasElement;
+        this.canvas = canvas;
+        
+        // Initialize input and UI managers
+        this.input = new InputManager();
+        this.ui = new UIManager(
+            () => {}, // onStartGame
+            () => {}, // onShowMenu
+            () => {}, // onResetAndRestart
+            () => {}, // onSpeedChange
+            () => {}  // onTableThemeToggle
+        );
+        
         // Create status display
         this.statusElement = document.createElement('div');
         this.statusElement.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl font-bold text-white text-center bg-black/50 p-4 rounded-lg z-10';
@@ -46,8 +95,8 @@ export class RemoteGameManager extends GameManager {
         this.setupSocketHandlers();
 
         // If we have a gameId, we're joining an existing game
-        if (gameId) {
-            this.joinGame(gameId);
+        if (this.gameId) {
+            this.joinGame(this.gameId);
         } else {
             this.findMatch();
         }
@@ -151,27 +200,54 @@ export class RemoteGameManager extends GameManager {
         }
         
         // Initialize game objects based on server data
-        this.leftPaddle = new Paddle(
-            this.canvas, 
-            CONFIG.PADDLE_MARGIN,
-            this.canvas.height / 2 - CONFIG.PADDLE_HEIGHT / 2
-        );
+        this.leftPaddle = {
+            draw: (ctx: any) => {
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(
+                    this.PADDLE_MARGIN, 
+                    this.canvas.height / 2 - this.PADDLE_HEIGHT / 2,
+                    this.PADDLE_WIDTH,
+                    this.PADDLE_HEIGHT
+                );
+            }
+        };
         
-        this.rightPaddle = new Paddle(
-            this.canvas,
-            this.canvas.width - CONFIG.PADDLE_MARGIN - CONFIG.PADDLE_WIDTH,
-            this.canvas.height / 2 - CONFIG.PADDLE_HEIGHT / 2
-        );
+        this.rightPaddle = {
+            draw: (ctx: any) => {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(
+                    this.canvas.width - this.PADDLE_MARGIN - this.PADDLE_WIDTH,
+                    this.canvas.height / 2 - this.PADDLE_HEIGHT / 2,
+                    this.PADDLE_WIDTH,
+                    this.PADDLE_HEIGHT
+                );
+            }
+        };
         
-        this.ball = new Ball(
-            this.canvas,
-            this.canvas.width / 2,
-            this.canvas.height / 2
-        );
+        this.ball = {
+            draw: (ctx: any) => {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(
+                    this.canvas.width / 2,
+                    this.canvas.height / 2,
+                    10,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+        };
         
         // Show scoreboard with player names
-        const player1Name = this.playerSide === 'left' ? this.playerName : this.opponent?.name || getText('player2');
-        const player2Name = this.playerSide === 'right' ? this.playerName : this.opponent?.name || getText('player1');
+        const player1Name = this.playerSide === 'left' 
+            ? this.playerName 
+            : (this.opponent?.name || getText('player2'));
+            
+        const player2Name = this.playerSide === 'right' 
+            ? this.playerName 
+            : (this.opponent?.name || getText('player1'));
+            
         this.ui.showScoreBoard(player1Name, player2Name);
         
         // Start the game loop

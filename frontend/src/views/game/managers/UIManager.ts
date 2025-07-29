@@ -23,11 +23,35 @@ export class UIManager {
     private _gameMode: "classic" | "powerups" = "classic";
     private _tournamentMatch: MatchInfo | null = null;
     private _lang: Language = getCurrentLanguage();
+    
+    // Callback functions
+    private _onStartGame: (enablePowerUps: boolean) => void;
+    private _onShowMenu: () => void;
+    private _onResetAndRestart: () => void;
+    private _onSpeedChange: (speed: number) => void;
+    private _onTableThemeToggle: () => void;
 
-    constructor(container: HTMLDivElement) {
-        this._container = container;
+    constructor(
+        onStartGame?: (enablePowerUps: boolean) => void,
+        onShowMenu?: () => void,
+        onResetAndRestart?: () => void,
+        onSpeedChange?: (speed: number) => void,
+        onTableThemeToggle?: () => void
+    ) {
+        this._container = document.createElement("div");
+        this._container.className = "absolute inset-0";
+        document.body.appendChild(this._container);
+        
         this._scoreBoard = document.createElement("div");
         this._menuScreen = document.createElement("div");
+        
+        // Store callbacks, using empty functions as defaults if not provided
+        this._onStartGame = onStartGame || (() => {});
+        this._onShowMenu = onShowMenu || (() => {});
+        this._onResetAndRestart = onResetAndRestart || (() => {});
+        this._onSpeedChange = onSpeedChange || (() => {});
+        this._onTableThemeToggle = onTableThemeToggle || (() => {});
+        
         this._setupScoreBoard();
     }
 
@@ -257,9 +281,6 @@ export class UIManager {
                 menuContainer.appendChild(nextMatchBtn);
             }
         }
-
-        // Language selector - keep the existing one that uses direct language methods
-        this._createLanguageSelector();
         
         this._menuScreen.appendChild(menuContainer);
         this._container.appendChild(this._menuScreen);
@@ -274,7 +295,14 @@ export class UIManager {
     }
 
     // Show game over screen
-    public showGameOver(winner?: "player1" | "player2"): void {
+    public showGameOver(
+        winner?: string,
+        player1Name?: string,
+        player2Name?: string,
+        matchInfo?: any,
+        tournamentComplete?: boolean,
+        champion?: string
+    ): void {
         this._menuScreen = document.createElement("div");
         this._menuScreen.className = "absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white";
         
@@ -433,37 +461,13 @@ export class UIManager {
         return this._powerUpsEnabled;
     }
 
-    private _createLanguageSelector(): void {
-        const oldSelector = document.getElementById("languageSelector");
-        if (oldSelector) oldSelector.remove();
+    // Add missing methods
+    public setTableTheme(theme: string): void {
+        this._tableColor = theme.toLowerCase();
+    }
 
-        const selector = document.createElement("select");
-        selector.id = "languageSelector";
-        selector.className = "fixed top-6 right-6 z-[10000] px-4 py-2 text-base rounded-lg bg-gray-800 text-white border border-gray-600 shadow-lg";
-
-        // Use language-specific names for the languages
-        const options = [
-            { value: "ptBR", label: getText("languagePtBR") },
-            { value: "en", label: getText("languageEn") },
-            { value: "es", label: getText("languageEs") }
-        ];
-
-        for (const opt of options) {
-            const option = document.createElement("option");
-            option.value = opt.value;
-            option.textContent = opt.label;
-            if (opt.value === this._lang) option.selected = true;
-            selector.appendChild(option);
-        }
-
-        selector.addEventListener("change", () => {
-            this._lang = selector.value as Language;
-            changeLanguage(this._lang);
-            // Update UI text elements that need to change with language
-            this._updateUILanguage();
-        });
-
-        document.body.appendChild(selector);
+    public hideGameOver(): void {
+        this.hideMenu();
     }
 
     private _updateUILanguage(): void {

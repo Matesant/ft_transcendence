@@ -1,17 +1,16 @@
 import { Scene } from "@babylonjs/core";
-import { Ball, DIRECTION } from "../gameObjects/Ball";
+import { Ball } from "../gameObjects/Ball";
 import { Paddle, PaddleType } from "../gameObjects/Paddle";
 import { Wall, WallType } from "../gameObjects/Wall";
 import { ScoreManager } from "./ScoreManager";
 import { InputManager } from "./InputManager";
 import { CONFIG } from "../config";
 import { PowerUpManager } from "./PowerUpManager";
-import { Language } from "../../i18n";
 import { UIManager } from "./UIManager";
 import { MatchManager } from "./MatchManager";
 import { CollisionManager } from "./CollisionManager";
 import { FieldManager } from "./FieldManager";
-import { GameStateManager, GameState } from "./GameStateManager";
+import { GameStateManager } from "./GameStateManager";
 import { getWsManager } from "../../../utils/connectionStore";
 import { router } from "../../../router/Router";
 

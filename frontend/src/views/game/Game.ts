@@ -3,6 +3,7 @@ import { GameManager } from "./managers/GameManager";
 import { RemoteGameManager } from "./managers/RemoteGameManager";
 import { CONFIG } from "./config";
 import { AView } from "../AView";
+import { getText } from "../../utils/language";
 
 export type GameMode = 'local' | 'remote';
 
@@ -13,6 +14,11 @@ export class Game extends AView {
     private _gameManager: GameManager | RemoteGameManager;
     private _gameMode: GameMode;
     private _onGameStarted?: () => void;
+    
+    // Add these properties to store the player information for RemoteGameManager
+    private playerSide?: 'left' | 'right';
+    private playerName?: string;
+    private opponent?: { id: string; name: string };
 
     constructor(
         gameMode: GameMode = 'local',
@@ -25,13 +31,17 @@ export class Game extends AView {
         super();
         this._gameMode = gameMode;
         this._onGameStarted = onGameStarted;
+        this.playerName = playerName;
+        this.playerSide = options?.playerSide;
+        this.opponent = options?.opponent;
+        
+        // Engine and scene setup
         this._canvas = document.createElement("canvas");
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
         this._canvas.id = CONFIG.CANVAS_ID;
         document.body.appendChild(this._canvas);
 
-        // Engine and scene setup
         this._engine = new Engine(this._canvas, true);
         this._scene = new Scene(this._engine);
         this._scene.clearColor = CONFIG.SCENE.CLEAR_COLOR;
@@ -65,7 +75,13 @@ export class Game extends AView {
             if (!playerId || !playerName) {
                 throw new Error('Player ID and name are required for remote game mode');
             }
-            this._gameManager = new RemoteGameManager(this._scene, playerId, playerName, this._onGameStarted, options);
+            this._gameManager = new RemoteGameManager(
+                this._scene, 
+                playerId, 
+                playerName,
+                this._onGameStarted,
+                options
+            );
         } else {
             this._gameManager = new GameManager(this._scene);
             // For local games, call the callback immediately since the game starts right away
@@ -104,8 +120,11 @@ export class Game extends AView {
         this._engine.stopRenderLoop();
 
         // Disconnect network manager if in remote mode
-        if (this._gameMode === 'remote' && 'disconnect' in this._gameManager) {
-            (this._gameManager as RemoteGameManager).disconnect();
+        if (this._gameMode === 'remote') {
+            const remoteManager = this._gameManager as RemoteGameManager;
+            if (typeof remoteManager.disconnect === 'function') {
+                remoteManager.disconnect();
+            }
         }
 
         // Dispose of the Babylon.js engine and scene
@@ -132,11 +151,17 @@ export class Game extends AView {
     public getGameMode(): GameMode {
         return this._gameMode;
     }
+
+    // Add a method to get player names with null checks
+    public getPlayerNames(): { player1Name: string, player2Name: string } {
+        const player1Name = this.playerSide === 'left' 
+            ? this.playerName ?? getText('player1') 
+            : this.opponent?.name ?? getText('player2');
+
+        const player2Name = this.playerSide === 'right' 
+            ? this.playerName ?? getText('player1') 
+            : this.opponent?.name ?? getText('player2');
+            
+        return { player1Name, player2Name };
+    }
 }
-
-// Create and start the game
-// const game = new Game();
-// game.mainLoop();
-
-const player1Name = this.playerSide === 'left' ? this.playerName : this.opponent?.name || getText('player2');
-const player2Name = this.playerSide === 'right' ? this.playerName : this.opponent?.name || getText('player1');
