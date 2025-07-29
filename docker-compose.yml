@@ -31,6 +31,7 @@ services:
     environment:
       - DB_PATH=${MATCH_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}
+      - IP=${IP}
     command: ./start.sh
     networks:
       - backend
@@ -45,6 +46,7 @@ services:
     environment:
       - DB_PATH=${USER_DB_PATH}
       - JWT_SECRET=${JWT_SECRET}
+      - IP=${IP}
     volumes:
       - ./services/user-service:/app
     command: ./start.sh
@@ -63,6 +65,7 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - COOKIE_SECRET=${COOKIE_SECRET}
+      - IP=${IP}
     command: ./start.sh
     networks:
       - backend
