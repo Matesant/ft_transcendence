@@ -6,7 +6,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'public'),
         filename: "bundle.js", //name for the js file that is created/compiled in memory
-        clean: true,
+        clean: false,
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
