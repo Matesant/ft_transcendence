@@ -25,6 +25,7 @@ setup()
         cp -t ./services/match-service/ ./services/server.key ./services/server.crt
         cp -t ./services/game-service/ ./services/server.key ./services/server.crt
         cp -t ./services/auth-service/ ./services/server.key ./services/server.crt
+        cp -t ./frontend/ ./services/server.key ./services/server.crt
 
         printf "%bSSL certificates generated!%b\n" "$BLUE" "$RESET"
 
@@ -39,7 +40,8 @@ clear()
         ./services/user-service/server.{key,crt} \
         ./services/match-service/server.{key,crt} \
         ./services/game-service/server.{key,crt} \
-        ./services/auth-service/server.{key,crt}
+        ./services/auth-service/server.{key,crt} \
+        ./frontend/server.{key,crt}
     printf "%bCleanup done!%b\n" "$BLUE" "$RESET"
 }
 
