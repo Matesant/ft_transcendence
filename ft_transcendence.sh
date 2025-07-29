@@ -14,8 +14,11 @@ setup()
         printf "JWT_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "COOKIE_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
+        printf "%bGenerating IP address in .env...%b\n" "$BLUE" "$RESET"
+        printf "IP=%s\n" "$(hostname -i | cut -d ' ' -f 1)" >> .env
+        printf "%bIP address done!%b\n" "$BLUE" "$RESET"
 
-        printf "%bGerenating SSL certificates%b\n" "$BLUE" "$RESET"
+        printf "%bGerenating SSL certificates...%b\n" "$BLUE" "$RESET"
         openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
 	    -keyout ./services/server.key \
 	    -out ./services/server.crt \
@@ -42,6 +45,7 @@ clear()
         ./services/game-service/server.{key,crt} \
         ./services/auth-service/server.{key,crt} \
         ./frontend/server.{key,crt}
+    sudo rm -f ./services/{user,match,auth}-service/data/*-service.db
     printf "%bCleanup done!%b\n" "$BLUE" "$RESET"
 }
 
