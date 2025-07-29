@@ -14,6 +14,7 @@ services:
       - MAIL_PASS=${AUTH_MAIL_PASS}
       - JWT_SECRET=${JWT_SECRET}
       - COOKIE_SECRET=${COOKIE_SECRET}
+      - IP=${IP}
     command: ./start.sh
     networks:
       - backend

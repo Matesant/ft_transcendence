@@ -48,7 +48,7 @@ fastify.decorate("authenticate", async function (request, reply) {
 
 // 4) CORS
 await fastify.register(cors, {
-  origin: 'https://localhost:8080',
+  origin: `https://${process.env.IP || 'localhost'}:8080`,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
