@@ -3,6 +3,7 @@ import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton, PongSpinner } from "../../components/ui";
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
+import { PongModal } from "../../components/ui/PongModal";
 
 export class ForgotPassword extends AView {
     
@@ -10,6 +11,129 @@ export class ForgotPassword extends AView {
     private currentStep: 'request' | 'reset' = 'request';
     private userAlias: string = '';
     private isLoading: boolean = false;
+
+    // Helper function to map password reset request errors to user-friendly messages
+    private mapRequestResetError(errorMessage: string): { title: string; message: string } {
+        const error = errorMessage.toLowerCase();
+        
+        if (error.includes('alias is required')) {
+            return {
+                title: "Missing Information",
+                message: "Please enter your username to request a password reset."
+            };
+        }
+        
+        if (error.includes('error sending reset code')) {
+            return {
+                title: "Email Error",
+                message: "Unable to send the reset code to your email. Please try again later."
+            };
+        }
+        
+        if (error.includes('network') || error.includes('fetch')) {
+            return {
+                title: "Connection Error",
+                message: "Unable to connect to the server. Please check your internet connection and try again."
+            };
+        }
+        
+        if (error.includes('timeout')) {
+            return {
+                title: "Request Timeout",
+                message: "The request took too long to complete. Please try again."
+            };
+        }
+        
+        return {
+            title: "Request Error",
+            message: "An unexpected error occurred while requesting the reset code. Please try again."
+        };
+    }
+
+    // Helper function to map password reset errors to user-friendly messages
+    private mapPasswordResetError(errorMessage: string): { title: string; message: string } {
+        const error = errorMessage.toLowerCase();
+        
+        if (error.includes('alias, code, new password and confirm password are required')) {
+            return {
+                title: "Missing Information",
+                message: "Please fill in all required fields: username, code, new password, and confirm password."
+            };
+        }
+        
+        if (error.includes('passwords do not match')) {
+            return {
+                title: "Password Mismatch",
+                message: "The new password and confirm password do not match. Please try again."
+            };
+        }
+        
+        if (error.includes('password must be at least 6 characters long')) {
+            return {
+                title: "Password Too Short",
+                message: "The new password must be at least 6 characters long."
+            };
+        }
+        
+        if (error.includes('invalid or expired reset code')) {
+            return {
+                title: "Invalid Code",
+                message: "The reset code is invalid or has expired. Please request a new code."
+            };
+        }
+        
+        if (error.includes('error resetting password')) {
+            return {
+                title: "Reset Error",
+                message: "Unable to reset your password. Please try again later."
+            };
+        }
+        
+        if (error.includes('network') || error.includes('fetch')) {
+            return {
+                title: "Connection Error",
+                message: "Unable to connect to the server. Please check your internet connection and try again."
+            };
+        }
+        
+        if (error.includes('timeout')) {
+            return {
+                title: "Request Timeout",
+                message: "The request took too long to complete. Please try again."
+            };
+        }
+        
+        return {
+            title: "Reset Error",
+            message: "An unexpected error occurred while resetting your password. Please try again."
+        };
+    }
+
+    // Helper function to show error modal
+    private showErrorModal(message: string, title: string = "Error"): void {
+        const modal = PongModal({
+            message: message,
+            title: title,
+            type: 'error',
+            onClose: () => {
+                // Optional: any cleanup when modal closes
+            }
+        });
+        document.body.appendChild(modal);
+    }
+
+    // Helper function to show success modal
+    private showSuccessModal(message: string, title: string = "Success"): void {
+        const modal = PongModal({
+            message: message,
+            title: title,
+            type: 'success',
+            onClose: () => {
+                // Optional: any cleanup when modal closes
+            }
+        });
+        document.body.appendChild(modal);
+    }
 
     public render(parent: HTMLElement = document.body): void {
         parent.innerHTML = '';
@@ -225,18 +349,20 @@ export class ForgotPassword extends AView {
                 this.userAlias = data.alias;
                 this.currentStep = 'reset';
                 this.isLoading = false;
-                this.showSuccess('Código enviado para seu e-mail!');
+                this.showSuccessModal('Código enviado para seu e-mail!', 'Código Enviado');
                 this.render();
             } else {
                 const errorResponse = await response.json();
                 this.isLoading = false;
                 this.render();
-                this.showError(`Erro: ${errorResponse.error || 'Falha ao solicitar reset'}`);
+                const mappedError = this.mapRequestResetError(errorResponse.error);
+                this.showErrorModal(mappedError.message, mappedError.title);
             }
         } catch (error) {
             this.isLoading = false;
             this.render();
-            this.showError(`Erro ao solicitar reset: ${error}`);
+            const mappedError = this.mapRequestResetError(String(error));
+            this.showErrorModal(mappedError.message, mappedError.title);
         }
     }
 
@@ -247,7 +373,7 @@ export class ForgotPassword extends AView {
         const confirmPassword = String(formData.get('confirmPassword'));
         
         if (password !== confirmPassword) {
-            this.showError('As senhas não coincidem!');
+            this.showErrorModal('As senhas não coincidem!', 'Password Mismatch');
             return;
         }
 
@@ -271,7 +397,7 @@ export class ForgotPassword extends AView {
 
             if (response.ok) {
                 this.isLoading = false;
-                this.showSuccess('Senha redefinida com sucesso!');
+                this.showSuccessModal('Senha redefinida com sucesso!', 'Password Reset Success');
                 setTimeout(() => {
                     navigateTo('/login');
                 }, 2000);
@@ -279,39 +405,15 @@ export class ForgotPassword extends AView {
                 const errorResponse = await response.json();
                 this.isLoading = false;
                 this.render();
-                this.showError(`Erro: ${errorResponse.error || 'Falha ao redefinir senha'}`);
+                const mappedError = this.mapPasswordResetError(errorResponse.error);
+                this.showErrorModal(mappedError.message, mappedError.title);
             }
         } catch (error) {
             this.isLoading = false;
             this.render();
-            this.showError(`Erro ao redefinir senha: ${error}`);
+            const mappedError = this.mapPasswordResetError(String(error));
+            this.showErrorModal(mappedError.message, mappedError.title);
         }
-    }
-
-    private showSuccess(message: string): void {
-        const successDiv = document.createElement("div");
-        successDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
-        successDiv.textContent = message;
-        document.body.appendChild(successDiv);
-
-        setTimeout(() => {
-            if (successDiv.parentNode) {
-                successDiv.parentNode.removeChild(successDiv);
-            }
-        }, 3000);
-    }
-
-    private showError(message: string): void {
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
-        errorDiv.textContent = message;
-        document.body.appendChild(errorDiv);
-
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 3000);
     }
 
     public dispose(): void {

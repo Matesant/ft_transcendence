@@ -3,10 +3,95 @@ import { PongHeaderPublic }  from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
 import { apiUrl } from "../../utils/api";
+import { PongModal } from "../../components/ui/PongModal";
 
 export class Register extends AView {
 
     private elements: HTMLElement[] = [];
+
+    // Helper function to map backend errors to user-friendly messages
+    private mapRegistrationError(errorMessage: string): { title: string; message: string } {
+        const error = errorMessage.toLowerCase();
+        
+        // Map specific backend errors
+        if (error.includes('alias or email already exists') || error.includes('alias, email and password are required')) {
+            return {
+                title: "Registration Failed",
+                message: "This username or email is already registered. Please choose a different one."
+            };
+        }
+        
+        if (error.includes('alias, email and password are required')) {
+            return {
+                title: "Missing Information",
+                message: "Please fill in all required fields: username, email, and password."
+            };
+        }
+        
+        if (error.includes('network') || error.includes('fetch')) {
+            return {
+                title: "Connection Error",
+                message: "Unable to connect to the server. Please check your internet connection and try again."
+            };
+        }
+        
+        if (error.includes('timeout')) {
+            return {
+                title: "Request Timeout",
+                message: "The request took too long to complete. Please try again."
+            };
+        }
+        
+        // Default error mapping
+        return {
+            title: "Registration Error",
+            message: "An unexpected error occurred during registration. Please try again."
+        };
+    }
+
+    // Helper function to map login errors to user-friendly messages
+    private mapLoginError(errorMessage: string): { title: string; message: string } {
+        const error = errorMessage.toLowerCase();
+        
+        if (error.includes('invalid credentials') || error.includes('wrong password')) {
+            return {
+                title: "Login Failed",
+                message: "Invalid username or password. Please check your credentials and try again."
+            };
+        }
+        
+        if (error.includes('user not found')) {
+            return {
+                title: "User Not Found",
+                message: "No account found with this username. Please check your username or register a new account."
+            };
+        }
+        
+        if (error.includes('network') || error.includes('fetch')) {
+            return {
+                title: "Connection Error",
+                message: "Unable to connect to the server. Please check your internet connection and try again."
+            };
+        }
+        
+        return {
+            title: "Login Error",
+            message: "An unexpected error occurred during login. Please try again."
+        };
+    }
+
+    // Helper function to show error modal
+    private showErrorModal(message: string, title: string = "Error"): void {
+        const modal = PongModal({
+            message: message,
+            title: title,
+            type: 'error',
+            onClose: () => {
+                // Optional: any cleanup when modal closes
+            }
+        });
+        document.body.appendChild(modal);
+    }
 
     public render(parent: HTMLElement = document.body): void {
         parent.innerHTML = '';
@@ -74,8 +159,6 @@ export class Register extends AView {
         });
         form.appendChild(submitBtn);
 
-
-
         const divider = document.createElement('div');
         divider.className = 'flex items-center my-4';
         divider.innerHTML = `
@@ -84,8 +167,6 @@ export class Register extends AView {
             <div class="flex-1 border-t border-white/20"></div>
         `;
         form.appendChild(divider);
-
-
 
         const googleBtn = PongButton({
             text: '',
@@ -160,17 +241,21 @@ export class Register extends AView {
                             navigateTo('/dashboard');
                         } else {
                             const loginError = await loginResponse.json();
-                            main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${loginError.error}</h1>`;
+                            const mappedError = this.mapLoginError(loginError.error);
+                            this.showErrorModal(mappedError.message, mappedError.title);
                         }
                     } catch (loginError) {
-                        main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Login Failed: ${loginError}</h1>`;
+                        const mappedError = this.mapLoginError(String(loginError));
+                        this.showErrorModal(mappedError.message, mappedError.title);
                     }
                 } else {
                     const errorResponse = await response.json();
-                    main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Registration Failed: ${errorResponse.error}</h1>`;
+                    const mappedError = this.mapRegistrationError(errorResponse.error);
+                    this.showErrorModal(mappedError.message, mappedError.title);
                 }
             } catch (error) {
-                main.innerHTML = `<h1 class='text-center text-2xl font-bold text-red-600'>Registration Failed: ${error}</h1>`;
+                const mappedError = this.mapRegistrationError(String(error));
+                this.showErrorModal(mappedError.message, mappedError.title);
             }
         });
     } 
