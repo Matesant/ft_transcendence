@@ -5,7 +5,7 @@ export default async function googleRoutes(fastify) {
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    'http://localhost:3001/auth/google/callback'
+    process.env.GOOGLE_REDIRECT_URI
   )
 
   fastify.get('/google', async (request, reply) => {
@@ -35,7 +35,7 @@ export default async function googleRoutes(fastify) {
       const { data: userInfo } = await oauth2.userinfo.get()
 
       const email = userInfo.email
-      const alias = userInfo.name || email
+      const alias = (userInfo.name?.split(' ')[0]) || email
 
       if (!email) {
         throw new Error('E-mail não retornado pelo Google.')
@@ -76,7 +76,7 @@ export default async function googleRoutes(fastify) {
         maxAge: 24 * 60 * 60 * 1000
       })
 
-      reply.redirect('http://localhost:8080/dashboard')
+     reply.redirect(process.env.FRONTEND_REDIRECT_URI)
     } catch (err) {
       reply.status(500).send({
         error: 'Erro interno na autenticação com o Google',
