@@ -1,4 +1,5 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
+
 class Enable2faBtn extends HTMLElement {
     constructor() {
       super();

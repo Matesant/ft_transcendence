@@ -1,3 +1,5 @@
+import { apiUrl } from '../utils/api';
+
 class DisablefaBtn extends HTMLElement {
     constructor() {
       super();
