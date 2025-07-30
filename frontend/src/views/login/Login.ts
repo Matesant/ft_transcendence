@@ -3,6 +3,7 @@ import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { PongInput } from "../../components/ui";
 import { t } from "../../utils/LanguageContext";
 import { navigateTo } from "../../router/Router";
+import { login } from "../../utils/auth";
 
 export class Login extends AView {
     
@@ -22,8 +23,8 @@ export class Login extends AView {
         const bg = document.createElement('div');
         bg.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-        // Header com botão Voltar
-        const header = PongHeaderPublic({ homeOnly: true });
+        // Header com botão Voltar (no language selector)
+        const header = PongHeaderPublic();
         bg.appendChild(header);
 
         // Conteúdo central
@@ -151,8 +152,25 @@ export class Login extends AView {
         parent.appendChild(bg);
         this.elements.push(bg);
 
-        // Submit handler (if needed)
-        // form.addEventListener('submit', ...);
+        // Error message
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-red-400 text-center mt-4 mb-2 font-semibold hidden';
+        form.appendChild(errorMsg);
+
+        // Submit handler
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const alias = (aliasInput as HTMLInputElement).value;
+            const password = (passInput as HTMLInputElement).value;
+            errorMsg.classList.add('hidden');
+            const ok = await login(alias, password);
+            if (ok) {
+                navigateTo('/dashboard');
+            } else {
+                errorMsg.textContent = t('loginError');
+                errorMsg.classList.remove('hidden');
+            }
+        });
     }
 
     public dispose(): void {

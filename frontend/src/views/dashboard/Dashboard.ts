@@ -7,8 +7,8 @@ import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 export class Dashboard extends AView {
   public render(parent: HTMLElement = document.body): void {
     parent.innerHTML = '';
-    // Add header with language selector
-    const header = PongHeaderPublic();
+    // Add header with language selector (dashboard is first page after login)
+    const header = PongHeaderPublic({ homeOnly: true });
     parent.appendChild(header);
 
     // Create main dashboard container using only Tailwind classes

@@ -25,7 +25,7 @@ export function PongHeader({ rightContent = null, homeOnly = false }: PongHeader
   header.appendChild(logo);
 
 
-  // Always show language selector on the right
+  // Only show language selector on homepage or dashboard
   const rightBox = document.createElement('div');
   rightBox.className = 'flex items-center gap-4';
   if (homeOnly) {
@@ -36,12 +36,13 @@ export function PongHeader({ rightContent = null, homeOnly = false }: PongHeader
       extraClass: 'w-auto px-4 py-2 text-base font-semibold rounded ml-4'
     });
     rightBox.appendChild(backBtn);
+    // Show language selector only on homepage or dashboard
+    const langSelector = document.createElement('language-selector');
+    rightBox.appendChild(langSelector);
   }
   if (rightContent) {
     rightBox.appendChild(rightContent);
   }
-  const langSelector = document.createElement('language-selector');
-  rightBox.appendChild(langSelector);
   header.appendChild(rightBox);
 
   return header;

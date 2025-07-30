@@ -66,6 +66,25 @@ services:
     networks:
       - backend
 
+  frontend:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: npm run start
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+
+  tailwind:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: npx tailwindcss -i src/style.css -o public/style.css --watch
+    # No ports needed
+
 networks:
   backend:
     name: backend

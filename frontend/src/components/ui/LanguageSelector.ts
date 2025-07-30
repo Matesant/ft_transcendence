@@ -44,7 +44,10 @@ export class LanguageSelector extends HTMLElement {
       opt.textContent = STRINGS[l][`language${l.charAt(0).toUpperCase() + l.slice(1)}`] || l;
       this.select.appendChild(opt);
     });
-    this.select.value = lang;
+    // Always set the value after options are rendered, and force update if needed
+    setTimeout(() => {
+      this.select.value = lang;
+    }, 0);
   }
 }
 

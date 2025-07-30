@@ -43,25 +43,20 @@ logs:
 
 # Install frontend dependencies
 frontend-install:
-	@echo "$(CYAN)Installing frontend dependencies...$(RESET)"
-	@cd $(FRONTEND_DIR) && npm install
+	@echo "$(CYAN)Installing frontend dependencies (Docker)...$(RESET)"
+	docker run --rm -v "$(PWD)/$(FRONTEND_DIR):/app" -w /app node:18 npm install
 	@echo "$(GREEN)✅ Frontend dependencies installed!$(RESET)"
 
 # Start frontend development
 frontend-dev:
-	@echo "$(CYAN)Starting frontend development...$(RESET)"
-	@$(MAKE) kill-frontend
-	@cd $(FRONTEND_DIR) && nohup npx tailwindcss -i src/style.css -o public/style.css --watch > .tailwind.log 2>&1 & echo $$! > .tailwind.pid
-	@sleep 2
-	@cd $(FRONTEND_DIR) && nohup npm run start > .frontend.log 2>&1 & echo $$! > .frontend.pid
+	@echo "$(CYAN)Starting frontend development (Docker Compose)...$(RESET)"
+	docker compose up -d tailwind frontend
 	@echo "$(GREEN)✅ Frontend development started!$(RESET)"
-	@echo "$(GREEN)🌐 Frontend available at: http://localhost:8080$(RESET)"
 
 # Stop frontend processes
 frontend-stop:
 	@echo "$(YELLOW)Stopping frontend processes...$(RESET)"
-	@if [ -f $(FRONTEND_DIR)/.tailwind.pid ]; then kill `cat $(FRONTEND_DIR)/.tailwind.pid` 2>/dev/null || true; rm -f $(FRONTEND_DIR)/.tailwind.pid; fi
-	@if [ -f $(FRONTEND_DIR)/.frontend.pid ]; then kill `cat $(FRONTEND_DIR)/.frontend.pid` 2>/dev/null || true; rm -f $(FRONTEND_DIR)/.frontend.pid; fi
+	docker compose stop tailwind frontend
 	@echo "$(GREEN)✅ Frontend processes stopped!$(RESET)"
 
 # Kill processes on ports
@@ -77,11 +72,18 @@ clean: down
 # Full cleanup
 fclean: down
 	@echo "$(RED)Full cleanup...$(RESET)"
+	# Stop and remove all containers, including orphans
 	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
+	# Remove all stopped containers, dangling images, unused networks, and volumes
 	docker system prune -af --volumes
+	# Remove any container that might still be holding port 8080
+	-docker ps -aq --filter "publish=8080" | xargs -r docker rm -f
+	# Kill any process using port 8080 (just in case)
+	-ss -ltnp 'sport = :8080' | awk '{print $$NF}' | grep -o '[0-9]*' | xargs -r kill -9
+	# Remove frontend logs and PID files
+	@rm -f $(FRONTEND_DIR)/.frontend.log $(FRONTEND_DIR)/.tailwind.log $(FRONTEND_DIR)/.frontend.pid $(FRONTEND_DIR)/.tailwind.pid
+	# Remove SQLite DBs if present
 	@rm -rf services/*/data/*.db
-	@$(MAKE) frontend-stop
-	@rm -f $(FRONTEND_DIR)/.frontend.log $(FRONTEND_DIR)/.tailwind.log
 	@echo "$(GREEN)✅ Full cleanup complete!$(RESET)"
 
 # Rebuild everything from scratch
