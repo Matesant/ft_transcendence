@@ -41,3 +41,7 @@ tmp
 **/server.key
 **/server.crt
 **/bundle.js
+
+root-ca.key
+server.csr
+root-ca.crt

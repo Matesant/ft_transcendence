@@ -25,11 +25,15 @@ dev: up-dev frontend-install frontend-dev
 	@echo "$(GREEN)🚀 Development environment ready!$(RESET)"
 
 up:
+	@echo "$(CYAN)Setting up environment...$(RESET)"
+	@./ft_transcendence.sh setup
 	@echo "$(CYAN)Starting all services (backend + frontend)...$(RESET)"
 	docker compose --profile all up -d
 	@echo "$(GREEN)✅ All services started!$(RESET)"
 
 up-dev:
+	@echo "$(CYAN)Setting up environment...$(RESET)"
+	@./ft_transcendence.sh setup
 	@echo "$(CYAN)Starting backend services for development...$(RESET)"
 	docker compose --profile dev up -d
 	@echo "$(GREEN)✅ Backend development services started!$(RESET)"
@@ -83,6 +87,7 @@ fclean: down
 	@rm -rf services/*/data/*.db
 	@$(MAKE) frontend-stop
 	@rm -f $(FRONTEND_DIR)/.frontend.log $(FRONTEND_DIR)/.tailwind.log
+	@./ft_transcendence.sh clear
 	@echo "$(GREEN)✅ Full cleanup complete!$(RESET)"
 
 # Rebuild everything from scratch
