@@ -3,15 +3,22 @@ import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { PongHeader, PongFooter, PongInput, PongButton, PongSpinner } from "../../components/ui";
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
+import { t } from "../../utils/LanguageContext";
 
 export class ForgotPassword extends AView {
     
-    private elements: HTMLElement[] = [];
+  private elements: HTMLElement[] = [];
+  private languageListener?: () => void;
     private currentStep: 'request' | 'reset' = 'request';
     private userAlias: string = '';
     private isLoading: boolean = false;
 
     public render(parent: HTMLElement = document.body): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+    }
+    this.languageListener = () => this.render(parent);
+    window.addEventListener('language-changed', this.languageListener);
         parent.innerHTML = '';
         parent.className = '';
 
@@ -34,13 +41,13 @@ export class ForgotPassword extends AView {
         // Título
         const title = document.createElement('h2');
         title.className = 'text-2xl font-bold text-center text-white mb-2';
-        title.textContent = this.currentStep === 'request' ? 'Esqueceu sua senha?' : 'Redefinir Senha';
+        title.textContent = this.currentStep === 'request' ? t('forgotPasswordTitle') : t('resetPasswordTitle');
 
         const subtitle = document.createElement('p');
         subtitle.className = 'text-center text-white/70 text-sm mb-8';
         subtitle.textContent = this.currentStep === 'request' 
-            ? 'Digite seu alias para receber um código de verificação no e-mail'
-            : 'Digite o código recebido no e-mail e sua nova senha';
+            ? t('forgotPasswordSubtitleRequest')
+            : t('forgotPasswordSubtitleReset');
 
         formContainer.appendChild(title);
         formContainer.appendChild(subtitle);
@@ -88,18 +95,18 @@ export class ForgotPassword extends AView {
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'alias';
         aliasLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        aliasLabel.textContent = 'Alias';
+        aliasLabel.textContent = t('username');
         aliasDiv.appendChild(aliasLabel);
         
         const aliasInput = PongInput({ id: 'alias', name: 'alias', type: 'text', required: true });
         aliasInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
-        aliasInput.placeholder = 'Digite seu alias';
+        aliasInput.placeholder = t('enterAlias');
         aliasDiv.appendChild(aliasInput);
         form.appendChild(aliasDiv);
 
         // Botão submit
         const submitBtn = PongButton({
-            text: this.isLoading ? '' : 'Enviar Código',
+            text: this.isLoading ? '' : t('sendCode'),
             variant: 'primary',
             extraClass: `w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25 mb-6 flex items-center justify-center ${this.isLoading ? 'opacity-75 cursor-not-allowed' : ''}`,
         });
@@ -108,7 +115,7 @@ export class ForgotPassword extends AView {
             const spinner = PongSpinner({ size: 'sm', extraClass: 'border-white border-t-white/30' });
             const loadingText = document.createElement('span');
             loadingText.className = 'ml-2';
-            loadingText.textContent = 'Enviando...';
+            loadingText.textContent = t('sending');
             submitBtn.appendChild(spinner);
             submitBtn.appendChild(loadingText);
         }
@@ -121,7 +128,7 @@ export class ForgotPassword extends AView {
         const backToLoginLink = document.createElement('a');
         backToLoginLink.href = '#';
         backToLoginLink.className = 'text-sm text-white/60 hover:text-white/80 cursor-pointer transition-colors duration-200';
-        backToLoginLink.textContent = 'Voltar para o login';
+        backToLoginLink.textContent = t('backToLogin');
         backToLoginLink.addEventListener('click', (e) => {
             e.preventDefault();
             navigateTo('/login');
@@ -136,7 +143,7 @@ export class ForgotPassword extends AView {
         aliasInfoDiv.className = 'mb-4 p-3 bg-black/20 rounded-lg';
         const aliasInfoLabel = document.createElement('span');
         aliasInfoLabel.className = 'text-sm text-white/70';
-        aliasInfoLabel.textContent = `Redefinindo senha para: ${this.userAlias}`;
+        aliasInfoLabel.textContent = t('resettingPasswordFor') + ': ' + this.userAlias;
         aliasInfoDiv.appendChild(aliasInfoLabel);
         form.appendChild(aliasInfoDiv);
 
@@ -146,12 +153,12 @@ export class ForgotPassword extends AView {
         const codeLabel = document.createElement('label');
         codeLabel.htmlFor = 'code';
         codeLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        codeLabel.textContent = 'Código de Verificação';
+        codeLabel.textContent = t('verificationCode');
         codeDiv.appendChild(codeLabel);
         
         const codeInput = PongInput({ id: 'code', name: 'code', type: 'text', required: true });
         codeInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
-        codeInput.placeholder = 'Digite o código recebido';
+        codeInput.placeholder = t('enterVerificationCode');
         codeDiv.appendChild(codeInput);
         form.appendChild(codeDiv);
 
@@ -161,12 +168,12 @@ export class ForgotPassword extends AView {
         const passwordLabel = document.createElement('label');
         passwordLabel.htmlFor = 'password';
         passwordLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        passwordLabel.textContent = 'Nova Senha';
+        passwordLabel.textContent = t('newPassword');
         passwordDiv.appendChild(passwordLabel);
         
         const passwordInput = PongInput({ id: 'password', name: 'password', type: 'password', required: true });
         passwordInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
-        passwordInput.placeholder = 'Digite sua nova senha';
+        passwordInput.placeholder = t('enterNewPassword');
         passwordDiv.appendChild(passwordInput);
         form.appendChild(passwordDiv);
 
@@ -176,18 +183,18 @@ export class ForgotPassword extends AView {
         const confirmPasswordLabel = document.createElement('label');
         confirmPasswordLabel.htmlFor = 'confirmPassword';
         confirmPasswordLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        confirmPasswordLabel.textContent = 'Confirmar Nova Senha';
+        confirmPasswordLabel.textContent = t('confirmNewPassword');
         confirmPasswordDiv.appendChild(confirmPasswordLabel);
         
         const confirmPasswordInput = PongInput({ id: 'confirmPassword', name: 'confirmPassword', type: 'password', required: true });
         confirmPasswordInput.className = 'w-full p-4 border-none rounded-lg bg-black/20 text-white text-base placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30';
-        confirmPasswordInput.placeholder = 'Confirme sua nova senha';
+        confirmPasswordInput.placeholder = t('confirmNewPassword');
         confirmPasswordDiv.appendChild(confirmPasswordInput);
         form.appendChild(confirmPasswordDiv);
 
         // Botão submit
         const submitBtn = PongButton({
-            text: this.isLoading ? '' : 'Redefinir Senha',
+            text: this.isLoading ? '' : t('resetPasswordButton'),
             variant: 'primary',
             extraClass: `w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25 mb-6 flex items-center justify-center ${this.isLoading ? 'opacity-75 cursor-not-allowed' : ''}`,
         });
@@ -196,7 +203,7 @@ export class ForgotPassword extends AView {
             const spinner = PongSpinner({ size: 'sm', extraClass: 'border-white border-t-white/30' });
             const loadingText = document.createElement('span');
             loadingText.className = 'ml-2';
-            loadingText.textContent = 'Redefinindo...';
+            loadingText.textContent = t('resetting');
             submitBtn.appendChild(spinner);
             submitBtn.appendChild(loadingText);
         }
@@ -209,7 +216,7 @@ export class ForgotPassword extends AView {
         const backToRequestLink = document.createElement('a');
         backToRequestLink.href = '#';
         backToRequestLink.className = 'text-sm text-white/60 hover:text-white/80 cursor-pointer transition-colors duration-200';
-        backToRequestLink.textContent = 'Voltar para solicitar código';
+        backToRequestLink.textContent = t('backToRequestCode');
         backToRequestLink.addEventListener('click', (e) => {
             e.preventDefault();
             this.currentStep = 'request';
@@ -243,18 +250,18 @@ export class ForgotPassword extends AView {
                 this.userAlias = data.alias;
                 this.currentStep = 'reset';
                 this.isLoading = false;
-                this.showSuccess('Código enviado para seu e-mail!');
+                this.showSuccess(t('codeSent'));
                 this.render();
             } else {
                 const errorResponse = await response.json();
                 this.isLoading = false;
                 this.render();
-                this.showError(`Erro: ${errorResponse.error || 'Falha ao solicitar reset'}`);
+                this.showError(t('error') + ': ' + (errorResponse.error || t('requestResetFailed')));
             }
         } catch (error) {
             this.isLoading = false;
             this.render();
-            this.showError(`Erro ao solicitar reset: ${error}`);
+            this.showError(t('requestResetError') + ': ' + error);
         }
     }
 
@@ -265,7 +272,7 @@ export class ForgotPassword extends AView {
         const confirmPassword = String(formData.get('confirmPassword'));
         
         if (password !== confirmPassword) {
-            this.showError('As senhas não coincidem!');
+            this.showError(t('passwordMismatch'));
             return;
         }
 
@@ -290,7 +297,7 @@ export class ForgotPassword extends AView {
 
             if (response.ok) {
                 this.isLoading = false;
-                this.showSuccess('Senha redefinida com sucesso!');
+                this.showSuccess(t('passwordChanged'));
                 setTimeout(() => {
                     navigateTo('/login');
                 }, 2000);
@@ -298,12 +305,12 @@ export class ForgotPassword extends AView {
                 const errorResponse = await response.json();
                 this.isLoading = false;
                 this.render();
-                this.showError(`Erro: ${errorResponse.error || 'Falha ao redefinir senha'}`);
+                this.showError(t('error') + ': ' + (errorResponse.error || t('resetPasswordFailed')));
             }
         } catch (error) {
             this.isLoading = false;
             this.render();
-            this.showError(`Erro ao redefinir senha: ${error}`);
+            this.showError(t('resetPasswordError') + ': ' + error);
         }
     }
 
@@ -334,6 +341,10 @@ export class ForgotPassword extends AView {
     }
 
     public dispose(): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+      this.languageListener = undefined;
+    }
         Array.from(document.body.children).forEach(child => {
               document.body.removeChild(child);
           });

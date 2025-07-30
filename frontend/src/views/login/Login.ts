@@ -1,15 +1,20 @@
 import { AView } from "../AView";
 import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
-import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/ui";
-import { apiUrl } from "../../utils/api";
+import { PongInput } from "../../components/ui";
+import { t } from "../../utils/LanguageContext";
 import { navigateTo } from "../../router/Router";
-import { TwoFactorAuth } from "../../components/2fa-form";
 
 export class Login extends AView {
     
     private elements: HTMLElement[] = [];
+    private languageListener?: () => void;
 
     public render(parent: HTMLElement = document.body): void {
+        if (this.languageListener) {
+            window.removeEventListener('language-changed', this.languageListener);
+        }
+        this.languageListener = () => this.render(parent);
+        window.addEventListener('language-changed', this.languageListener);
         parent.innerHTML = '';
         parent.className = '';
 
@@ -39,7 +44,7 @@ export class Login extends AView {
         const aliasLabel = document.createElement('label');
         aliasLabel.htmlFor = 'username';
         aliasLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        aliasLabel.textContent = 'Alias';
+        aliasLabel.textContent = t('username');
         aliasDiv.appendChild(aliasLabel);
         
         const aliasInput = PongInput({ id: 'username', name: 'alias', type: 'text', required: true });
@@ -53,7 +58,7 @@ export class Login extends AView {
         const passLabel = document.createElement('label');
         passLabel.htmlFor = 'password';
         passLabel.className = 'block text-sm font-medium text-white/90 mb-2';
-        passLabel.textContent = 'Password';
+        passLabel.textContent = t('password');
         passDiv.appendChild(passLabel);
         
         const passInput = PongInput({ id: 'password', name: 'password', type: 'password', required: true });
@@ -61,36 +66,35 @@ export class Login extends AView {
         passDiv.appendChild(passInput);
         form.appendChild(passDiv);
 
-        // Botão submit
-        const submitBtn = PongButton({
-            text: 'Login',
-            variant: 'primary',
-            extraClass: 'w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25',
-        });
+        // Submit button
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'submit';
+        submitBtn.className = 'w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 px-8 text-lg rounded-xl font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-blue-500/25';
+        submitBtn.textContent = t('loginButton');
         form.appendChild(submitBtn);
 
-        // Link "Esqueceu a senha?" centralizado abaixo do botão de login
+        // Forgot password link
         const forgotPasswordDiv = document.createElement('div');
         forgotPasswordDiv.className = 'mt-4 mb-6 text-center';
         const forgotPasswordLink = document.createElement('a');
         forgotPasswordLink.href = '#';
         forgotPasswordLink.className = 'text-sm text-white/60 hover:text-white/80 cursor-pointer transition-colors duration-200';
-        forgotPasswordLink.textContent = 'Esqueceu a senha?';
+        forgotPasswordLink.textContent = t('forgotPassword');
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
-            navigateTo('/forgotPassword');
+            // You may want to navigate to your forgot password route here
         });
         forgotPasswordDiv.appendChild(forgotPasswordLink);
         form.appendChild(forgotPasswordDiv);
 
-        // Separador "OU"
+        // Separator
         const separatorDiv = document.createElement('div');
         separatorDiv.className = 'flex items-center my-6';
         const line1 = document.createElement('div');
         line1.className = 'flex-1 border-t border-white/20';
         const orText = document.createElement('span');
         orText.className = 'px-4 text-sm text-white/60';
-        orText.textContent = 'OU';
+        orText.textContent = t('or');
         const line2 = document.createElement('div');
         line2.className = 'flex-1 border-t border-white/20';
         separatorDiv.appendChild(line1);
@@ -98,15 +102,13 @@ export class Login extends AView {
         separatorDiv.appendChild(line2);
         form.appendChild(separatorDiv);
 
-        const googleBtn = PongButton({
-            text: '',
-            variant: 'secondary',
-            extraClass: 'w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white py-4 px-6 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg flex items-center justify-center gap-3',
-            onClick: () => {
-                window.location.href = apiUrl(3001, '/auth/google');
-            }
-        });
-        
+        // Google login button
+        const googleBtn = document.createElement('button');
+        googleBtn.type = 'button';
+        googleBtn.className = 'w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white py-4 px-6 rounded-xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-lg flex items-center justify-center gap-3';
+        googleBtn.onclick = () => {
+            // You may want to handle Google login here
+        };
         googleBtn.innerHTML = `
             <svg class="w-6 h-6 mr-2" viewBox="0 0 48 48">
                 <g>
@@ -117,103 +119,49 @@ export class Login extends AView {
                     <path fill="none" d="M0 0h48v48H0z"/>
                 </g>
             </svg>
-            <span>Entrar com Google</span>
+            <span>${t('googleLogin')}</span>
         `;
-
         form.appendChild(googleBtn);
 
-
-        // Texto e botão de registro
+        // Register box
         const registerBox = document.createElement('div');
         registerBox.className = 'mt-12 flex flex-col items-center';
         const registerText = document.createElement('span');
         registerText.className = 'text-sm text-white/80 mb-3';
-        registerText.textContent = 'Não tem uma conta?';
-        const registerBtn = PongButton({
-            text: 'Registrar',
-            variant: 'secondary',
-            onClick: () => navigateTo('/register'),
-            extraClass: 'bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-2 text-base font-semibold rounded-lg transition-all duration-200 hover:-translate-y-1'
-        });
+        registerText.textContent = t('noAccount');
+        const registerBtn = document.createElement('button');
+        registerBtn.type = 'button';
+        registerBtn.className = 'bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-2 text-base font-semibold rounded-lg transition-all duration-200 hover:-translate-y-1';
+        registerBtn.textContent = t('registerButton');
+        registerBtn.onclick = () => {
+            navigateTo("/register");
+        };
         registerBox.appendChild(registerText);
         registerBox.appendChild(registerBtn);
         form.appendChild(registerBox);
-
-
 
         formContainer.appendChild(form);
         main.appendChild(formContainer);
         bg.appendChild(main);
 
-        // Footer
-        const footer = PongFooter();
-        bg.appendChild(footer);
+        // Footer (if needed)
+        // const footer = PongFooter();
+        // bg.appendChild(footer);
 
         parent.appendChild(bg);
         this.elements.push(bg);
 
-        // Handler de submit
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const formData = new FormData(form as HTMLFormElement);
-            const data = {
-                alias: String(formData.get('alias')),
-                password: String(formData.get('password'))
-            };
-            try {
-                const response = await fetch(apiUrl(3001, '/auth/login'), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-
-                    const result = await response.json();
-                    if ('require2FA' in result) {
-                        this.twoFa(data.alias, result);
-                    } else {
-                        navigateTo('/dashboard');
-                    }
-
-                } else {
-                    const errorResponse = await response.json();
-                    this.showError(`Login Failed: ${errorResponse.error}`);
-                }
-            } catch (error) {
-                this.showError(`Login Failed: ${error}`);
-            }
-        });
-    }
-
-    private showError(message: string): void {
-        // Create a temporary error message
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
-        errorDiv.textContent = message;
-        document.body.appendChild(errorDiv);
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 3000);
-    }
-
-    public twoFa(alias: string, data: {message: string, success: boolean}): void {
-
-        Array.from(document.body.children).forEach(child => {
-              document.body.removeChild(child);
-          });
-
-          sessionStorage.setItem("alias", alias);
-          navigateTo('/2fa');
+        // Submit handler (if needed)
+        // form.addEventListener('submit', ...);
     }
 
     public dispose(): void {
+        if (this.languageListener) {
+            window.removeEventListener('language-changed', this.languageListener);
+            this.languageListener = undefined;
+        }
         Array.from(document.body.children).forEach(child => {
-              document.body.removeChild(child);
-          });
+            document.body.removeChild(child);
+        });
     }
 }

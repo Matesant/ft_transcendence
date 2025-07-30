@@ -248,10 +248,7 @@ export class UIManager {
         const languageLabels: Record<Language, string> = {
             ptBR: "Português (Brasil)",
             en: "English",
-            es: "Español",
-            fr: "Français",
-            de: "Deutsch",
-            ru: "Русский"
+            es: "Español"
         };
 
         for (const lang of Object.keys(languageLabels) as Language[]) {

@@ -1,3 +1,4 @@
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 import { AView } from "../AView";
 import { router } from "../../router/Router";
 import { apiUrl } from "../../utils/api";
@@ -6,41 +7,36 @@ export class Tournament extends AView {
     
     private element: HTMLElement;
 
-    public render(parent: HTMLElement = document.body): void {
-        // Create main tournament container using the same style as Dashboard
-        const tournamentContainer = document.createElement('div');
-        tournamentContainer.className = 'w-full min-h-screen max-h-screen overflow-y-auto p-2 pt-2 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans custom-scrollbar';
-        
-        // Header similar to Dashboard
-        const header = document.createElement('div');
-        header.className = 'flex justify-start items-center mb-4 w-full p-2 animate-slideDown';
-        header.innerHTML = `
-            <div class="flex items-center cursor-pointer transition-all duration-300 hover:scale-105" data-route="/dashboard">
-            <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
-            </div>
-        `;
+  public render(parent: HTMLElement = document.body): void {
+    parent.innerHTML = '';
+    // Add header with language selector
+    const header = PongHeaderPublic();
+    parent.appendChild(header);
 
-        // Main content container
-        const mainContent = document.createElement('div');
-        mainContent.className = 'flex flex-col gap-4 items-center w-full max-w-5xl animate-fadeInUp';
+    // Create main tournament container using the same style as Dashboard
+    const tournamentContainer = document.createElement('div');
+    tournamentContainer.className = 'w-full min-h-screen max-h-screen overflow-y-auto p-2 pt-2 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans custom-scrollbar';
 
-        // Content based on tournament state
-        const contentContainer = document.createElement('div');
-        contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-6 border border-white/20 shadow-2xl';
+    // Main content container
+    const mainContent = document.createElement('div');
+    mainContent.className = 'flex flex-col gap-4 items-center w-full max-w-5xl animate-fadeInUp';
 
-        // Check if there's an active tournament in the backend
-        this.checkTournamentState(contentContainer);
+    // Content based on tournament state
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'w-full max-w-4xl bg-white/10 backdrop-blur-3xl rounded-3xl p-6 border border-white/20 shadow-2xl';
 
-        // Assemble the layout
-        tournamentContainer.appendChild(header);
-        mainContent.appendChild(contentContainer);
-        tournamentContainer.appendChild(mainContent);
+    // Check if there's an active tournament in the backend
+    this.checkTournamentState(contentContainer);
 
-        // Append to parent
-        parent.appendChild(tournamentContainer);
+    // Assemble the layout
+    mainContent.appendChild(contentContainer);
+    tournamentContainer.appendChild(mainContent);
 
-        // Setup navigation
-        this.setupNavigation(tournamentContainer);
+    // Append to parent
+    parent.appendChild(tournamentContainer);
+
+    // Setup navigation
+    this.setupNavigation(tournamentContainer);
     }
 
     private async checkTournamentState(contentContainer: HTMLElement): Promise<void> {

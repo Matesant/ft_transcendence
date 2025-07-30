@@ -6,9 +6,15 @@ import { apiUrl } from "../../utils/api";
 
 export class Register extends AView {
 
-    private elements: HTMLElement[] = [];
+  private elements: HTMLElement[] = [];
+  private languageListener?: () => void;
 
     public render(parent: HTMLElement = document.body): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+    }
+    this.languageListener = () => this.render(parent);
+    window.addEventListener('language-changed', this.languageListener);
         parent.innerHTML = '';
 
         // Fundo branco simples
@@ -189,6 +195,10 @@ export class Register extends AView {
     } 
 
     public dispose(): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+      this.languageListener = undefined;
+    }
         Array.from(document.body.children).forEach(child => {
               document.body.removeChild(child);
           });

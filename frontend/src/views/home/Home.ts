@@ -2,29 +2,31 @@ import { AView } from "../AView";
 import { PongButton } from "../../components/ui";
 import { navigateTo } from "../../router/Router";
 import { PongFooter } from "../../components/ui/PongFooter";
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
+import { t } from "../../utils/LanguageContext";
 
 export class Home extends AView {
   private elements: HTMLElement[] = [];
+  private languageListener?: () => void;
+
+// ...existing code...
 
   public render(parent: HTMLElement = document.body): void {
+    // Remove previous language listener if any
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+    }
+    // Add language change listener to re-render the view
+    this.languageListener = () => this.render(parent);
+    window.addEventListener('language-changed', this.languageListener);
     parent.innerHTML = '';
 
     // Container principal com o mesmo estilo do lobby
     const container = document.createElement('div');
     container.className = 'min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-sans';
 
-    // Header
-    const header = document.createElement('header');
-    header.className = 'w-full flex justify-between items-center px-8 py-6';
-
-    // Logo/título com mesmo estilo
-    const logo = document.createElement('div');
-    logo.className = 'flex items-center cursor-pointer transition-all duration-300 hover:scale-105';
-    logo.innerHTML = `
-      <img src="/images/transcendence-logo.svg" alt="Transcendence Logo" class="max-h-36 w-auto drop-shadow-lg">
-    `;
-
-    header.appendChild(logo);
+    // Header com Language Selector
+    const header = PongHeaderPublic({ homeOnly: true });
 
     // Conteúdo central
     const main = document.createElement('main');
@@ -40,16 +42,16 @@ export class Home extends AView {
     
     const cardTitle = document.createElement('h1');
     cardTitle.className = 'text-5xl font-bold mb-6 text-white drop-shadow-lg';
-    cardTitle.textContent = '🏓 ft_transcendence';
+    cardTitle.textContent = t('homeTitle');
     
     // Descrição
     const desc = document.createElement('p');
     desc.className = 'text-lg text-white/80 mb-8 leading-relaxed';
-    desc.textContent = 'The classic Pong, reimagined for the 21st century.';
+    desc.textContent = t('homeDescription');
     
     // Botão PLAY NOW
     const playNowBtn = PongButton({
-      text: '🚀 PLAY NOW',
+      text: t('playNow'),
       variant: 'primary',
       onClick: () => navigateTo('/login')
     });
@@ -74,17 +76,17 @@ export class Home extends AView {
     
     const howToPlayTitle = document.createElement('h2');
     howToPlayTitle.className = 'text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3';
-    howToPlayTitle.innerHTML = '🎮 Como Jogar';
+    howToPlayTitle.innerHTML = t('howToPlayTitle');
     
     const tipsList = document.createElement('div');
     tipsList.className = 'space-y-6 text-left';
     
     const tips = [
-      { icon: '⬅️➡️', text: 'Use as setas ou A/D para mover sua raquete' },
-      { icon: '🎯', text: 'Rebata a bola para marcar pontos' },
-      { icon: '⚡', text: 'Primeiro a 5 pontos vence a partida' },
-      { icon: '🏆', text: 'Participe de torneios para ganhar ranking' },
-      { icon: '👥', text: 'Convide amigos para partidas personalizadas' }
+      { icon: '⬅️➡️', text: t('tipMove') },
+      { icon: '🎯', text: t('tipScore') },
+      { icon: '⚡', text: t('tipWin') },
+      { icon: '🏆', text: t('tipTournaments') },
+      { icon: '👥', text: t('tipInviteFriends') }
     ];
     
     tips.forEach(tip => {
@@ -114,8 +116,8 @@ export class Home extends AView {
     feature3D.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     feature3D.innerHTML = `
       <div class="text-4xl mb-4">🎮</div>
-      <h3 class="text-xl font-bold text-white mb-3">Totalmente em 3D</h3>
-      <p class="text-white/80 text-sm leading-relaxed">Gráficos modernos com efeitos visuais impressionantes e física realista</p>
+      <h3 class="text-xl font-bold text-white mb-3">${t('feature3DTitle')}</h3>
+      <p class="text-white/80 text-sm leading-relaxed">${t('feature3DDesc')}</p>
     `;
     
     // Feature 2 - Torneios e Online
@@ -123,8 +125,8 @@ export class Home extends AView {
     featureTournaments.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     featureTournaments.innerHTML = `
       <div class="text-4xl mb-4">🏆</div>
-      <h3 class="text-xl font-bold text-white mb-3">Torneios Locais e Partidas Online!</h3>
-      <p class="text-white/80 text-sm leading-relaxed">Compete em torneios épicos ou desafie jogadores do mundo todo</p>
+      <h3 class="text-xl font-bold text-white mb-3">${t('featureTournamentsTitle')}</h3>
+      <p class="text-white/80 text-sm leading-relaxed">${t('featureTournamentsDesc')}</p>
     `;
     
     // Feature 3 - Perfil Personalizado
@@ -132,8 +134,8 @@ export class Home extends AView {
     featureProfile.className = 'bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
     featureProfile.innerHTML = `
       <div class="text-4xl mb-4">👤</div>
-      <h3 class="text-xl font-bold text-white mb-3">Perfil Personalizado!</h3>
-      <p class="text-white/80 text-sm leading-relaxed">Customize seu avatar, acompanhe estatísticas e mostre suas conquistas</p>
+      <h3 class="text-xl font-bold text-white mb-3">${t('featureProfileTitle')}</h3>
+      <p class="text-white/80 text-sm leading-relaxed">${t('featureProfileDesc')}</p>
     `;
     
     featuresContainer.appendChild(feature3D);
@@ -147,7 +149,7 @@ export class Home extends AView {
     
     const creatorsTitle = document.createElement('h2');
     creatorsTitle.className = 'text-4xl font-bold text-white mb-12 text-center';
-    creatorsTitle.innerHTML = '👨‍💻 Criadores do Projeto';
+    creatorsTitle.innerHTML = t('creatorsTitle');
     
     const creatorsContainer = document.createElement('div');
     creatorsContainer.className = 'flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto';
@@ -284,6 +286,10 @@ export class Home extends AView {
   }
 
   public dispose(): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+      this.languageListener = undefined;
+    }
     this.elements.forEach((el) => el.parentNode?.removeChild(el));
     this.elements = [];
   }

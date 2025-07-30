@@ -1,5 +1,6 @@
 import { PongButton } from './PongButton';
 import { navigateTo } from '../../router/Router';
+import './LanguageSelector';
 
 export interface PongHeaderProps {
   rightContent?: HTMLElement | null;
@@ -23,20 +24,25 @@ export function PongHeaderPublic({ rightContent = null, homeOnly = false }: Pong
 
   header.appendChild(logo);
 
+
+  // Always show language selector on the right
+  const rightBox = document.createElement('div');
+  rightBox.className = 'flex items-center gap-4';
   if (homeOnly) {
-    const leftBox = document.createElement('div');
-    leftBox.className = 'flex items-center justify-start';
     const backBtn = PongButton({
       text: 'Voltar',
       variant: 'primary',
       onClick: () => history.back(),
       extraClass: 'w-auto px-4 py-2 text-base font-semibold rounded ml-4'
     });
-    leftBox.appendChild(backBtn);
-    header.appendChild(leftBox);
-  } else if (rightContent) {
-    header.appendChild(rightContent);
+    rightBox.appendChild(backBtn);
   }
+  if (rightContent) {
+    rightBox.appendChild(rightContent);
+  }
+  const langSelector = document.createElement('language-selector');
+  rightBox.appendChild(langSelector);
+  header.appendChild(rightBox);
 
   return header;
 } 

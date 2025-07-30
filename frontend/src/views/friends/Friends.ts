@@ -1,6 +1,7 @@
 import { AView } from "../AView";
 import { apiUrl } from "../../utils/api";
 import { router } from "../../router/Router";
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
 
 export class Friends extends AView {
   private friends: { alias: string; status: string }[] = [];
@@ -25,6 +26,7 @@ export class Friends extends AView {
         </div>
       </div>
       <div class="flex flex-col md:flex-row gap-10 w-full max-w-4xl justify-center items-start mt-10">
+import { PongHeaderPublic } from "../../components/ui/PongHeaderPublic";
         <!-- Received Requests -->
         <div class="flex-1 bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl min-w-[300px]">
           <h2 class="text-2xl font-bold mb-6 text-center">Received</h2>
@@ -71,6 +73,9 @@ export class Friends extends AView {
         await this.loadAndRenderLists(friendsContainer);
       } catch (e: any) {
         addMsg.textContent = e.message || "Erro ao adicionar amigo";
+    // Add header with language selector
+    const header = PongHeaderPublic();
+    parent.appendChild(header);
         addMsg.className = "text-red-300 mt-2";
       } finally {
         addBtn.disabled = false;

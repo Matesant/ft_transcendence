@@ -8,6 +8,7 @@ import { requireAuth, getCurrentUserDisplayName, UserProfile } from "../../utils
 
 export class Lobby extends AView {
   private elements: HTMLElement[] = [];
+  private languageListener?: () => void;
   private container!: HTMLDivElement;
 
   // elementos usados na sala
@@ -28,6 +29,11 @@ export class Lobby extends AView {
   private currentUserDisplayName: string = "";
 
   public render(parent: HTMLElement = document.body): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+    }
+    this.languageListener = () => this.render(parent);
+    window.addEventListener('language-changed', this.languageListener);
     // Initialize the lobby asynchronously
     this.initializeLobby(parent);
   }
@@ -638,6 +644,10 @@ export class Lobby extends AView {
   }
 
   public dispose(): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+      this.languageListener = undefined;
+    }
     // Disconnect from WebSocket
     if (this.wsManager && !this.keepConnection) {
       this.wsManager.leaveRoom();

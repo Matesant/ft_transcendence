@@ -1,14 +1,21 @@
 import { AView } from "../AView";
 import { Game } from "../game/Game";
+import { t } from "../../utils/LanguageContext";
 import { getWsManager } from "../../utils/connectionStore";
 
 export class Online extends AView {
+  private languageListener?: () => void;
   private game!: Game;
 
   public render(parent: HTMLElement = document.body): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+    }
+    this.languageListener = () => this.render(parent);
+    window.addEventListener('language-changed', this.languageListener);
     const wsManager = getWsManager();
     if (!wsManager || !wsManager.socket) {
-      parent.innerHTML = '<p>Connection not available.</p>';
+      parent.innerHTML = `<p>${t('connectionNotAvailable')}</p>`;
       return;
     }
 
@@ -31,6 +38,10 @@ export class Online extends AView {
   }
 
   public dispose(): void {
+    if (this.languageListener) {
+      window.removeEventListener('language-changed', this.languageListener);
+      this.languageListener = undefined;
+    }
     if (this.game) {
       this.game.dispose();
     }
