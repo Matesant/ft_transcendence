@@ -17,31 +17,32 @@ RESET             = \033[0m
 #                         TARGETS                              #
 #--------------------------------------------------------------#
 
-# Default target shows help
 .DEFAULT_GOAL := help
 
-.PHONY: all up down logs clean fclean re frontend-install frontend-dev frontend-stop kill-frontend help 
+.PHONY: all dev up up-dev down logs clean fclean re frontend-install frontend-dev frontend-stop kill-frontend help 
 
-all: up frontend-install frontend-dev
+dev: up-dev frontend-install frontend-dev
+	@echo "$(GREEN)🚀 Development environment ready!$(RESET)"
 
-# Start all backend services
 up:
-	@echo "$(CYAN)Starting backend services...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) up -d
-	@echo "$(GREEN)✅ Backend services started!$(RESET)"
+	@echo "$(CYAN)Starting all services (backend + frontend)...$(RESET)"
+	docker compose --profile all up -d
+	@echo "$(GREEN)✅ All services started!$(RESET)"
 
-# Stop all services
+up-dev:
+	@echo "$(CYAN)Starting backend services for development...$(RESET)"
+	docker compose --profile dev up -d
+	@echo "$(GREEN)✅ Backend development services started!$(RESET)"
+
 down:
 	@echo "$(RED)Stopping all services...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) down
+	docker compose --profile all down
 	@$(MAKE) frontend-stop
 
-# Show logs
 logs:
 	@echo "$(YELLOW)Showing logs from backend services...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) logs -f
+	docker compose logs -f
 
-# Install frontend dependencies
 frontend-install:
 	@echo "$(CYAN)Installing frontend dependencies...$(RESET)"
 	@cd $(FRONTEND_DIR) && npm install
@@ -55,7 +56,7 @@ frontend-dev:
 	@sleep 2
 	@cd $(FRONTEND_DIR) && nohup npm run start > .frontend.log 2>&1 & echo $$! > .frontend.pid
 	@echo "$(GREEN)✅ Frontend development started!$(RESET)"
-	@echo "$(GREEN)🌐 Frontend available at: http://localhost:8080$(RESET)"
+	@echo "$(GREEN)🌐 Frontend available at: https://localhost:8080$(RESET)"
 
 # Stop frontend processes
 frontend-stop:
@@ -77,7 +78,7 @@ clean: down
 # Full cleanup
 fclean: down
 	@echo "$(RED)Full cleanup...$(RESET)"
-	docker compose -f $(COMPOSE_FILE) down --volumes --remove-orphans
+	docker compose down --volumes --remove-orphans
 	docker system prune -af --volumes
 	@rm -rf services/*/data/*.db
 	@$(MAKE) frontend-stop
@@ -92,8 +93,9 @@ help:
 	@echo "$(CYAN)🚀 ft_transcendence - Available Commands$(RESET)"
 	@echo ""
 	@echo "$(GREEN)📋 Main Commands:$(RESET)"
-	@echo "  $(YELLOW)make all$(RESET)              - Start everything (backend + frontend)"
-	@echo "  $(YELLOW)make up$(RESET)               - Start backend services only"
+	@echo "  $(YELLOW)make dev$(RESET)              - Start development environment (backend dev + frontend)"
+	@echo "  $(YELLOW)make up$(RESET)               - Start all services (backend + frontend)"
+	@echo "  $(YELLOW)make up-dev$(RESET)           - Start backend services for development"
 	@echo "  $(YELLOW)make down$(RESET)             - Stop all services"
 	@echo "  $(YELLOW)make logs$(RESET)             - Show backend logs"
 	@echo ""
@@ -108,9 +110,9 @@ help:
 	@echo "  $(YELLOW)make re$(RESET)               - Rebuild everything from scratch"
 	@echo ""
 	@echo "$(GREEN)🔗 Service URLs:$(RESET)"
-	@echo "  • Frontend:      http://localhost:8080"
-	@echo "  • Auth Service:  http://localhost:3001"
-	@echo "  • Match Service: http://localhost:3002"
-	@echo "  • User Service:  http://localhost:3003"
-	@echo "  • Game Service:  http://localhost:3004"
+	@echo "  • Frontend:      https://localhost:8080"
+	@echo "  • Auth Service:  https://localhost:3001"
+	@echo "  • Match Service: https://localhost:3002"
+	@echo "  • User Service:  https://localhost:3003"
+	@echo "  • Game Service:  https://localhost:3004"
 	@echo ""

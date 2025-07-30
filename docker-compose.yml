@@ -18,6 +18,9 @@ services:
     command: ./start.sh
     networks:
       - backend
+    profiles:
+      - dev
+      - all
 
   match-service:
     container_name: match-service
@@ -35,6 +38,9 @@ services:
     command: ./start.sh
     networks:
       - backend
+    profiles:
+      - dev
+      - all
 
   user-service:
     container_name: user-service
@@ -52,6 +58,9 @@ services:
     command: ./start.sh
     networks:
       - backend
+    profiles:
+      - dev
+      - all
 
   game-service:
     container_name: game-service
@@ -69,6 +78,9 @@ services:
     command: ./start.sh
     networks:
       - backend
+    profiles:
+      - dev
+      - all
     
   frontend:
     container_name: frontend
@@ -86,6 +98,8 @@ services:
     command: ./start.sh
     networks:
       - backend
+    profiles:
+      - all
 
 networks:
   backend:
