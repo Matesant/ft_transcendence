@@ -15,14 +15,33 @@ setup()
         printf "COOKIE_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
         printf "%bGenerating IP address in .env...%b\n" "$BLUE" "$RESET"
-        printf "IP=%s\n" "$(hostname -i | cut -d ' ' -f 1)" >> .env
+        export IP=$(hostname -i | cut -d ' ' -f 1)
+        printf "IP=%s\n" "$IP" >> .env
         printf "%bIP address done!%b\n" "$BLUE" "$RESET"
 
         printf "%bGerenating SSL certificates...%b\n" "$BLUE" "$RESET"
-        openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
-	    -keyout ./services/server.key \
-	    -out ./services/server.crt \
-	    -subj "/C=BR/ST=SP/L=Sao Paulo/O=42SP/OU=ft_transcendence/CN=localhost"
+
+        openssl req -x509 -nodes \
+        -newkey RSA:2048       \
+        -keyout ./services/root-ca.key    \
+        -days 365              \
+        -out ./services/root-ca.crt       \
+        -subj '/C=US/ST=Denial/L=Earth/O=42SP/CN=root_CA_for_firefox'
+
+        openssl req -nodes   \
+        -newkey rsa:2048   \
+        -keyout ./services/server.key \
+        -out ./services/server.csr    \
+        -subj "/C=US/ST=Denial/L=Earth/O=ft_trans/CN=$IP"
+
+        openssl x509 -req    \
+        -CA ./services/root-ca.crt    \
+        -CAkey ./services/root-ca.key \
+        -in ./services/server.csr     \
+        -out ./services/server.crt    \
+        -days 365          \
+        -CAcreateserial    \
+        -extfile <(printf "subjectAltName = IP:$IP\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = digitalSignature, keyEncipherment\nextendedKeyUsage=serverAuth")
 
         cp -t ./services/user-service/ ./services/server.key ./services/server.crt
         cp -t ./services/match-service/ ./services/server.key ./services/server.crt
@@ -44,7 +63,10 @@ clear()
         ./services/match-service/server.{key,crt} \
         ./services/game-service/server.{key,crt} \
         ./services/auth-service/server.{key,crt} \
-        ./frontend/server.{key,crt}
+        ./frontend/server.{key,crt} \
+        ./services/root-ca.{key,crt} \
+        ./services/root-ca.srl \
+        ./services/server.csr
     sudo rm -f ./services/{user,match,auth}-service/data/*-service.db
     printf "%bCleanup done!%b\n" "$BLUE" "$RESET"
 }
