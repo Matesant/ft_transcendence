@@ -4,10 +4,83 @@ import { PongHeader, PongFooter, PongInput, PongButton } from "../../components/
 import { apiUrl } from "../../utils/api";
 import { navigateTo } from "../../router/Router";
 import { TwoFactorAuth } from "../../components/2fa-form";
+import { PongModal } from "../../components/ui/PongModal";
 
 export class Login extends AView {
     
     private elements: HTMLElement[] = [];
+
+    // Helper function to map login errors to user-friendly messages
+    private mapLoginError(errorMessage: string): { title: string; message: string } {
+        const error = errorMessage.toLowerCase();
+        
+        // Credenciais inválidas (usuário não encontrado ou senha incorreta)
+        if (error.includes('invalid alias or password') || error.includes('invalid credentials') || error.includes('wrong password')) {
+            return {
+                title: "Login Failed",
+                message: "Invalid username or password. Please check your credentials and try again."
+            };
+        }
+        
+        // Campos obrigatórios não preenchidos
+        if (error.includes('alias and password are required')) {
+            return {
+                title: "Missing Information",
+                message: "Please fill in both username and password fields."
+            };
+        }
+        
+        // Usuário não encontrado (caso específico)
+        if (error.includes('user not found')) {
+            return {
+                title: "User Not Found",
+                message: "No account found with this username. Please check your username or register a new account."
+            };
+        }
+        
+        // Erros de servidor interno
+        if (error.includes('internal server error') || error.includes('something went wrong')) {
+            return {
+                title: "Server Error",
+                message: "A server error occurred. Please try again later."
+            };
+        }
+        
+        // Erros de conexão de rede
+        if (error.includes('network') || error.includes('fetch') || error.includes('failed to fetch')) {
+            return {
+                title: "Connection Error",
+                message: "Unable to connect to the server. Please check your internet connection and try again."
+            };
+        }
+        
+        // Timeouts
+        if (error.includes('timeout')) {
+            return {
+                title: "Request Timeout",
+                message: "The request took too long to complete. Please try again."
+            };
+        }
+        
+        // Erro padrão para casos não mapeados
+        return {
+            title: "Login Error",
+            message: "An unexpected error occurred during login. Please try again."
+        };
+    }
+
+    // Helper function to show error modal
+    private showErrorModal(message: string, title: string = "Error"): void {
+        const modal = PongModal({
+            message: message,
+            title: title,
+            type: 'error',
+            onClose: () => {
+                // Optional: any cleanup when modal closes
+            }
+        });
+        document.body.appendChild(modal);
+    }
 
     public render(parent: HTMLElement = document.body): void {
         parent.innerHTML = '';
@@ -28,6 +101,11 @@ export class Login extends AView {
         // Formulário centralizado com estilo glassmorphism
         const formContainer = document.createElement('div');
         formContainer.className = 'bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/20';
+
+        const cardTitle = document.createElement('h2');
+        cardTitle.className = 'text-2xl font-bold mb-6 text-center';
+        cardTitle.textContent = 'Login';
+        formContainer.appendChild(cardTitle);
 
         const form = document.createElement('form');
         form.id = 'login-form';
@@ -122,7 +200,6 @@ export class Login extends AView {
 
         form.appendChild(googleBtn);
 
-
         // Texto e botão de registro
         const registerBox = document.createElement('div');
         registerBox.className = 'mt-12 flex flex-col items-center';
@@ -138,8 +215,6 @@ export class Login extends AView {
         registerBox.appendChild(registerText);
         registerBox.appendChild(registerBtn);
         form.appendChild(registerBox);
-
-
 
         formContainer.appendChild(form);
         main.appendChild(formContainer);
@@ -168,41 +243,25 @@ export class Login extends AView {
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-
                     const result = await response.json();
                     if ('require2FA' in result) {
                         this.twoFa(data.alias, result);
                     } else {
                         navigateTo('/dashboard');
                     }
-
                 } else {
                     const errorResponse = await response.json();
-                    this.showError(`Login Failed: ${errorResponse.error}`);
+                    const mappedError = this.mapLoginError(errorResponse.error);
+                    this.showErrorModal(mappedError.message, mappedError.title);
                 }
             } catch (error) {
-                this.showError(`Login Failed: ${error}`);
+                const mappedError = this.mapLoginError(String(error));
+                this.showErrorModal(mappedError.message, mappedError.title);
             }
         });
     }
 
-    private showError(message: string): void {
-        // Create a temporary error message
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white py-4 px-8 rounded-lg z-50 text-base shadow-lg";
-        errorDiv.textContent = message;
-        document.body.appendChild(errorDiv);
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 3000);
-    }
-
     public twoFa(alias: string, data: {message: string, success: boolean}): void {
-
         Array.from(document.body.children).forEach(child => {
               document.body.removeChild(child);
           });
