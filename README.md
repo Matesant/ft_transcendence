@@ -1,8 +1,8 @@
 
 ```sh
-./ft_transcendence.sh clear # cria o .env e os certificados https
+./ft_transcendence.sh setup # cria o .env e os certificados https
 
-./ft_transcendence.sh setup # apaga .env, certificados e DBs
+./ft_transcendence.sh clear # apaga .env, certificados e DBs
 
 
 docker compose up # sobe todos os services, terminal fica travado com os logs
