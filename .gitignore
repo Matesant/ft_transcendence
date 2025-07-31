@@ -29,7 +29,6 @@ Thumbs.db
 dist/
 coverage/
 
-package-lock.json
 .frontend.log
 .tailwind.log
 .frontend.pid
