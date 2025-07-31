@@ -69,7 +69,6 @@ export class TwoFactorAuth extends HTMLElement {
         const data = await res.json();
         if (data.success) {
           status.textContent = data.message;
-          debugger;
           navigateTo("/dashboard");
         } else {
           status.textContent = data.error || "Falha na verificação";
