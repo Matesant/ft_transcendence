@@ -1,0 +1,33 @@
+
+> frontend@1.0.0 start
+> webpack-dev-server --port 8080
+
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:8080/, http://[::1]:8080/
+<i> [webpack-dev-server] On Your Network (IPv4): http://10.13.6.4:8080/
+<i> [webpack-dev-server] Content not from webpack is served from '/nfs/homes/csilva-m/Projetos_Fase2/ft_transcendence/frontend/public' directory
+<i> [webpack-dev-server] 404s will fallback to '/index.html'
+Error parsing bundle asset "/nfs/homes/csilva-m/Projetos_Fase2/ft_transcendence/frontend/public/bundle.js": no such file
+
+No bundles were parsed. Analyzer will show only original module sizes from stats file.
+
+Webpack Bundle Analyzer is started at http://127.0.0.1:8888
+Use Ctrl+C to close it
+asset bundle.js 43.1 MiB [emitted] (name: main)
+asset index.html 447 bytes [emitted]
+runtime modules 27.4 KiB 12 modules
+modules by path ./node_modules/@babylonjs/core/ 14.3 MiB 1982 modules
+modules by path ./src/ 310 KiB 60 modules
+modules by path ./node_modules/webpack-dev-server/client/ 84.8 KiB
+  modules by path ./node_modules/webpack-dev-server/client/*.js 53.3 KiB 4 modules
+  modules by path ./node_modules/webpack-dev-server/client/utils/*.js 980 bytes 2 modules
+  ./node_modules/webpack-dev-server/client/clients/WebSocketClient.js 2.19 KiB [built] [code generated]
+  ./node_modules/webpack-dev-server/client/modules/logger/index.js 28.4 KiB [built] [code generated]
+modules by path ./node_modules/webpack/hot/*.js 5.17 KiB
+  ./node_modules/webpack/hot/dev-server.js 1.94 KiB [built] [code generated]
+  ./node_modules/webpack/hot/log.js 1.73 KiB [built] [code generated]
+  ./node_modules/webpack/hot/emitter.js 75 bytes [built] [code generated]
+  ./node_modules/webpack/hot/log-apply-result.js 1.43 KiB [built] [code generated]
+./node_modules/events/events.js 14.5 KiB [built] [code generated]
+./node_modules/ansi-html-community/index.js 4.16 KiB [built] [code generated]
+webpack 5.100.2 compiled successfully in 7210 ms
