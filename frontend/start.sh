@@ -6,6 +6,7 @@ while true; do
     if [[ -n "$DEV" ]]; then
       echo "Running in development mode..."
       npm i
+      npx tailwindcss -i src/style.css -o public/style.css --watch &
       npm run start
     fi
     if ! grep -qs bundle.js public/index.html; then
