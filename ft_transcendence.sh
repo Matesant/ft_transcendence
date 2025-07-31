@@ -16,6 +16,7 @@ setup()
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
         printf "%bGenerating IP address in .env...%b\n" "$BLUE" "$RESET"
         export IP=$(hostname -I | cut -d ' ' -f 1)
+        print "DEV=true" >> .env
         printf "IP=%s\n" "$IP" >> .env
         printf "%bIP address done!%b\n" "$BLUE" "$RESET"
 
