@@ -16,7 +16,7 @@ setup()
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
         printf "%bGenerating IP address in .env...%b\n" "$BLUE" "$RESET"
         export IP=$(hostname -I | cut -d ' ' -f 1)
-        print "DEV=true" >> .env
+        printf "DEV=true\n" >> .env
         printf "IP=%s\n" "$IP" >> .env
         printf "%bIP address done!%b\n" "$BLUE" "$RESET"
 
@@ -59,7 +59,7 @@ setup()
 clear()
 {
     printf "%bCleaning up...%b\n" "$BLUE" "$RESET"
-    rm -f .env ./services/server.{key,crt} \
+    rm -rf .env ./services/server.{key,crt} \
         ./services/user-service/server.{key,crt} \
         ./services/match-service/server.{key,crt} \
         ./services/game-service/server.{key,crt} \
@@ -68,7 +68,8 @@ clear()
         ./services/root-ca.{key,crt} \
         ./services/root-ca.srl \
         ./services/server.csr
-    sudo rm -f ./services/{user,match,auth}-service/data/*-service.db
+
+    rm -f ./services/{user,match,auth}-service/data/*-service.db
     printf "%bCleanup done!%b\n" "$BLUE" "$RESET"
 }
 
