@@ -69,6 +69,17 @@ export class TwoFactorAuth extends HTMLElement {
         const data = await res.json();
         if (data.success) {
           status.textContent = data.message;
+          // Atualizar status online após verificação 2FA bem-sucedida
+          try {
+            await fetch(apiUrl(3003, '/users/status/online'), {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({})
+            });
+          } catch (statusError) {
+            console.warn('Failed to update online status:', statusError);
+          }
           navigateTo("/dashboard");
         } else {
           status.textContent = data.error || "Falha na verificação";
