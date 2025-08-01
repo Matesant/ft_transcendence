@@ -36,6 +36,23 @@ class UserInfo extends HTMLElement {
         avatarContainer!.textContent = "foto user";
       }
     }
+
+    private async loadDisplayName(): Promise<void> {
+      const displayNameInfo = this.querySelector("#displayNameInfo");
+      try {
+        const response = await fetch(apiUrl(3003, '/users/me'), { credentials: "include" });
+        if (!response.ok) throw new Error("Falha na request");
+        const data = await response.json();
+        
+        if (data.profile.display_name) {
+          displayNameInfo!.textContent = `Display Name: ${data.profile.display_name}`;
+        } else {
+          displayNameInfo!.textContent = "No display name set";
+        }
+      } catch (err) {
+        displayNameInfo!.textContent = "Error loading display name";
+      }
+    }
   
     private async loadData() {
 
@@ -73,6 +90,7 @@ class UserInfo extends HTMLElement {
 
             <div class="mx-auto w-140 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 text-center space-y-2 mt-7">
               <div class="text-lg font-bold">${alias}</div>
+              <div id="displayNameInfo" class="text-sm text-gray-300">Loading display name...</div>
               <div>${email}</div>
               <div>2FA ${is2fa ? "enabled" : "disabled"}</div>
               ${
@@ -89,6 +107,9 @@ class UserInfo extends HTMLElement {
             <br>
 
               <!-- Botões extras -->
+            <button id="changeDisplayNameBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+              Change Display Name
+            </button>
             <button id="changeEmailBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
               Change Email
             </button>
@@ -129,8 +150,81 @@ class UserInfo extends HTMLElement {
             });
           };
           
+          const changeDisplayNameBtn = this.querySelector('#changeDisplayNameBtn') as HTMLButtonElement;
           const changeEmailBtn = this.querySelector('#changeEmailBtn') as HTMLButtonElement;
           const changePasswordBtn = this.querySelector('#changePasswordBtn') as HTMLButtonElement;
+          
+          changeDisplayNameBtn.addEventListener('click', () => {
+            createModal(`
+              <h2 class="text-lg font-bold mb-2">Change Display Name</h2>
+              <input id="newDisplayNameInput" type="text" placeholder="New Display Name" class="border p-2 rounded w-full" />
+              <button id="submitDisplayNameChange" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Submit</button>
+            `);
+          
+            setTimeout(() => {
+              const submitBtn = document.getElementById('submitDisplayNameChange') as HTMLButtonElement;
+              submitBtn.addEventListener('click', async () => {
+                const newDisplayName = (document.getElementById('newDisplayNameInput') as HTMLInputElement).value;
+                
+                // Validação no frontend
+                if (!newDisplayName || newDisplayName.trim().length < 2) {
+                  let errorMessage = document.createElement('div');
+                  errorMessage.className = "text-red-500 mt-2";
+                  errorMessage.textContent = "Display name must be at least 2 characters long.";
+                  submitBtn.insertAdjacentElement('afterend', errorMessage);
+                  setTimeout(() => { errorMessage.remove(); }, 3000);
+                  return;
+                }
+     
+                try {
+                    let response = await fetch(apiUrl(3003, '/users/me'), {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ display_name: newDisplayName.trim() }),
+                      credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                      const errorData = await response.json();
+                      throw new Error(errorData.error || 'Failed to update display name');
+                    }
+
+                    const data = await response.json();
+                    let status = document.createElement('div');
+                    status.className = "text-green-500 mt-2";
+                    status.textContent = data.message || "Display name updated successfully!";
+    
+                    submitBtn.insertAdjacentElement('afterend', status);
+
+                    // Atualizar a exibição do display name
+                    setTimeout(() => {
+                        this.loadDisplayName();
+                    }, 1000);
+
+                    setTimeout(() => {
+                        status.remove();
+                    }, 2000);
+
+                  
+                  
+                } catch (error) {
+
+                    let errorMessage = document.createElement('div');
+                    errorMessage.className = "text-red-500 mt-2";
+                    errorMessage.textContent = error instanceof Error ? error.message : "Error updating display name. Please try again.";
+                    
+                    submitBtn.insertAdjacentElement('afterend', errorMessage);
+
+
+                    setTimeout(() => {
+                        errorMessage.remove();
+                    }, 3000);
+                    
+                }
+
+              });
+            }, 0);
+          });
           
           changeEmailBtn.addEventListener('click', () => {
             createModal(`
@@ -268,6 +362,7 @@ class UserInfo extends HTMLElement {
         }
 
         this.loadUserAvatar();
+        this.loadDisplayName();
 
         const modal = this.querySelector("#avatarModal") as HTMLDivElement;
         const modalContent = this.querySelector("#modalContent") as HTMLDivElement;
