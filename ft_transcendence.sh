@@ -15,13 +15,13 @@ setup()
         printf "COOKIE_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
 
-        read -p "The project will be avaliable in local network ? (y/n)" res
+        read -p "The project will be avaliable in localhost ? (y/n)" res
         if [ "$res" = "y" ]; then
-            export IP=$(hostname -I | cut -d ' ' -f 1)
-            export TYPE="IP"
-        else
             export IP="localhost"
             export TYPE="DNS"
+        else
+            export IP=$(hostname -I | cut -d ' ' -f 1)
+            export TYPE="IP"
         fi
 
         printf "IP=%s\n" "$IP" >> .env
