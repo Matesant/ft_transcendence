@@ -14,8 +14,16 @@ setup()
         printf "JWT_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "COOKIE_SECRET=%s\n" "$(openssl rand -hex 64)" >> .env
         printf "%bSecrets done!%b\n" "$BLUE" "$RESET"
-        printf "%bGenerating IP address in .env...%b\n" "$BLUE" "$RESET"
-        export IP=$(hostname -I | cut -d ' ' -f 1)
+
+        read -p "The project will be avaliable in local network ? (y/n)" res
+        if [ "$res" = "y" ]; then
+            export IP=$(hostname -I | cut -d ' ' -f 1)
+            export TYPE="IP"
+        else
+            export IP="localhost"
+            export TYPE="DNS"
+        fi
+
         printf "IP=%s\n" "$IP" >> .env
         printf "%bIP address done!%b\n" "$BLUE" "$RESET"
 
@@ -41,7 +49,7 @@ setup()
         -out ./services/server.crt    \
         -days 365          \
         -CAcreateserial    \
-        -extfile <(printf "subjectAltName = IP:$IP\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = digitalSignature, keyEncipherment\nextendedKeyUsage=serverAuth")
+        -extfile <(printf "subjectAltName = $TYPE:$IP\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = digitalSignature, keyEncipherment\nextendedKeyUsage=serverAuth")
 
         cp -t ./services/user-service/ ./services/server.key ./services/server.crt
         cp -t ./services/match-service/ ./services/server.key ./services/server.crt
