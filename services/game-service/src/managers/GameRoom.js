@@ -83,8 +83,6 @@ export class GameRoom extends EventEmitter {
             this.releaseBall();
             this.ballReleaseTimer = null;
         }, 5000);
-        
-        console.log(`Game ${this.id} started - ball will be released in 3 seconds`);
     }
 
     startGameLoop() {

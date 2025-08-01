@@ -38,7 +38,6 @@ export default async function sessionRoutes(fastify, opts) {
       }
     })() : 'unknown'
     
-    
     reply.clearCookie('authToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

@@ -7,7 +7,6 @@ export class NetworkManager {
     private _playerSide: 'left' | 'right' | null = null;
     
     // Event handlers
-    private _onMatchFound: ((data: any) => void) | null = null;
     private _onGameState: ((state: any) => void) | null = null;
     private _onGameStart: ((data: any) => void) | null = null;
     private _onGameEnd: ((data: any) => void) | null = null;
@@ -90,28 +89,6 @@ export class NetworkManager {
         this._cleanup();
     }
 
-    public joinQueue(): void {
-        if (!this._connected || !this._playerId || !this._playerName) {
-            console.error('Not connected or missing player info');
-            return;
-        }
-
-        this._send({
-            type: 'join_queue',
-            playerId: this._playerId,
-            playerName: this._playerName
-        });
-    }
-
-    public leaveQueue(): void {
-        if (!this._connected || !this._playerId) return;
-
-        this._send({
-            type: 'leave_queue',
-            playerId: this._playerId
-        });
-    }
-
     public sendInput(action: string): void {
         if (!this._connected || !this._playerId || !this._gameId) return;
 
@@ -128,10 +105,6 @@ export class NetworkManager {
         });
 
         this._lastInputSent = now;
-    }
-
-    public onMatchFound(callback: (data: any) => void): void {
-        this._onMatchFound = callback;
     }
 
     public onGameState(callback: (state: any) => void): void {
@@ -196,14 +169,6 @@ export class NetworkManager {
             const data = JSON.parse(event.data);
 
             switch (data.type) {
-                case 'match_found':
-                    this._gameId = data.gameId;
-                    this._playerSide = data.playerSide;
-                    if (this._onMatchFound) {
-                        this._onMatchFound(data);
-                    }
-                    break;
-
                 case 'game_start':
                     if (data.gameId) {
                         this._gameId = data.gameId;
@@ -237,12 +202,6 @@ export class NetworkManager {
                     if (this._onOpponentDisconnected) {
                         this._onOpponentDisconnected(data);
                     }
-                    break;
-
-                case 'queue_joined':
-                    break;
-
-                case 'queue_left':
                     break;
 
                 case 'pong':
