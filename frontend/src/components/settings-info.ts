@@ -132,7 +132,7 @@ class UserInfo extends HTMLElement {
           `;
 
 
-          const createModal = (innerHtml: string) => {
+          const createModal = (innerHtml: string): HTMLDivElement => {
             const overlay = document.createElement('div');
             overlay.className = "fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50";
             
@@ -148,6 +148,7 @@ class UserInfo extends HTMLElement {
                 document.body.removeChild(overlay);
               }
             });
+            return overlay;
           };
           
           const changeDisplayNameBtn = this.querySelector('#changeDisplayNameBtn') as HTMLButtonElement;
@@ -155,24 +156,27 @@ class UserInfo extends HTMLElement {
           const changePasswordBtn = this.querySelector('#changePasswordBtn') as HTMLButtonElement;
           
           changeDisplayNameBtn.addEventListener('click', () => {
-            createModal(`
+            const modalOverlay = createModal(`
               <h2 class="text-lg font-bold mb-2">Change Display Name</h2>
+              <div id="displayNameMessageContainer"></div>
               <input id="newDisplayNameInput" type="text" placeholder="New Display Name" class="border p-2 rounded w-full" />
-              <button id="submitDisplayNameChange" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Submit</button>
+              <div class="flex gap-2 mt-3">
+                <button id="submitDisplayNameChange" class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700">Update</button>
+                <button id="removeDisplayNameBtn" class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700">Remove</button>
+              </div>
             `);
           
             setTimeout(() => {
               const submitBtn = document.getElementById('submitDisplayNameChange') as HTMLButtonElement;
+              const removeBtn = document.getElementById('removeDisplayNameBtn') as HTMLButtonElement;
+              const messageContainer = document.getElementById('displayNameMessageContainer');
+              
               submitBtn.addEventListener('click', async () => {
                 const newDisplayName = (document.getElementById('newDisplayNameInput') as HTMLInputElement).value;
                 
-                // Validação no frontend
                 if (!newDisplayName || newDisplayName.trim().length < 2) {
-                  let errorMessage = document.createElement('div');
-                  errorMessage.className = "text-red-500 mt-2";
-                  errorMessage.textContent = "Display name must be at least 2 characters long.";
-                  submitBtn.insertAdjacentElement('afterend', errorMessage);
-                  setTimeout(() => { errorMessage.remove(); }, 3000);
+                  messageContainer.innerHTML = `<div class="text-red-500 mb-2">Display name must be at least 2 characters long.</div>`;
+                  setTimeout(() => { messageContainer.innerHTML = ''; }, 3000);
                   return;
                 }
      
@@ -190,38 +194,49 @@ class UserInfo extends HTMLElement {
                     }
 
                     const data = await response.json();
-                    let status = document.createElement('div');
-                    status.className = "text-green-500 mt-2";
-                    status.textContent = data.message || "Display name updated successfully!";
+                    messageContainer.innerHTML = `<div class="text-green-500 mb-2">${data.message || "Display name updated successfully!"}</div>`;
     
-                    submitBtn.insertAdjacentElement('afterend', status);
-
-                    // Atualizar a exibição do display name
                     setTimeout(() => {
                         this.loadDisplayName();
+                        document.body.removeChild(modalOverlay);
                     }, 1000);
-
-                    setTimeout(() => {
-                        status.remove();
-                    }, 2000);
 
                   
                   
                 } catch (error) {
-
-                    let errorMessage = document.createElement('div');
-                    errorMessage.className = "text-red-500 mt-2";
-                    errorMessage.textContent = error instanceof Error ? error.message : "Error updating display name. Please try again.";
-                    
-                    submitBtn.insertAdjacentElement('afterend', errorMessage);
-
-
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 3000);
+                    messageContainer.innerHTML = `<div class="text-red-500 mb-2">${error instanceof Error ? error.message : "Error updating display name. Please try again."}</div>`;
+                    setTimeout(() => { messageContainer.innerHTML = ''; }, 3000);
                     
                 }
 
+              });
+              
+              removeBtn.addEventListener('click', async () => {
+                try {
+                    let response = await fetch(apiUrl(3003, '/users/me'), {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ display_name: null }),
+                      credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                      const errorData = await response.json();
+                      throw new Error(errorData.error || 'Failed to remove display name');
+                    }
+
+                    const data = await response.json();
+                    messageContainer.innerHTML = `<div class="text-green-500 mb-2">${data.message || "Display name removed successfully!"}</div>`;
+
+                    setTimeout(() => {
+                        this.loadDisplayName();
+                        document.body.removeChild(modalOverlay);
+                    }, 1000);
+
+                } catch (error) {
+                    messageContainer.innerHTML = `<div class="text-red-500 mb-2">${error instanceof Error ? error.message : "Error removing display name. Please try again."}</div>`;
+                    setTimeout(() => { messageContainer.innerHTML = ''; }, 3000);
+                }
               });
             }, 0);
           });

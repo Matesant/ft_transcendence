@@ -58,6 +58,21 @@ export default async function (fastify, opts) {
 		const { alias } = request.user;
 		const { display_name } = request.body;
 
+		// Se display_name for null, remove o display name
+		if (display_name === null) {
+			try {
+				await fastify.db.run(
+					'UPDATE user_profiles SET display_name = NULL WHERE alias = ?',
+					[alias]
+				);
+
+				return { success: true, message: 'Display name removed' };
+			} catch (err) {
+				return reply.status(500).send({ error: 'Failed to remove display name' });
+			}
+		}
+
+		// Validação para display name válido
 		if (!display_name || display_name.length < 2) {
 			return reply.status(400).send({ error: 'Invalid display name' });
 		}
