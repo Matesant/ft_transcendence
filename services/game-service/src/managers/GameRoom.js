@@ -84,7 +84,7 @@ export class GameRoom extends EventEmitter {
             this.ballReleaseTimer = null;
         }, 5000);
         
-        console.log(`Game ${this.id} started - ball will be released in 3 seconds`);
+        g(`Game ${this.id} started - ball will be released in 3 seconds`);
     }
 
     startGameLoop() {
@@ -235,7 +235,7 @@ export class GameRoom extends EventEmitter {
             if (this.state === 'playing') {
                 this.gameState.ball.velocityX = (Math.random() - 0.5) * BALL_INITIAL_SPEED;
                 this.gameState.ball.velocityZ = direction * BALL_INITIAL_SPEED * this.gameState.speedMultiplier;
-                console.log(`Ball released after point scored in game ${this.id}`);
+                g(`Ball released after point scored in game ${this.id}`);
             }
             this.ballReleaseTimer = null;
         }, 1000);

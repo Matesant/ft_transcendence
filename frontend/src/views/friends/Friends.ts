@@ -3,10 +3,14 @@ import { apiUrl } from "../../utils/api";
 import { router } from "../../router/Router";
 
 export class Friends extends AView {
-  private friends: { alias: string; status: string }[] = [];
+  private friends: { alias: string; status: string; is_online: number }[] = [];
   private pendingReceived: { alias: string }[] = [];
+  private updateInterval: number | null = null;
 
   public async render(parent: HTMLElement = document.body): Promise<void> {
+    // Garantir que o usuário está marcado como online
+    await this.setUserOnline();
+    
     const friendsContainer = document.createElement("div");
     friendsContainer.className =
       "w-full min-h-screen p-5 box-border bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex flex-col items-center font-sans animate-fadeInUp";
@@ -51,7 +55,19 @@ export class Friends extends AView {
     this.setupNavigation(friendsContainer);
     this.loadUserAvatar(friendsContainer);
 
+    // Definir usuário como online ao carregar a página
+    await this.setUserOnline();
+
     await this.loadAndRenderLists(friendsContainer);
+
+    // Atualizar lista de amigos a cada 30 segundos para refletir mudanças de status
+    this.updateInterval = window.setInterval(async () => {
+      try {
+        await this.loadAndRenderLists(friendsContainer);
+      } catch (e) {
+        console.warn('Failed to update friends list:', e);
+      }
+    }, 30000);
 
     const addBtn = friendsContainer.querySelector("#add-friend-btn")! as HTMLButtonElement;
     const addInput = friendsContainer.querySelector("#add-friend-input")! as HTMLInputElement;
@@ -90,7 +106,7 @@ export class Friends extends AView {
     this.renderFriends(this.friends, container.querySelector("#friends-list")!);
   }
 
-  private async fetchFriends(): Promise<{ alias: string; status: string }[]> {
+  private async fetchFriends(): Promise<{ alias: string; status: string; is_online: number }[]> {
     const res = await fetch(apiUrl(3003, "/users/friends"), { credentials: "include" });
     if (!res.ok) throw new Error("Erro ao buscar amigos");
     const data = await res.json();
@@ -189,18 +205,31 @@ export class Friends extends AView {
     });
   }
 
-  private renderFriends(friends: { alias: string; status: string }[], container: Element) {
+  private renderFriends(friends: { alias: string; status: string; is_online: number }[], container: Element) {
     container.innerHTML = "";
     if (friends.length === 0) {
       container.innerHTML = '<div class="text-white/60 text-center">Nenhum amigo encontrado.</div>';
       return;
     }
     friends.forEach((user) => {
+      const isOnline = user.is_online === 1;
+      const onlineIndicator = isOnline 
+        ? '<div class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 shadow-lg animate-pulse" title="Online"></div>'
+        : '<div class="w-4 h-4 rounded-full bg-red-500 border-2 border-red-300 shadow-lg" title="Offline"></div>';
+      
+      const statusText = isOnline ? '<span class="text-green-300 text-xs">online</span>' : '<span class="text-red-300 text-xs">offline</span>';
+      
       const row = document.createElement("div");
       row.className =
         "flex items-center gap-3 bg-white/10 rounded-lg px-4 py-2 border border-white/20 shadow-sm";
       row.innerHTML = `
-        <span class="flex-1 text-lg font-medium">${user.alias}</span>
+        <div class="flex items-center gap-2 flex-1">
+          ${onlineIndicator}
+          <div class="flex flex-col">
+            <span class="text-lg font-medium">${user.alias}</span>
+            ${statusText}
+          </div>
+        </div>
         ${user.status === 'pending' ? '<span class="text-yellow-300 text-sm font-semibold">pending</span>' : `<button class="remove-btn hover:text-red-400 text-2xl transition-all" title="Remove">✖️</button>`}
       `;
       if (user.status !== 'pending') {
@@ -249,6 +278,18 @@ export class Friends extends AView {
       logoutBtn.addEventListener('click', async (e: Event) => {
         e.preventDefault();
         try {
+          // Atualizar status offline antes do logout
+          await fetch(apiUrl(3003, '/users/status/offline'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+        } catch (statusError) {
+          console.warn('Failed to update offline status:', statusError);
+        }
+        
+        try {
           const response = await fetch(apiUrl(3001, '/auth/logout'), {
             method: 'POST',
             credentials: 'include'
@@ -272,7 +313,33 @@ export class Friends extends AView {
     }
   }
 
+  private async setUserOnline(): Promise<void> {
+    try {
+      const response = await fetch(apiUrl(3003, '/users/status/online'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Enviar um objeto vazio como body
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to set user online:', response.status, errorData);
+      } else {
+        const data = await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to update online status:', error);
+    }
+  }
+
   public dispose(): void {
+    // Limpar o intervalo de atualização
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+    
     const friendsContainer = document.querySelector(
       "div.w-full.min-h-screen.bg-gradient-to-br"
     );

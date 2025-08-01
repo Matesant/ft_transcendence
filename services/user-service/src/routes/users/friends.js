@@ -91,7 +91,7 @@ export default async function (fastify, opts) {
 			const myId = await getUserIdByAlias(fastify, alias);
 
 			const rows = await fastify.db.all(`
-				SELECT u.alias, f.status
+				SELECT u.alias, f.status, u.is_online
 				FROM friends f
 				JOIN user_profiles u ON u.id = f.friend_id
 				WHERE f.user_id = ?

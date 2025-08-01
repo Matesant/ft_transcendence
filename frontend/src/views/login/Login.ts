@@ -236,6 +236,17 @@ export class Login extends AView {
                     if ('require2FA' in result) {
                         this.twoFa(data.alias, result);
                     } else {
+                        // Atualizar status online após login bem-sucedido
+                        try {
+                            await fetch(apiUrl(3003, '/users/status/online'), {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({})
+                            });
+                        } catch (statusError) {
+                            console.warn('Failed to update online status:', statusError);
+                        }
                         navigateTo('/dashboard');
                     }
                 } else {

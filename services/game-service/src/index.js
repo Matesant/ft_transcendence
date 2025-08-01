@@ -25,7 +25,6 @@ const start = async () => {
     try {
         const app = await createApp();
         await app.listen({ port: appConfig.port, host: appConfig.host });
-        console.log(`🎮 Game Service started on port ${appConfig.port}`);
     } catch (err) {
         console.error('Error starting server:', err);
         process.exit(1);
