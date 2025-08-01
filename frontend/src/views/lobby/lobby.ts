@@ -504,7 +504,7 @@ export class Lobby extends AView {
           sessionStorage.setItem('opponent', JSON.stringify(data.opponent));
           this.keepConnection = true;
           navigateTo('/online');
-        });
+        }, 1000);
       }
     }, 1000);
   }

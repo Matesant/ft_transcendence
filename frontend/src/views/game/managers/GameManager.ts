@@ -132,7 +132,7 @@ export class GameManager {
             setTimeout(() => {
                 this._ball.start();
                 this._applySpeedMultiplierToBall(this._ball);
-            }, 2000);
+            }, 500);
         } else {
             this._ball.start();
             this._applySpeedMultiplierToBall(this._ball);
@@ -225,9 +225,9 @@ export class GameManager {
             
             const score = this._scoreManager.score;
             const { player1, player2 } = this._matchManager.getPlayerNames();
-            if (score.player1 >= 2) {
+            if (score.player1 >= 5) {
                 this._showGameOver(player1);
-            } else if (score.player2 >= 2) {
+            } else if (score.player2 >= 5) {
                 this._showGameOver(player2);
             }
         }
