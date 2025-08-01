@@ -47,8 +47,8 @@ export default async function passwordResetRoutes(fastify, opts) {
       return reply.status(400).send({ error: 'Passwords do not match' })
     }
 
-    if (newPassword.length < 6) {
-      return reply.status(400).send({ error: 'Password must be at least 6 characters long' })
+    if (!validatePassword(newPassword)) {
+      return reply.status(400).send({ error: 'Invalid password format' })
     }
 
     const record = await fastify.db.get(
@@ -80,4 +80,11 @@ export default async function passwordResetRoutes(fastify, opts) {
       return reply.status(500).send({ error: 'Error resetting password' })
     }
   })
+}
+
+
+function validatePassword(password) {
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/
+
+  return re.test(String(password))
 }
