@@ -1,4 +1,3 @@
-// Game REST API Routes
 export async function gameRoutes(fastify, options) {
     const { gameManager, playerManager } = options;
 

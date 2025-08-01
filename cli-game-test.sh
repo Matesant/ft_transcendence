@@ -1,17 +1,12 @@
-#!/bin/bash
 
-# CLI Game Test Script for ft_transcendence
-# This script demonstrates how to interact with the game service via REST API
 
-BASE_URL="https://172.27.134.61:3004"
+BASE_URL="https://10.12.10.5:3004"
 TEMP_DIR="/tmp/cli-game-test"
 GAME_FILE="$TEMP_DIR/current_game.txt"
 PLAYER_FILE="$TEMP_DIR/current_player.txt"
 
-# Create temp directory if it doesn't exist
 mkdir -p "$TEMP_DIR"
 
-# Load saved game and player IDs if they exist
 if [ -f "$GAME_FILE" ]; then
     GAME_ID=$(cat "$GAME_FILE" 2>/dev/null)
 fi
@@ -20,14 +15,11 @@ if [ -f "$PLAYER_FILE" ]; then
     PLAYER_ID=$(cat "$PLAYER_FILE" 2>/dev/null)
 fi
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
 
-# Function to save game state
 save_game_state() {
     if [ -n "$GAME_ID" ]; then
         echo "$GAME_ID" > "$GAME_FILE"
@@ -37,14 +29,12 @@ save_game_state() {
     fi
 }
 
-# Function to clear game state
 clear_game_state() {
     rm -f "$GAME_FILE" "$PLAYER_FILE"
     GAME_ID=""
     PLAYER_ID=""
 }
 
-# Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -61,7 +51,6 @@ print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Function to check service health
 check_health() {
     print_status "Checking game service health..."
     response=$(curl -k -s "${BASE_URL}/health" 2>/dev/null)
@@ -74,7 +63,6 @@ check_health() {
     fi
 }
 
-# Function to get game stats
 get_stats() {
     print_status "Getting game statistics..."
     response=$(curl -k -s "${BASE_URL}/games/stats" 2>/dev/null)
@@ -86,7 +74,6 @@ get_stats() {
     fi
 }
 
-# Function to create a new game
 create_game() {
     print_status "Creating new game..."
     response=$(curl -k -s -X POST "${BASE_URL}/games/create" \
@@ -112,7 +99,6 @@ create_game() {
     fi
 }
 
-# Function to get game state
 get_game_state() {
     if [ -z "$GAME_ID" ]; then
         print_error "No game ID available. Create a game first."
@@ -130,7 +116,6 @@ get_game_state() {
     fi
 }
 
-# Function to move paddle
 move_paddle() {
     local direction=$1
     
@@ -157,7 +142,6 @@ move_paddle() {
     fi
 }
 
-# Function to watch game (continuous state updates)
 watch_game() {
     if [ -z "$GAME_ID" ]; then
         print_error "No game ID available. Create a game first."
@@ -189,7 +173,6 @@ watch_game() {
     done
 }
 
-# Function to end game
 end_game() {
     if [ -z "$GAME_ID" ]; then
         print_error "No game ID available. Create a game first."
@@ -208,7 +191,6 @@ end_game() {
     fi
 }
 
-# Function to get current game info
 get_current_game() {
     if [ -n "$GAME_ID" ]; then
         echo "Current Game ID: $GAME_ID"
@@ -218,7 +200,6 @@ get_current_game() {
     fi
 }
 
-# Function to show help
 show_help() {
     echo "CLI Game Test Script for ft_transcendence"
     echo ""
@@ -245,13 +226,11 @@ show_help() {
     echo "  $0 info"
 }
 
-# Function to clear saved state
 clear_state() {
     clear_game_state
     print_success "Game state cleared"
 }
 
-# Function to run a complete demo
 run_demo() {
     print_status "Running complete game demo..."
     
@@ -290,7 +269,6 @@ run_demo() {
     fi
 }
 
-# Main script logic
 case "$1" in
     "health")
         check_health
