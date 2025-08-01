@@ -107,10 +107,6 @@ export class NetworkManager {
         this._lastInputSent = now;
     }
 
-    public onMatchFound(callback: (data: any) => void): void {
-        this._onMatchFound = callback;
-    }
-
     public onGameState(callback: (state: any) => void): void {
         this._onGameState = callback;
     }

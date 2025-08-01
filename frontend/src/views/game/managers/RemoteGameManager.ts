@@ -164,10 +164,6 @@ export class RemoteGameManager {
     }
 
     private _setupNetworkHandlers(): void {
-        this._networkManager.onMatchFound((data) => {
-            this._handleMatchFound(data);
-        });
-        
         this._networkManager.onGameStart((data) => {
             this._handleGameStart(data);
         });
