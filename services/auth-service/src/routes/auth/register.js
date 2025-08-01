@@ -43,7 +43,7 @@ export default async function registerRoutes(fastify, opts) {
 }
 
 function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const re = /^[^\s@]+@[^\s@][^\s@]+$/
   return re.test(String(email).toLowerCase())
 }
 
@@ -53,7 +53,7 @@ function validateAlias(alias) {
 }
 
 function validatePassword(password) {
-  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,20}$/;
 
   return re.test(String(password))
 }
