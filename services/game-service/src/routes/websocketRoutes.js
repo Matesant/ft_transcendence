@@ -1,4 +1,3 @@
-// WebSocket Routes and Handlers
 export async function websocketRoutes(fastify, options) {
     const { gameManager, playerManager, roomManager } = options;
 
@@ -63,7 +62,6 @@ export async function websocketRoutes(fastify, options) {
     });
 }
 
-// WebSocket Message Handlers
 export async function handleGameInput(connection, data, gameManager) {
     const gameRoom = gameManager.getGameByPlayerId(data.playerId);
     if (gameRoom) {

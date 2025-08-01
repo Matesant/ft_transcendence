@@ -1,20 +1,13 @@
 export class PlayerManager {
     constructor() {
         this.players = new Map(); 
-        this.queue = new Map(); 
         this.connections = new Map();
     }
 
     addPlayer(player) {
         this.players.set(player.id, player);
         this.connections.set(player.connection, player.id);
-        this.addToQueue(player);
         console.log(`Player ${player.name} (${player.id}) joined`);
-    }
-
-    addToQueue(player) {
-        this.queue.set(player.id, player);
-        console.log(`Player ${player.name} added to queue. Queue size: ${this.queue.size}`);
     }
 
     removePlayer(connection) {
@@ -26,33 +19,12 @@ export class PlayerManager {
             }
             
             this.players.delete(playerId);
-            this.queue.delete(playerId);
             this.connections.delete(connection);
         }
     }
 
-    removePlayerFromQueue(playerId) {
-        this.queue.delete(playerId);
-        console.log(`Player ${playerId} removed from queue. Queue size: ${this.queue.size}`);
-    }
-
-    findOpponent(playerId) {
-        for (const [id, player] of this.queue) {
-            if (id !== playerId) {
-                this.removePlayerFromQueue(id);
-                this.removePlayerFromQueue(playerId);
-                return player;
-            }
-        }
-        return null;
-    }
-
     getPlayer(playerId) {
         return this.players.get(playerId);
-    }
-
-    getQueueSize() {
-        return this.queue.size;
     }
 
     getTotalPlayers() {
