@@ -3,7 +3,7 @@ import { apiUrl } from "../utils/api";
 import { PongHeaderPublic } from "./ui/PongHeaderPublic";
 
 export class TwoFactorAuth extends HTMLElement {
-  public alias: string = "alisson";
+  public alias: string = "teste";
 
   constructor() {
     super();
