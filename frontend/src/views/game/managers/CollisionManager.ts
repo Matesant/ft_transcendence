@@ -134,7 +134,7 @@ export class CollisionManager {
                 this._ball.start(direction);
                 this._applySpeedMultiplierToBall(this._ball);
                 this._ballReleaseTimer = null;
-            }, 1000) as number;
+            }, 500) as number;
             
         } else {
             ball.reset();

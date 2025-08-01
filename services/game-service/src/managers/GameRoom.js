@@ -236,7 +236,7 @@ export class GameRoom extends EventEmitter {
                 console.log(`Ball released after point scored in game ${this.id}`);
             }
             this.ballReleaseTimer = null;
-        }, 1000);
+        }, 300);
     }
 
     resetGame() {
