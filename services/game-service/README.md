@@ -39,19 +39,6 @@ Real-time communication for gameplay.
 #### Client → Server Messages
 
 ```javascript
-// Join matchmaking queue
-{
-  type: 'join_queue',
-  playerId: string,
-  playerName: string
-}
-
-// Leave matchmaking queue
-{
-  type: 'leave_queue',
-  playerId: string
-}
-
 // Send game input
 {
   type: 'game_input',
@@ -235,14 +222,15 @@ The frontend uses the `NetworkManager` class to communicate with the game servic
 ```typescript
 import { NetworkManager } from './managers/NetworkManager';
 
+```javascript
 const networkManager = new NetworkManager();
 
-// Connect and join queue
+// Connect to game service
 await networkManager.connect(playerId, playerName);
-networkManager.joinQueue();
 
-// Handle events
-networkManager.onMatchFound((data) => {
+// Handle room events
+networkManager.onRoomCreated((data) => {
+  // Room created successfully
 });
 
 networkManager.onGameState((state) => {
@@ -251,6 +239,7 @@ networkManager.onGameState((state) => {
 
 // Send input
 networkManager.sendInput('move_left');
+```
 ```
 
 ## Performance Considerations

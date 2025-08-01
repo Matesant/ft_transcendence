@@ -199,8 +199,7 @@ export class RemoteGameManager {
 
             await this._networkManager.connect(this._playerId, this._playerName, this._existingSocket);
             
-            this._showStatus("Searching for opponent...", "info");
-            this._networkManager.joinQueue();
+            this._showStatus("Connected to server. Use lobby for matchmaking.", "info");
             
         } catch (error) {
             console.error('Connection failed:', error);

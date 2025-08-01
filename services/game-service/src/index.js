@@ -6,7 +6,6 @@ import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 
 import { readFileSync } from 'node:fs';
-import { GameRoom } from './managers/GameRoom.js';
 import { GameManager } from './managers/GameManager.js';
 import { PlayerManager } from './managers/PlayerManager.js';
 
@@ -66,12 +65,6 @@ app.register(async function (fastify) {
                 console.log('Received message:', data);
                 
                 switch (data.type) {
-                    case 'join_queue':
-                        await handleJoinQueue(connection, data);
-                        break;
-                    case 'leave_queue':
-                        await handleLeaveQueue(connection, data);
-                        break;
                     case 'create_room':
                         await handleCreateRoom(connection, data);
                         break;
@@ -123,61 +116,6 @@ app.register(async function (fastify) {
         });
     });
 });
-
-async function handleJoinQueue(connection, data) {
-    try {
-        const player = {
-            id: data.playerId,
-            name: data.playerName,
-            connection: connection,
-            joinedAt: Date.now()
-        };
-        
-        playerManager.addPlayer(player);
-        
-        const opponent = playerManager.findOpponent(player.id);
-        
-        if (opponent) {
-            const gameRoom = gameManager.createGame(player, opponent);
-            
-            player.connection.socket.send(JSON.stringify({
-                type: 'match_found',
-                gameId: gameRoom.id,
-                opponent: { id: opponent.id, name: opponent.name },
-                playerSide: 'left' 
-            }));
-            
-            opponent.connection.socket.send(JSON.stringify({
-                type: 'match_found',
-                gameId: gameRoom.id,
-                opponent: { id: player.id, name: player.name },
-                playerSide: 'right' 
-            }));
-            
-            gameRoom.startGame();
-        } else {
-            connection.socket.send(JSON.stringify({
-                type: 'queue_joined',
-                message: 'Searching for opponent...',
-                queueSize: playerManager.getQueueSize()
-            }));
-        }
-    } catch (error) {
-        console.error('Error handling join queue:', error);
-        connection.socket.send(JSON.stringify({
-            type: 'error',
-            message: 'Failed to join queue'
-        }));
-    }
-}
-
-async function handleLeaveQueue(connection, data) {
-    playerManager.removePlayerFromQueue(data.playerId);
-    connection.socket.send(JSON.stringify({
-        type: 'queue_left',
-        message: 'Left the queue'
-    }));
-}
 
 async function handleGameInput(connection, data) {
     const gameRoom = gameManager.getGameByPlayerId(data.playerId);
