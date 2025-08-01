@@ -211,10 +211,10 @@ export class Register extends AView {
                 password: formData.get('password'),
             };
 
-            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,12}$/;
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,20}$/;
             passwordErrorDiv.textContent = '';
             if (!strongPasswordRegex.test(String(data.password))) {
-                passwordErrorDiv.textContent = 'A senha deve ter entre 6 e 12 caracteres, incluindo maiúscula, minúscula, número e caractere especial.';
+                passwordErrorDiv.textContent = 'A senha deve ter entre 6 e 20 caracteres, incluindo maiúscula, minúscula, número e caractere especial.';
                 return;
             }
             try {
