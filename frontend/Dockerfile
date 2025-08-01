@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM alpine
 
 WORKDIR /app
 COPY ./start.sh .
