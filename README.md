@@ -1,3 +1,35 @@
+# 🕹️ Transcendence
+
+Transcendence é um jogo online multiplayer inspirado no clássico Pong, desenvolvido como projeto final da formação da 42. O objetivo do projeto foi aplicar conceitos avançados de autenticação, jogo em tempo real e integração entre frontend e backend em um sistema completo e funcional.
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+- 🟩 **Node.js** com **Fastify** (servidor backend)
+- 🔷 **TypeScript** (frontend)
+- 🎨 **Tailwind CSS** (estilização)
+- 🧠 **SQLite** (banco de dados)
+- 🔌 **Socket.IO** (comunicação em tempo real)
+- 🛠️ **bundle.js** (empacotamento e renderização do jogo em 3D)
+- 🔐 Autenticação com 2FA e OAuth (Google)
+- 🐳 **Docker / Docker Compose** (ambiente de contêineres)
+
+---
+
+## 🧩 Funcionalidades
+
+- 👤 Sistema de login com autenticação em duas etapas
+- 🧑‍🤝‍🧑 Gerenciamento de amigos, status online e chat em tempo real
+- 🏓 Jogo de Pong multiplayer (1v1)
+- 🏆 Sistema de ranking
+- 🎨 Customização de perfil com avatar
+- 🧱 Contêinerização completa com Docker
+
+---
+
+## 🔧 Como rodar localmente
+
 
 ```sh
 ./ft_transcendence.sh setup # cria o .env e os certificados https
@@ -18,19 +50,10 @@ docker compose logs -f frontend # mostra logs do container de front
 docker compose logs -f user-service # mostra logs do container de user-service
 ```
 
-qualquer alteração no .env requer um rebuild dos containers.
+---
 
-no browser/insomnia, voce deve usar o ip que está no .env.
+## 📸 Screenshots
 
-todos os containers vao fazer um reload automatico ao modificar o source code, olhe os logs do container para ver erros de sintaxe.
+![Landing page](./assets/landing_page.png)
 
-## bug double define
-
-se voce tomar um bug como esse:
-
-```
-CustomElementRegistry.define: 'start-tournament' has already been defined as a custom element
-```
-
-é porque no `frontend/public/index.html`, o `<script>` foi inserido duas vezes, de um `git restore frontend/public/index.html`
-
+![Jogo em 3d](./assets/pong.jpg)
