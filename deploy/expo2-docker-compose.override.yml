@@ -35,6 +35,12 @@ services:
       dockerfile: dockerfile
     ports: !override
       - "127.0.0.1:28081:8080"
+    # O compose do grupo não repassa APP_FRONTEND_BASE_URL, então o perfil prod
+    # cai no default http://localhost:8080. Os handlers de sucesso e de falha do
+    # OAuth2 redirecionam para "$frontendBaseUrl/..." — sem isto, depois de um
+    # login com Google bem-sucedido o usuário é mandado para localhost.
+    environment:
+      APP_FRONTEND_BASE_URL: ${APP_FRONTEND_BASE_URL}
 
   frontend:
     build:
