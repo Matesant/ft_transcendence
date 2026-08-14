@@ -1,0 +1,61 @@
+# Override para rodar o projeto do grupo cshingai como expo2 na VM.
+# Destino: /root/expo2/docker-compose.override.yml (carregado automático).
+#
+# Não edita o docker-compose.yml submetido. Corrige quatro coisas:
+#
+# 1. dockerfile do backend: o compose pede "Dockerfile" mas o arquivo em disco é
+#    "dockerfile" minúsculo. O grupo desenvolveu em macOS (tem .DS_Store), onde
+#    o filesystem é case-insensitive; no Linux o build falha.
+#
+# 2. dockerfile do frontend: o compose aponta para o Dockerfile de
+#    desenvolvimento (CMD npm start, porta 3000), mas publica 8080:80 — nada
+#    escuta na 80. Dockerfile.prod faz o build e serve por nginx na 80, que é o
+#    que o mapeamento espera.
+#
+# 3. nginx.conf corrigido por volume (ver expo2-nginx.conf): o original faz
+#    proxy_pass http:// para um backend TLS e não remove o prefixo /api.
+#
+# 4. Portas e nomes. Só a 8092 fica pública (o web-proxy bate ali). O frontend
+#    original pedia 8080 e o grafana 3001, que colidem com o expo3. Internos vão
+#    para 127.0.0.1 numa faixa 2xxxx.
+#
+# backend e frontend não têm container_name no compose original, então o compose
+# já os nomeia com o prefixo do projeto (expo2-backend-1). Só os quatro que têm
+# nome fixo precisam de prefixo aqui.
+
+services:
+  mysql:
+    container_name: expo2-mysql
+    ports: !override
+      - "127.0.0.1:23307:3306"
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: dockerfile
+    ports: !override
+      - "127.0.0.1:28081:8080"
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.prod
+    ports: !override
+      - "8092:80"
+    volumes:
+      - ./nginx.expo2.conf:/etc/nginx/nginx.conf:ro
+
+  node-exporter:
+    container_name: expo2-node-exporter
+    ports: !override
+      - "127.0.0.1:29101:9100"
+
+  prometheus:
+    container_name: expo2-prometheus
+    ports: !override
+      - "127.0.0.1:29090:9090"
+
+  grafana:
+    container_name: expo2-grafana
+    ports: !override
+      - "127.0.0.1:23001:3000"

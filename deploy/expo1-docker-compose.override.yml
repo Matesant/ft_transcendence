@@ -1,0 +1,108 @@
+# Override para rodar o projeto do grupo jopereir como expo1 na VM, ao lado dos
+# outros. Destino: /root/expo1/docker-compose.override.yml (carregado automático).
+#
+# Não edita o docker-compose.yml submetido pelo grupo. Faz três coisas:
+#
+# 1. container_name com prefixo expo1-. Nomes de container são globais no
+#    daemon: frontend, auth-service e match-service colidem com o expo3.
+# 2. Portas. Só a porta de entrada fica pública (8091 -> 443, onde o web-proxy
+#    bate). O resto vai para 127.0.0.1 numa faixa 1xxxx, evitando conflito —
+#    em especial o cadvisor, que pedia 8080 e o expo3 já ocupa.
+#    ports usa !override porque o compose concatena listas em vez de substituir.
+# 3. restart: unless-stopped, para sobreviver a reboot da VM.
+#
+# O nginx interno do grupo resolve os upstreams por NOME DE SERVIÇO
+# (set $api_gateway https://api-gateway:3000 + resolver 127.0.0.11), não por
+# container_name, então renomear containers não quebra o roteamento interno.
+
+services:
+  nginx:
+    container_name: expo1-nginx
+    restart: unless-stopped
+    ports: !override
+      - "8091:443"
+
+  frontend:
+    container_name: expo1-frontend
+    restart: unless-stopped
+
+  api-gateway:
+    container_name: expo1-api-gateway
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:13000:3000"
+
+  auth-service:
+    container_name: expo1-auth-service
+    restart: unless-stopped
+
+  users-service:
+    container_name: expo1-users-service
+    restart: unless-stopped
+
+  sqlite-db:
+    container_name: expo1-sqlite-db
+    restart: unless-stopped
+
+  chat-service:
+    container_name: expo1-chat-service
+    restart: unless-stopped
+
+  game-server:
+    container_name: expo1-game-server
+    restart: unless-stopped
+    # O compose do grupo não passa LOBBY_ID/LOBBY_PASS para o game-server (sem
+    # environment nem env_file), então lobby.class.js lê Number(undefined)=NaN e
+    # rejeita o match-service com close code 1008. O match-service lê os mesmos
+    # valores de new-match-service/.env, preenchido a partir de secrets/.
+    environment:
+      LOBBY_ID: ${LOBBY_ID}
+      LOBBY_PASS: ${LOBBY_PASS}
+
+  match-service:
+    container_name: expo1-match-service
+    restart: unless-stopped
+
+  prometheus:
+    container_name: expo1-prometheus
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:19090:9090"
+
+  grafana:
+    container_name: expo1-grafana
+    restart: unless-stopped
+
+  node-exporter:
+    container_name: expo1-node-exporter
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:19100:9100"
+
+  cadvisor:
+    container_name: expo1-cadvisor
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:18080:8080"
+
+  blackbox-exporter:
+    container_name: expo1-blackbox-exporter
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:19115:9115"
+
+  alertmanager:
+    container_name: expo1-alertmanager
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:19093:9093"
+
+  alert-receiver:
+    container_name: expo1-alert-receiver
+    restart: unless-stopped
+
+  mailpit:
+    container_name: expo1-mailpit
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:18025:8025"
