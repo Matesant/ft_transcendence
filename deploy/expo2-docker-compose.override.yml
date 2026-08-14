@@ -45,7 +45,11 @@ services:
   frontend:
     build:
       context: ./Frontend
-      dockerfile: Dockerfile.prod
+      # Espelho do Dockerfile.prod que aceita REACT_APP_API_URL como build arg
+      # (o CRA inlina process.env.REACT_APP_* no bundle em tempo de build).
+      dockerfile: Dockerfile.expo
+      args:
+        REACT_APP_API_URL: https://expo2.42sp.org.br/api
     ports: !override
       - "8092:80"
     volumes:
