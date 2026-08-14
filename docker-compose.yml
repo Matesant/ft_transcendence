@@ -1,6 +1,7 @@
 services:
   auth-service:
     container_name: auth-service
+    restart: unless-stopped
     build: ./services/auth-service
     ports:
       - "3001:3001"
@@ -21,6 +22,7 @@ services:
 
   match-service:
     container_name: match-service
+    restart: unless-stopped
     build: ./services/match-service
     ports:
       - "3002:3002"
@@ -38,6 +40,7 @@ services:
 
   user-service:
     container_name: user-service
+    restart: unless-stopped
     build: ./services/user-service
     ports:
       - "3003:3003"
@@ -55,6 +58,7 @@ services:
 
   game-service:
     container_name: game-service
+    restart: unless-stopped
     build: ./services/game-service
     ports:
       - "3004:3004"
@@ -72,6 +76,7 @@ services:
     
   frontend:
     container_name: frontend
+    restart: unless-stopped
     build: ./frontend
     ports:
       - "8080:8080"
