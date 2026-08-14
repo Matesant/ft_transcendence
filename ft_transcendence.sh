@@ -18,14 +18,24 @@ setup()
         read -p "The project will be avaliable in localhost ? (y/n)" res
         if [ "$res" = "y" ]; then
             export IP="localhost"
-            export TYPE="DNS"
         else
             export IP=$(hostname -I | cut -d ' ' -f 1)
-            export TYPE="IP"
         fi
 
+        read -p "Domain name to serve the project (empty for none): " DOMAIN
+
         printf "IP=%s\n" "$IP" >> .env
+        printf "ALLOWED_HOSTS=%s\n" "$DOMAIN" >> .env
         printf "%bIP address done!%b\n" "$BLUE" "$RESET"
+
+        # SANs: localhost sempre, mais o IP/host da máquina e o domínio (se houver).
+        SAN="DNS:localhost,IP:127.0.0.1"
+        if [ "$IP" != "localhost" ]; then
+            SAN="$SAN,IP:$IP"
+        fi
+        if [ -n "$DOMAIN" ]; then
+            SAN="$SAN,DNS:$DOMAIN"
+        fi
 
         printf "%bGerenating SSL certificates...%b\n" "$BLUE" "$RESET"
 
@@ -40,7 +50,7 @@ setup()
         -newkey rsa:2048   \
         -keyout ./services/server.key \
         -out ./services/server.csr    \
-        -subj "/C=US/ST=Denial/L=Earth/O=ft_trans/CN=$IP"
+        -subj "/C=US/ST=Denial/L=Earth/O=ft_trans/CN=${DOMAIN:-$IP}"
 
         openssl x509 -req    \
         -CA ./services/root-ca.crt    \
@@ -49,7 +59,7 @@ setup()
         -out ./services/server.crt    \
         -days 365          \
         -CAcreateserial    \
-        -extfile <(printf "subjectAltName = $TYPE:$IP\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = digitalSignature, keyEncipherment\nextendedKeyUsage=serverAuth")
+        -extfile <(printf "subjectAltName = $SAN\nauthorityKeyIdentifier = keyid,issuer\nbasicConstraints = CA:FALSE\nkeyUsage = digitalSignature, keyEncipherment\nextendedKeyUsage=serverAuth")
 
         cp -t ./services/user-service/ ./services/server.key ./services/server.crt
         cp -t ./services/match-service/ ./services/server.key ./services/server.crt

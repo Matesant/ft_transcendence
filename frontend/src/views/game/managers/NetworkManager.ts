@@ -56,11 +56,10 @@ export class NetworkManager {
                         }, { once: true });
                     }
                 } else {
-                    const host = window.location.hostname;
+                    const host = window.location.host;
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    const wsUrl = process.env.NODE_ENV === 'production'
-                        ? 'wss://your-domain.com/ws'
-                        : `${protocol}//${host}:3004/ws`;
+                    // Mesma origem do frontend: o nginx encaminha /ws para o game-service.
+                    const wsUrl = `${protocol}//${host}/ws`;
 
                     this._socket = new WebSocket(wsUrl);
 

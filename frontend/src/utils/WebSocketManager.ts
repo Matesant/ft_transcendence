@@ -38,9 +38,9 @@ export class WebSocketManager {
             }
 
             try {
-                const host = window.location.hostname;
+                const host = window.location.host;
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${protocol}//${host}:3004/ws`;
+                const wsUrl = `${protocol}//${host}/ws`;
                 
                 this._socket = new WebSocket(wsUrl);
                 

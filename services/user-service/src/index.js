@@ -16,6 +16,7 @@ import crypto from 'node:crypto'
 import path from 'node:path'
 import fastifyStatic from '@fastify/static'
 import { readFileSync } from 'node:fs';
+import { allowedOrigins } from './utils/allowedOrigins.js'
 
 
 dotenv.config()
@@ -23,6 +24,8 @@ dotenv.config()
 // Configure Fastify
 const fastify = Fastify({
 	logger: false,
+  // Atrás do nginx: respeita X-Forwarded-Proto/For ao montar URLs absolutas.
+  trustProxy: true,
   https: {
     cert: readFileSync('/app/server.crt'),
     key: readFileSync('/app/server.key')
@@ -49,7 +52,7 @@ fastify.decorate("authenticate", async function (request, reply) {
 })
 
 await fastify.register(cors, {
-  origin: `https://${process.env.IP || 'localhost'}:8080`,
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],

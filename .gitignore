@@ -6,6 +6,7 @@
 *.db
 
 frontend/public/style.css
+frontend/public/index.html
 
 # Env files (nunca versionar senhas ou tokens)
 **/.env

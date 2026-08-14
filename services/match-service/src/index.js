@@ -9,6 +9,7 @@ import playRoutes from './routes/match/play.js';
 import tournamentRoutes from './routes/match/tournament.js';
 import crypto from 'node:crypto'
 import { readFileSync } from 'node:fs';
+import { allowedOrigins } from './utils/allowedOrigins.js'
 
 
 dotenv.config()
@@ -60,7 +61,7 @@ fastify.setErrorHandler((error, request, reply) => {
 })
 
 await fastify.register(cors, {
-  origin: `https://${process.env.IP || 'localhost'}:8080`,
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
