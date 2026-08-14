@@ -1,0 +1,39 @@
+# Override para rodar o projeto ft_transcendence4 como expo4 na VM.
+# Destino: /root/expo4/docker-compose.override.yml (carregado automático).
+#
+# O compose original põe frontend e backend em portas separadas e aponta
+# VITE_API_URL para http://${HOST_IP}:3333. Atrás de https://expo4.42sp.org.br
+# isso quebra duas vezes: mixed content (página HTTPS chamando API HTTP) e uma
+# porta que o web-proxy não publica.
+#
+# Aqui o frontend passa a ser um bundle estático servido por nginx, que também
+# encaminha as rotas do backend — tudo na mesma origem, uma porta pública só.
+# VITE_API_URL vira o domínio público e entra como build arg (o Vite inlina
+# import.meta.env no bundle, não lê em runtime).
+#
+# container_name: os originais são pong_backend/pong_frontend, que não colidem
+# com nada, mas ficam com prefixo expo4- por consistência com os outros.
+
+services:
+  backend:
+    container_name: expo4-backend
+    restart: unless-stopped
+    # Sem porta publicada: quem alcança o backend é o nginx, pela rede interna.
+    ports: !override []
+
+  frontend:
+    container_name: expo4-frontend
+    restart: unless-stopped
+    build:
+      context: ./Front
+      dockerfile: Dockerfile.expo
+      args:
+        VITE_API_URL: https://expo4.42sp.org.br
+    ports: !override
+      - "8094:80"
+    # O bundle é estático e já está na imagem; montar ./Front sobre /app
+    # (como o compose original faz) não tem efeito no nginx, mas o volume
+    # anônimo de node_modules atrapalharia. Removidos.
+    volumes: !override []
+    # npm run css & npm run dev -- --host não se aplica ao nginx.
+    command: !reset null
